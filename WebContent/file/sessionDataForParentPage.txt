@@ -1,0 +1,4 @@
+
+<c:if test="${sessionScope.sessionObject.userId==null}">				
+			<c:redirect url="login.html"/>
+</c:if>

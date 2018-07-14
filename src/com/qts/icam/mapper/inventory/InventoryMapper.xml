@@ -1,0 +1,1529 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.inventory.xml.InventoryMapper">
+	
+	<select id="checkCommodityName" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			commodity_code as commodityCode,
+			commodity_name as commodityName
+		FROM
+			commodity
+		WHERE
+			commodity_name=upper(#{commodityName})
+			AND
+			is_active=true;
+	</select>
+	
+	
+	<insert id="saveCommodity" parameterType="com.qts.icam.model.inventory.Commodity">
+	
+		INSERT INTO inventory_master_catalogue(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation,
+            commodity_code, commodity_name, commodity_desc, commodity_type,
+            commodity_sub_type, unit)
+	    VALUES ((SELECT uuid_generate_v4()), #{objectId},
+		   (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+		   (SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+		   upper(#{commodityCode}), upper(#{commodityName}), #{commodityDesc}, #{commodityType}, #{commoditySubType}, #{modelNo});
+		   
+		INSERT INTO commodity(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation,
+            commodity_code, commodity_name, commodity_desc, commodity_threshold, commodity_type,
+            commodity_sub_type, unit, inventory_master_catalogue)
+	    VALUES ((SELECT uuid_generate_v4()), #{objectId},
+		   (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+		   (SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+		   upper(#{commodityCode}), upper(#{commodityName}), #{commodityDesc}, #{threshold}, #{commodityType}, #{commoditySubType}, #{modelNo},
+		   (SELECT rec_id FROM inventory_master_catalogue WHERE serial_id = (select max(serial_id) from inventory_master_catalogue where is_active=true))
+		   );
+	</insert>
+	
+	<select id="listCommodity" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			commodity_code as commodityCode,
+			commodity_name as commodityName,
+			commodity_desc as commodityDesc,
+			unit as modelNo, <!-- added by sourav.bhadra on 28-07-2017 to fetch commodity unit -->
+			commodity_instock as inStock,
+			commodity_threshold as threshold,
+			commodity_type as commodityType,
+			commodity_sub_type as commoditySubType
+		FROM
+			commodity
+		WHERE
+			is_active=true;
+	</select>
+
+
+	<update id="editCommodity" parameterType="com.qts.icam.model.inventory.Commodity">
+		UPDATE inventory_master_catalogue SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active=true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			commodity_code=upper(#{commodityName}),
+			commodity_name=upper(#{commodityName}),
+			commodity_desc=#{commodityDesc},
+			commodity_type=#{commodityType},
+			commodity_sub_type=#{commoditySubType}
+		WHERE
+			commodity_code=upper(#{commodityCode})
+			AND
+			is_active=true;
+		
+		
+		UPDATE commodity SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active=true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			commodity_code=upper(#{commodityName}),
+			commodity_name=upper(#{commodityName}),
+			commodity_desc=#{commodityDesc},
+			commodity_type=#{commodityType},
+			commodity_sub_type=#{commoditySubType},
+			commodity_threshold=#{threshold}
+		WHERE
+			commodity_code=upper(#{commodityCode})
+			AND
+			is_active=true;
+	</update>
+	
+	<!-- sourav 23062017 -->
+	
+	<select id="commodityVendorList" resultType="com.qts.icam.model.common.Vendor">
+		SELECT
+			v.vendor_code as vendorCode,
+			v.vendor_name as vendorName,
+			vt.vendor_type_name as vendorType		<!-- added by sourav.bhadra -->
+		FROM
+			vendor v
+		JOIN vendor_type vt ON(v.vendor_type=vt.rec_id AND vt.is_active=true)
+		WHERE
+			v.is_active=true;
+	</select>
+	
+	<select id="checkVendorCommodity" resultType="com.qts.icam.model.inventory.Commodity" parameterType="com.qts.icam.model.inventory.Commodity">
+		SELECT count(*) as commodityId
+		FROM
+			commodity_vendor_mapping
+		WHERE
+			commodity=(SELECT rec_id FROM commodity WHERE commodity_code=#{commodityCode})
+			AND
+			vendor=(SELECT rec_id FROM vendor WHERE vendor_code=#{vendor});
+	</select>
+	
+	<select id="vendorCommodityList" parameterType="com.qts.icam.model.common.Vendor" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			c.commodity_name as commodityName,
+			c.unit as modelNo, <!-- added by sourav.bhadra on 28-07-2017 to fetch commodity unit -->
+			commodity_price as sellingRate,
+			v.vendor_code as vendor
+		FROM
+			commodity_vendor_mapping cvm
+		JOIN vendor v ON(v.rec_id=cvm.vendor AND v.is_active=true)
+		JOIN commodity c ON(c.rec_id=cvm.commodity AND c.is_active=true)
+		JOIN financial_year fy ON(cvm.financial_year = fy.rec_id)
+		WHERE
+			v.vendor_code = #{vendorCode}
+		AND
+			financial_year_code = #{financialYear}
+		AND
+			cvm.is_active=true;
+	</select>
+	
+	<insert id="mapCommodityVendor" parameterType="com.qts.icam.model.inventory.Commodity">
+		INSERT INTO commodity_vendor_mapping(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation,
+			vendor, commodity, commodity_price,financial_year)
+		VALUES ((SELECT uuid_generate_v4()), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM vendor WHERE vendor_code =#{vendor} AND is_active=true),
+			(SELECT rec_id FROM commodity WHERE commodity_code =#{commodityCode} AND is_active=true),
+			#{sellingRate},
+			(SELECT rec_id FROM financial_year WHERE financial_year_code = #{date}));
+	</insert>
+	
+	<delete id="deleteMapCommodityVendor" parameterType="com.qts.icam.model.inventory.Commodity">
+		DELETE FROM
+			commodity_vendor_mapping
+		WHERE
+			vendor=(SELECT rec_id FROM vendor WHERE vendor_code=#{vendor});
+	</delete>
+	
+	<insert id="mapCommodityVendorPriceHistory" parameterType="com.qts.icam.model.inventory.Commodity">
+		INSERT INTO commodity_price_history(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			vendor, commodity, price,financial_year)
+		VALUES ((SELECT uuid_generate_v4()), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM vendor WHERE vendor_code =#{vendor} AND is_active=true),
+			(SELECT rec_id FROM commodity WHERE commodity_code =#{commodityCode} AND is_active=true),
+			#{sellingRate},
+			(SELECT rec_id FROM financial_year WHERE financial_year_code = #{date}));
+	</insert>
+	
+	<select id="vendorCommodityPriceHistory" parameterType="com.qts.icam.model.inventory.Commodity" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			price as sellingRate,
+			to_char((SELECT to_timestamp(cph.date_of_creation)),'DD/MM/YYYY') as date
+		FROM
+			commodity_price_history cph
+		JOIN commodity c ON(cph.commodity=c.rec_id AND c.is_active=true)
+		JOIN vendor v ON(cph.vendor=v.rec_id AND v.is_active=true)
+		WHERE
+			c.commodity_code=#{commodityCode}
+		AND
+			v.vendor_code=#{vendor}
+		AND
+			cph.is_active=true
+		ORDER BY
+			date DESC;	
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<select id="nextCommodityPurchaseOrderCode" resultType="java.lang.String">
+		(SELECT ('CPO-' ||(select COALESCE((SELECT MAX(serial_id) FROM commodity_Order), 0 )+1)));
+	</select>
+	
+	
+	<select id="remeaningCommodities" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			commodity_name as commodityName,
+			commodity_code as commodityCode
+		FROM
+			commodity
+		EXCEPT SELECT
+			c.commodity_name as commodityName,
+			c.commodity_code as commodityCode
+		FROM
+			commodity_vendor_mapping cvm
+		JOIN vendor v ON(v.rec_id=cvm.vendor AND v.is_active=true)
+		JOIN commodity c ON(c.rec_id=cvm.commodity AND c.is_active=true)
+		WHERE
+			v.vendor_code=#{vendorCode}
+			AND
+			cvm.is_active=true;
+	</select>
+	
+	<!-- sourav 04072017 -->
+	<!-- Modified by naimisha 12032018 -->
+	<insert id="createCommodityPurchaseOrder" parameterType="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		INSERT INTO commodity_order(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			commodity_order_code, commodity_order_desc, commodity_order_open_date, 
+			totalqtyordered, totalqtydeficit, 
+			totalqtyreceived, paid, pendingamount, totalamount, amountstatus, 
+			receivestatus, vendor, orderstatus, tds, stds, department,financial_year,
+			payment_mode, cheque_no, bank_name, bank_account_no, bank_ifsc_code, 
+			bank_branch_code, bank_location, tax_name, tax_percentage, ticket, task_details,commodity_requisition)
+		VALUES ((SELECT uuid_generate_v4()), #{objId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			#{purchaseOrderCode}, #{purchaseOrderCode}, (SELECT extract(epoch FROM now())), #{totalQtyOrdered}, #{totalQtyDeficit}, #{totalQtyReceived},
+			#{advanceAmount}, #{pendingAmount}, #{netTotal}, #{amountStatus}, #{receiveStatus},
+			(SELECT rec_id FROM vendor WHERE vendor_code =#{vendorCode} AND is_active=true),
+			#{orderStatus}, #{tdsAmount}, #{stdsAmount},
+			(SELECT rec_id FROM department WHERE department_code =#{departmentCode} AND is_active=true),
+			(SELECT fy.rec_id FROM financial_year fy JOIN status_flag sf ON (fy.year_status = sf.rec_id AND sf.is_active = true) AND fy.is_active = true AND sf.status_sym = 'C'),
+			#{transactionMode}, #{chequeNo}::integer, #{bankName}, #{bankAccountNo}::bigint, #{bankIfscCode}, #{bankCode}, #{bankLocation},
+			(SELECT tax_name FROM tax_percentage_details WHERE tax_code = #{taxName}),
+			(SELECT percentage FROM tax_percentage_details WHERE tax_code = #{taxName}),
+			(SELECT ticket FROM task_details WHERE task_details_code = #{purchaseId} AND is_active = true),
+			(SELECT rec_id FROM task_details WHERE task_details_code = #{purchaseId} AND is_active = true),
+			(SELECT rec_id FROM commodity_requisition WHERE commodity_requisition_code = #{purchaseOrderDesc} AND is_active = true));
+	</insert>
+	
+	<!-- sourav 21062017 -->
+	<!--   Modified b y naimisha 27042018 -->
+	<insert id="createCommodityPurchaseOrderDetails" parameterType="com.qts.icam.model.inventory.CommodityPurchaseOrderDetails">
+		INSERT INTO commodity_order_details(
+			rec_id, obj_id, updated_by, updated_on, 
+			date_of_creation,
+			qty_ordered, qty_deficit, qty_received, commodity_order, commodity, 
+			rate, amount, damage, expence_desc,
+  			payment_type,expence_amount)
+		VALUES ((SELECT uuid_generate_v4()), #{objId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			#{qtyOrdered}, #{qtyDeficit}, #{qtyReceived},
+			(SELECT rec_id FROM commodity_order WHERE  commodity_order_code=#{commodityPurchaseOrderCode} AND is_active=true), 
+			(SELECT rec_id FROM commodity WHERE  commodity_code=#{commodity} AND is_active=true),
+			#{rate}, #{amount}, #{qtyDefect},#{expenceDesc}, #{paymentType}, #{expenceAmount}::double precision);
+	</insert>
+	
+	<insert id="createServiceDetails" parameterType="com.qts.icam.model.inventory.CommodityPurchaseOrderDetails">
+		INSERT INTO commodity_service_details(
+			rec_id, obj_id, updated_by, updated_on, 
+			date_of_creation, commodity_service_code, commodity_service_name, 
+			service_charge, commodity_order)
+		VALUES ((SELECT uuid_generate_v4()), #{objId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			upper(#{service}), upper(#{service}), #{amount},
+			(SELECT rec_id FROM commodity_order WHERE commodity_order_code =#{commodityPurchaseOrderCode} AND is_active=true));
+	</insert>
+
+	<select id="commodityPurchaseOrderList" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		SELECT
+			co.commodity_order_code as purchaseOrderCode,
+			to_char((SELECT to_timestamp(co.commodity_order_open_date)), 'DD/MM/YYYY') as purchaseOrderOpenDate,
+			to_char((SELECT to_timestamp(co.commodity_order_close_date)), 'DD/MM/YYYY') as purchaseOrderCloseDate,
+			co.totalqtyordered as totalQtyOrdered,
+			co.totalqtydeficit as totalQtyDeficit,
+			co.totalqtyreceived as totalQtyReceived,
+			co.paid as advanceAmount,
+			co.pendingamount as pendingAmount,
+			co.totalamount as netTotal,
+			co.amountstatus as amountStatus,
+			co.receivestatus as receiveStatus,
+			v.vendor_code as vendorCode,
+			v.vendor_name as vendorName,
+			co.orderstatus as orderStatus,
+			d.department_code as departmentCode,
+			d.department_name as departmentName,
+			co.approval_status as approvalStatus
+		FROM
+			commodity_order co
+		JOIN vendor v ON(co.vendor=v.rec_id AND v.is_active=true)
+		JOIN department d ON(co.department=d.rec_id AND d.is_active=true)
+		WHERE
+			co.is_active=true
+		AND
+			orderstatus=#{status} 
+	</select>
+	
+	<!-- sourav.bhadra 04072017 -->
+	
+	<select id="commodityPurchaseOrderPaymentDetails" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		SELECT
+			co.commodity_order_code as purchaseOrderCode,
+			to_char((SELECT to_timestamp(co.commodity_order_open_date)), 'DD/MM/YYYY') as purchaseOrderOpenDate,
+			to_char((SELECT to_timestamp(co.commodity_order_close_date)), 'DD/MM/YYYY') as purchaseOrderCloseDate,
+			co.totalqtyordered as totalQtyOrdered,
+			co.totalqtydeficit as totalQtyDeficit,
+			co.totalqtyreceived as totalQtyReceived,
+			co.paid as advanceAmount,
+			co.pendingamount as pendingAmount,
+			co.totalamount as netTotal,
+			co.amountstatus as amountStatus,
+			co.receivestatus as receiveStatus,
+			co.tax_name as taxName,
+			co.tax_percentage as taxPercentage,
+			v.vendor_code as vendorCode,
+			v.vendor_name as vendorName,
+			co.orderstatus as orderStatus,
+			d.department_code as departmentCode,
+			d.department_name as departmentName,
+			ticket_code as ticket,
+			task_details_code as taskDetailsCode
+		FROM
+			commodity_order co
+		JOIN vendor v ON(co.vendor=v.rec_id AND v.is_active=true)
+		JOIN department d ON(co.department=d.rec_id AND d.is_active=true)
+		LEFT JOIN ticket t ON (co.ticket = t.rec_id AND t.is_active = true)
+		LEFT JOIN task_details td ON (co.task_details = td.rec_id AND td.is_active = true)
+		WHERE
+			co.is_active=true
+		AND
+			orderstatus='OPEN'
+		AND
+			commodity_order_code=#{orderID}
+	</select>
+	
+	<update id="makeCommodityPayment" parameterType="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		UPDATE commodity_order SET
+			<if test="orderStatus == 'CLOSED'">
+				commodity_order_close_date=(SELECT extract(epoch FROM now())),
+			</if>
+			updated_by = (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			paid = #{advanceAmount},
+			pendingamount = #{pendingAmount},
+			amountstatus = #{amountStatus},
+			orderstatus = #{orderStatus}
+		WHERE
+			commodity_order_code=#{purchaseOrderCode}
+			AND
+			is_active=true
+			AND
+			orderstatus='OPEN';
+	</update>
+	
+	<!-- sourav 23062017 -->
+	
+	<select id="commodityPurchaseOrderDetailsList" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.CommodityPurchaseOrderDetails">
+		SELECT
+			cod.qty_ordered as qtyOrdered,
+			cod.qty_deficit as qtyDeficit,
+			cod.qty_received as qtyReceived,
+			c.commodity_code as commodity,
+			c.unit as service, <!-- added by sourav.bhadra on 28-07-2017 to fetch commodity unit -->
+			cod.rate as rate,
+			cod.amount as amount,
+			cod.damage as damage,
+			cod.discount as discount,
+			<!-- added by sourav.bhadra on 21-06-2017 -->
+			cod.expence_desc as expenceDesc,
+			cod.payment_type as paymentType,
+			cod.expence_amount as expenceAmount
+		FROM
+			commodity_order_details cod
+		JOIN commodity c ON(cod.commodity=c.rec_id AND c.is_active=true)
+		JOIN commodity_order co ON(cod.commodity_order=co.rec_id AND co.is_active=true)
+		WHERE
+			co.commodity_order_code=#{orderID}
+			AND
+			cod.is_active=true;
+	</select>
+	
+	<select id="serviceDetailsList" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.CommodityPurchaseOrderDetails">
+		SELECT
+			csd.commodity_service_name as service,
+			csd.service_charge as rate
+		FROM
+			commodity_service_details csd
+		JOIN commodity_order co ON(csd.commodity_order=co.rec_id AND co.is_active=true)
+		WHERE
+			co.commodity_order_code=#{orderID}
+			AND
+			csd.is_active=true;
+	</select>
+	
+	<update id="makeCommodityReceive" parameterType="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		UPDATE commodity_order SET
+			<if test="orderStatus == 'CLOSED'">
+				commodity_order_close_date=(SELECT extract(epoch FROM now())),
+			</if>
+			updated_by = (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			totalqtydeficit=#{totalQtyDeficit},
+			totalqtyreceived=#{totalQtyReceived},
+			receivestatus=#{receiveStatus},
+			orderstatus=#{orderStatus}
+		WHERE
+			commodity_order_code=#{purchaseOrderCode}
+			AND
+			is_active=true
+			AND
+			orderstatus='OPEN';
+	</update>
+	
+	<update id="receiveIndividualCommodity" parameterType="com.qts.icam.model.inventory.CommodityPurchaseOrderDetails">
+		UPDATE commodity_order_details SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			qty_deficit=#{qtyDeficit},
+			qty_received=#{qtyReceived},
+			damage=#{qtyDefect}
+		WHERE
+			commodity_order=(SELECT rec_id FROM commodity_order WHERE commodity_order_code =#{commodityPurchaseOrderCode} AND is_active=true)
+			AND
+			commodity=(SELECT rec_id FROM commodity WHERE commodity_code =#{commodity} AND is_active=true)
+			AND
+			is_active=true;
+		
+		UPDATE commodity SET
+			commodity_instock=commodity_instock+(#{increaseInStock})
+		WHERE
+			commodity_code=#{commodity};
+	</update>
+	
+	<select id="commoditiesInPurchaseOrder" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.CommodityPurchaseOrderDetails">
+		SELECT
+			c.commodity_name as commodity,
+			cod.qty_received as qtyReceived,
+			cod.rate as rate,
+			v.vendor_code as vendorCode
+		FROM
+			commodity_order_details cod
+		JOIN commodity_order co ON(cod.commodity_order=co.rec_id)
+		JOIN vendor v ON(co.vendor=v.rec_id)
+		JOIN commodity c ON(cod.commodity=c.rec_id)
+		WHERE
+			co.commodity_order_code=#{orderId}
+	</select>
+	
+	<insert id="createIndividualCommodity" parameterType="com.qts.icam.model.inventory.CommodityPurchaseOrderDetails">
+		INSERT INTO individual_commodity(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation,
+			individual_commodity_code, commodity_common_name,
+			commodity, purchase_date, purchase_rate, vendor, sequence_no, current_value,financial_year)
+		VALUES ( 
+			uuid_generate_v4(), 
+			#{objId}, 
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active=true), 
+			(SELECT extract(epoch FROM now())), 
+			(SELECT extract(epoch FROM now())),
+			(SELECT(#{commodity} || '-' ||(SELECT COALESCE((SELECT MAX(sequence_no) FROM individual_commodity WHERE commodity=(SELECT rec_id FROM commodity where commodity_name = #{commodity} AND is_active=true)), 0)+1))),
+			#{commodity},          
+			(SELECT rec_id FROM commodity where commodity_name = #{commodity} AND is_active=true),
+			(SELECT extract(epoch FROM now())), 
+			#{rate},
+			(SELECT rec_id FROM vendor where vendor_code = #{vendorCode} AND is_active=true),
+			(SELECT COALESCE((SELECT MAX(sequence_no) FROM individual_commodity WHERE commodity=(SELECT rec_id FROM commodity where commodity_name = #{commodity} AND is_active=true)), 0)+1),
+			#{rate},
+			(SELECT fy.rec_id FROM financial_year fy JOIN status_flag sf ON (fy.year_status = sf.rec_id AND sf.is_active = true) AND fy.is_active = true AND sf.status_sym = 'C'));
+	</insert>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<select id="getIndividualNotAllotedCommodity" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.IndividualCommodity">
+		SELECT
+			individual_commodity_code as individualCommodityCode,
+			to_char((SELECT to_timestamp(purchase_date)),'DD/MM/YYYY') as purchaseDate,
+			warranty as warranty,
+			model_no as modelNo
+		FROM
+			individual_commodity
+		WHERE
+			commodity_common_name=#{commodityCode}
+			AND
+			is_active=true
+			AND
+			alloted_to IS null;
+	</select>
+	
+	<select id="getTeachersAndNotTeachers" resultType="com.qts.icam.model.common.Resource">
+		SELECT
+			r.user_id as userId,
+			(r.first_name||' '||COALESCE(r.middle_name,'')||' '||r.last_name) as name
+		FROM
+			resource r
+		JOIN resource_type rt ON (r.resource_type=rt.rec_id AND rt.is_active=true)
+		WHERE
+			rt.resource_type_code != 'STUDENT'
+			AND
+			r.is_active=true;
+	</select>
+	
+	<update id="allotCommodity" parameterType="com.qts.icam.model.inventory.IndividualCommodity">
+		INSERT INTO commodity_allotment_history(
+			rec_id,
+			obj_id,
+			updated_by,
+			updated_on,
+			date_of_creation,
+			individual_commodity,
+			alloted_to,
+			allotment_date,
+			alloted_by)
+		VALUES ((SELECT uuid_generate_v4()), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM individual_commodity WHERE individual_commodity_code =#{individualCommodityCode} AND is_active=true),
+			(SELECT rec_id FROM resource WHERE user_id =#{allotedTo} AND is_active=true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM resource WHERE user_id =#{allotedBy} AND is_active=true));
+		
+		
+		
+		UPDATE individual_commodity SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			alloted_to=(SELECT rec_id FROM resource WHERE user_id =#{allotedTo} AND is_active=true),
+			allotment_date=(SELECT extract(epoch FROM now())),
+			alloted_by=(SELECT rec_id FROM resource WHERE user_id =#{allotedBy} AND is_active=true)
+		WHERE
+			individual_commodity_code=#{individualCommodityCode}
+			AND
+			is_active=true;
+	</update>
+	
+	<select id="getIndividualAllotedCommodity" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.IndividualCommodity">
+		SELECT
+			ic.individual_commodity_code as individualCommodityCode,
+			to_char((SELECT to_timestamp(ic.allotment_date)),'DD/MM/YYYY') as allotedOn,
+			ic.warranty as warranty,
+			ic.model_no as modelNo,
+			r.user_id as allotedTo,
+			(r.first_name||' '||COALESCE(r.middle_name,'')||' '||r.last_name) as status
+		FROM
+			individual_commodity ic
+		JOIN resource r ON(ic.alloted_to=r.rec_id AND r.is_active=true)
+		WHERE
+			commodity_common_name=#{commodityCode}
+			AND
+			ic.is_active=true
+			AND
+			alloted_to IS NOT null;
+	</select>
+	
+	<update id="deAllotCommodity" parameterType="com.qts.icam.model.inventory.IndividualCommodity">
+		UPDATE individual_commodity SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			alloted_to=null,
+			allotment_date=null,
+			alloted_by=null
+		WHERE
+			individual_commodity_code=#{individualCommodityCode}
+			AND
+			is_active=true;
+		
+		
+		UPDATE commodity_allotment_history SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			return_date=(SELECT extract(epoch FROM now())),
+			user_comment=#{comment},
+			returned_to=(SELECT rec_id FROM resource WHERE user_id =#{returnedTo} AND is_active=true)
+		WHERE
+			return_date IS null
+			AND
+			individual_commodity=(SELECT rec_id FROM individual_commodity WHERE individual_commodity_code=#{individualCommodityCode} AND is_active=true)
+			AND
+			is_active=true;
+	</update>
+	
+	<select id="getAssetCommodity" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			commodity_code as commodityCode,
+			commodity_name as commodityName
+		FROM
+			commodity c
+		WHERE
+			is_active=true
+			AND
+			commodity_type='ASSET';
+	</select>
+	
+	<select id="getIndividualCommodityList" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.IndividualCommodity">
+		SELECT
+			ic.individual_commodity_code as individualCommodityCode
+		FROM
+			individual_commodity ic
+		WHERE
+			commodity_common_name=#{commodityCode}
+			AND
+			is_active=true;
+	</select>
+	
+	<select id="getCommodityAllotmentHistory" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.IndividualCommodity">
+		SELECT
+			(r1.first_name||' '||COALESCE(r1.middle_name,' ')||''||r1.last_name||' ('||r1.user_id||')') as allotedTo,
+			to_char((SELECT to_timestamp(cah.allotment_date)),'DD/MM/YYYY') as allotedOn,
+			(r2.first_name||' '||COALESCE(r2.middle_name,' ')||''||r2.last_name||' ('||r2.user_id||')') as allotedBy,
+			(r3.first_name||' '||COALESCE(r3.middle_name,' ')||''||r3.last_name||' ('||r3.user_id||')') as returnedTo,
+			to_char((SELECT to_timestamp(cah.return_date)),'DD/MM/YYYY') as returnedOn,
+			user_comment as comment
+		FROM
+			commodity_allotment_history cah
+		LEFT JOIN resource r1 ON(cah.alloted_to=r1.rec_id AND r1.is_active=true)
+		LEFT JOIN resource r2 ON(cah.alloted_by=r2.rec_id AND r2.is_active=true)
+		LEFT JOIN resource r3 ON(cah.returned_to=r3.rec_id AND r3.is_active=true)
+		JOIN individual_commodity ic ON(cah.individual_commodity=ic.rec_id AND ic.is_active=true)
+		WHERE
+			individual_commodity_code=#{individualCommodity}
+			AND
+			cah.is_active=true;
+	</select>
+	
+	
+	<select id="getIndividualCommodity" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.IndividualCommodity">
+		SELECT
+			individual_commodity_code as individualCommodityCode,
+			to_char((SELECT to_timestamp(purchase_date)),'DD/MM/YYYY') as purchaseDate,
+			warranty as warranty,
+			model_no as modelNo,
+			depreciation_rate as depreciation
+		FROM
+			individual_commodity
+		WHERE
+			commodity_common_name=#{commodityCode}
+			AND
+			is_active=true;
+	</select>
+	
+	<update id="setWarrantyAndModelNoForCommodity" parameterType="com.qts.icam.model.inventory.IndividualCommodity">
+		UPDATE individual_commodity SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			warranty=#{warranty},
+			model_no=#{modelNo},
+			depreciation_rate=#{depreciation}
+		WHERE
+			individual_commodity_code=#{individualCommodityCode};
+	</update>
+	
+	<update id="retireIndividualCommodity" parameterType="com.qts.icam.model.inventory.IndividualCommodity">
+		UPDATE individual_commodity SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			retire_date=(SELECT extract(epoch FROM now())),
+			is_active=false
+		WHERE
+			individual_commodity_code=#{individualCommodityCode};
+	</update>
+	
+	<update id="closeCommodityOrder" parameterType="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		UPDATE commodity_order SET
+			commodity_order_close_date=(SELECT extract(epoch FROM now())),
+			updated_by = (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			orderstatus=#{orderStatus}
+		WHERE
+			commodity_order_code=#{purchaseOrderCode}
+			AND
+			is_active=true
+			AND
+			orderstatus='OPEN';
+	</update>
+	
+	<!-- updated by sourav 29062017 -->
+	
+	<insert id="insertPOInTransactionWorkingArea" parameterType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		INSERT INTO 
+				transactional_working_area
+				(
+					rec_id,
+					obj_id,
+					updated_by,
+					updated_on, 
+					date_of_creation,
+					transactional_working_area_code,
+					transactional_working_area_name, 
+					transactional_working_area_desc,
+					resource,
+					transaction_date,	
+					transaction_year,
+					transaction_month,
+					gross_amount,
+					net_amount,
+					reason_of_transaction,
+					desc_of_transaction,
+					paid_against,
+					transaction_status,
+					academic_year,
+					department,
+					resource_type,
+					income_expense,
+					ledger,
+					ticket,
+					task_details
+				)
+		VALUES
+				(
+					uuid_generate_v4(),
+					#{objectId},
+					(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+					extract(epoch FROM now()), 
+					extract(epoch FROM now()),
+					(SELECT('TWA' ||(SELECT COALESCE((SELECT MAX(transactional_working_area_id) FROM transactional_working_area), 0)+1))),
+					#{transactionalWorkingAreaName}, 
+					#{transactionalWorkingAreaDesc},
+					(SELECT vendor_name FROM vendor WHERE vendor_code=#{resource}),
+					extract(epoch FROM now()),			
+					to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'YYYY'),
+					to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'MM'),
+					#{netAmount},
+					#{netAmount}, 
+					'COMMODITY PO',
+					#{descOfTransaction},
+					#{paidAgainst},
+					'PENDING',
+					(SELECT academic_year_name FROM academic_year WHERE year_status=(SELECT rec_id FROM status_flag WHERE status_sym='C')),
+					(SELECT department_name FROM department WHERE department_code = #{department}), 
+					'MESS VENDOR',
+					#{incomeExpense},
+					(SELECT rec_id FROM ledger WHERE ledger_code = #{academicYear} AND is_active = true),
+					(SELECT rec_id FROM ticket WHERE ticket_code = #{ticketCode} AND is_active = true),
+					(SELECT rec_id FROM task_details WHERE task_details_code = #{taskCode} AND is_active = true)
+				);
+	</insert>
+	
+	<!-- sourav.bhadra 27062017 -->
+	
+	<select id="getVendorBankAllDetailsList" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Vendor">
+		select 
+			v.bank_name as bankName,
+			v.bank_account_no as accountNo,
+			v.bank_ifsc_code as  bankIfscCode,
+			v.bank_code as bankCode,
+			v.bank_location as bankLocation
+		FROM 	
+			vendor v
+		WHERE  
+			v.vendor_name=#{vendorName}
+		AND 
+			is_active=true;
+	</select>
+	
+	<!-- Saif.Ali	Date- 10/07/2017 -->
+	<select id="nextMessCommodityPurchaseOrderCode" resultType="java.lang.String">
+		(SELECT ('MCPO-' ||(select COALESCE((SELECT MAX(serial_id) FROM mess_commodity_purchase_order), 0 )+1)));
+	</select>
+	
+	<!-- Saif.Ali	Date- 11/07/2017 -->
+	<insert id="createMessCommodityPurchaseOrder" parameterType="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		INSERT INTO mess_commodity_purchase_order(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			mess_commodity_order_code, mess_commodity_order_desc, mess_commodity_order_open_date, 
+			totalqtyordered, totalqtydeficit, 
+			totalqtyreceived, paid, pendingamount, totalamount, amountstatus, 
+			receivestatus, vendor, orderstatus, department,financial_year,
+			payment_mode, cheque_no, bank_name, bank_account_no, bank_ifsc_code, 
+			bank_branch_code, bank_location, tax_name, tax_percentage)
+		VALUES ((SELECT uuid_generate_v4()), #{objId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			#{purchaseOrderCode}, #{purchaseOrderCode}, (SELECT extract(epoch FROM now())), #{totalQtyOrdered}, #{totalQtyDeficit}, #{totalQtyReceived},
+			#{advanceAmount}, #{pendingAmount}, #{netTotal}, #{amountStatus}, #{receiveStatus},
+			(SELECT rec_id FROM vendor WHERE vendor_code =#{vendorCode} AND is_active=true),
+			#{orderStatus},
+			(SELECT rec_id FROM department WHERE department_code =#{departmentCode} AND is_active=true),
+			(SELECT fy.rec_id FROM financial_year fy JOIN status_flag sf ON (fy.year_status = sf.rec_id AND sf.is_active = true) AND fy.is_active = true AND sf.status_sym = 'C'),
+			#{transactionMode}, #{chequeNo}::integer, #{bankName}, #{bankAccountNo}::bigint, #{bankIfscCode}, #{bankCode}, #{bankLocation},
+			(SELECT tax_name FROM tax_percentage_details WHERE tax_code = #{taxName}),
+			(SELECT percentage FROM tax_percentage_details WHERE tax_code = #{taxName}));
+	</insert>
+	
+	<insert id="createMessCommodityPurchaseOrderDetails" parameterType="com.qts.icam.model.inventory.CommodityPurchaseOrderDetails">
+		INSERT INTO mess_commodity_purchase_order_details(
+			rec_id, obj_id, updated_by, updated_on, 
+			date_of_creation,
+			qty_ordered, qty_deficit, qty_received, mess_commodity_order, commodity, 
+			rate, amount, damage, discount, payment_type)
+		VALUES ((SELECT uuid_generate_v4()), #{objId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			#{qtyOrdered}, #{qtyDeficit}, #{qtyReceived},
+			(SELECT rec_id FROM mess_commodity_purchase_order WHERE  mess_commodity_order_code=#{commodityPurchaseOrderCode} AND is_active=true), 
+			(SELECT rec_id FROM commodity WHERE  commodity_code=#{commodity} AND is_active=true),
+			#{rate}, #{amount}, #{qtyDefect}, #{discount}, #{paymentType});
+	</insert>
+
+	<!-- author SAIF.ALI -->
+	<select id="messCommodityPurchaseOrderList" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		SELECT
+			mcpo.mess_commodity_order_code as purchaseOrderCode,
+			to_char((SELECT to_timestamp(mcpo.mess_commodity_order_open_date)), 'DD/MM/YYYY') as purchaseOrderOpenDate,
+			to_char((SELECT to_timestamp(mcpo.mess_commodity_order_close_date)), 'DD/MM/YYYY') as purchaseOrderCloseDate,
+			mcpo.totalqtyordered as totalQtyOrdered,
+			mcpo.totalqtydeficit as totalQtyDeficit,
+			mcpo.totalqtyreceived as totalQtyReceived,
+			mcpo.paid as advanceAmount,
+			mcpo.pendingamount as pendingAmount,
+			mcpo.totalamount as netTotal,
+			mcpo.amountstatus as amountStatus,
+			mcpo.receivestatus as receiveStatus,
+			v.vendor_code as vendorCode,
+			v.vendor_name as vendorName,
+			mcpo.orderstatus as orderStatus,
+			d.department_code as departmentCode,
+			d.department_name as departmentName
+		FROM
+			mess_commodity_purchase_order mcpo
+		JOIN vendor v ON(mcpo.vendor=v.rec_id AND v.is_active=true)
+		JOIN department d ON(mcpo.department=d.rec_id AND d.is_active=true)
+		WHERE
+			mcpo.is_active=true
+		AND
+			orderstatus=#{status};
+	</select>
+	
+	<!-- Author Saif.Ali 	Date-11/07/2017 -->
+	<select id="messCommodityPurchaseOrderPaymentDetails" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		SELECT
+			mcpo.mess_commodity_order_code as purchaseOrderCode,
+			to_char((SELECT to_timestamp(mcpo.mess_commodity_order_open_date)), 'DD/MM/YYYY') as purchaseOrderOpenDate,
+			to_char((SELECT to_timestamp(mcpo.mess_commodity_order_close_date)), 'DD/MM/YYYY') as purchaseOrderCloseDate,
+			mcpo.totalqtyordered as totalQtyOrdered,
+			mcpo.totalqtydeficit as totalQtyDeficit,
+			mcpo.totalqtyreceived as totalQtyReceived,
+			mcpo.paid as advanceAmount,
+			mcpo.pendingamount as pendingAmount,
+			mcpo.totalamount as netTotal,
+			mcpo.amountstatus as amountStatus,
+			mcpo.receivestatus as receiveStatus,
+			mcpo.tax_name as taxName,
+			mcpo.tax_percentage as taxPercentage,
+			v.vendor_code as vendorCode,
+			v.vendor_name as vendorName,
+			mcpo.orderstatus as orderStatus,
+			d.department_code as departmentCode,
+			d.department_name as departmentName
+		FROM
+			mess_commodity_purchase_order mcpo
+		JOIN vendor v ON(mcpo.vendor=v.rec_id AND v.is_active=true)
+		JOIN department d ON(mcpo.department=d.rec_id AND d.is_active=true)
+		WHERE
+			mcpo.is_active=true
+		AND
+			orderstatus='OPEN'
+		AND
+			mess_commodity_order_code=#{orderID}
+	</select>
+	
+	<select id="messCommodityPurchaseOrderDetailsList" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.CommodityPurchaseOrderDetails">
+		SELECT
+			mcpod.qty_ordered as qtyOrdered,
+			mcpod.qty_deficit as qtyDeficit,
+			mcpod.qty_received as qtyReceived,
+			c.commodity_code as commodity,
+			mcpod.rate as rate,
+			mcpod.amount as amount,
+			mcpod.damage as damage,
+			mcpod.discount as discount,
+			mcpod.payment_type as paymentType
+		FROM
+			mess_commodity_purchase_order_details mcpod
+		JOIN commodity c ON(mcpod.commodity=c.rec_id AND c.is_active=true)
+		JOIN mess_commodity_purchase_order mcpo ON(mcpod.mess_commodity_order=mcpo.rec_id AND mcpo.is_active=true)
+		WHERE
+			mcpo.mess_commodity_order_code=#{orderID}
+		AND
+			mcpo.is_active=true;	
+	</select>
+	
+	<!-- Author Saif.Ali
+	Date-12/07/2017
+	Used to update the received quantity in the database -->
+	<update id="makeMessCommodityReceive" parameterType="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		UPDATE mess_commodity_purchase_order SET
+			<if test="orderStatus == 'CLOSED'">
+				mess_commodity_order_close_date=(SELECT extract(epoch FROM now())),
+			</if>
+			updated_by = (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			totalqtydeficit=#{totalQtyDeficit},
+			totalqtyreceived=#{totalQtyReceived},
+			receivestatus=#{receiveStatus},
+			orderstatus=#{orderStatus}
+		WHERE
+			mess_commodity_order_code=#{purchaseOrderCode}
+		AND
+			is_active=true
+		AND
+			orderstatus='OPEN';
+	</update>
+	
+	<select id="commoditiesInMessPurchaseOrder" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.CommodityPurchaseOrderDetails">
+		SELECT
+			c.commodity_name as commodity,
+			mcpod.qty_received as qtyReceived,
+			mcpod.rate as rate,
+			v.vendor_code as vendorCode
+		FROM
+			mess_commodity_purchase_order_details mcpod
+		JOIN mess_commodity_purchase_order mcpo ON(mcpod.mess_commodity_order=mcpo.rec_id)
+		JOIN vendor v ON(mcpo.vendor=v.rec_id)
+		JOIN commodity c ON(mcpod.commodity=c.rec_id)
+		WHERE
+			mcpo.mess_commodity_order_code=#{orderId}
+	</select>
+	
+	<update id="makeMessCommodityPayment" parameterType="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		UPDATE mess_commodity_purchase_order SET
+			<if test="orderStatus == 'CLOSED'">
+				mess_commodity_order_close_date=(SELECT extract(epoch FROM now())),
+			</if>
+			updated_by = (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			paid = #{advanceAmount},
+			pendingamount = #{pendingAmount},
+			amountstatus = #{amountStatus},
+			orderstatus = #{orderStatus}
+		WHERE
+			mess_commodity_order_code=#{purchaseOrderCode}
+		AND
+			is_active=true
+		AND
+			orderstatus='OPEN';
+	</update>
+	
+	<!-- added by sourav.bhadra on 27-07-2017
+	to get budget details of a department-->
+	<select id="getDepartmentBudgetDetails" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Budget">
+		SELECT 
+			actual_income as actualIncome,
+		    total_expence as totalExpence, 
+		    balance as reserveFund
+		FROM 
+			budget b
+		JOIN 
+			department d ON(b.department = d.rec_id AND d.is_active=true)
+		JOIN 
+			financial_year fy ON(b.financial_year = fy.rec_id AND fy.is_active=true)
+		WHERE 
+			d.department_name=#{departmentCode}
+		AND 
+			b.financial_year = (SELECT rec_id FROM financial_year WHERE is_active = true AND year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C'))
+		AND 
+			b.is_active=true;
+		
+	</select>
+	
+	<!-- added by sourav.bhadra on 28-07-2017
+	to get commodity unit list -->
+	<select id="selectCommodityUnitsList" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT 
+			unit_code as commodityCode, 
+			unit_name as commodityName
+		FROM 
+			unit_matrix
+		WHERE 
+			is_active=true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 28-07-2017
+	to get commodity unit for PO -->
+	<select id="selectCommodityUnitForPO" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT 
+			unit 
+		FROM 
+			commodity 
+		WHERE 
+			commodity_code=#{commodity} 
+		AND 
+			is_active=true;
+	</select>
+	
+	
+	<!-- added by sourav.bhadra on 31-07-2017
+	to get vendor's ledger for PO -->
+	<select id="selectvendorsLedgerForPO" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT 
+			ledger_name
+		FROM 
+			ledger
+		WHERE 
+			ledger_holder=(SELECT rec_id FROM vendor WHERE vendor_code=#{vendorCode} AND is_active=true)
+		AND 
+			is_active=true;
+		
+	</select>
+	
+	<!-- added by sourav.bhadra on 04-09-2017 to create ledger for commodities -->
+	<insert id="createLedgerForCommodities" parameterType="com.qts.icam.model.common.Ledger">
+		INSERT INTO ledger(
+			rec_id,
+			obj_id, 
+			updated_by,
+			updated_on,
+			date_of_creation, 
+			is_active,
+			ledger_code,
+			ledger_name,
+			parent_group,
+			subgroup,
+			ledger_holder
+		)VALUES(
+			(uuid_generate_v4()), 
+		    #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			true,
+			#{ledgerCode},
+			#{ledgerName},
+			(SELECT rec_id FROM group_for_ledger WHERE group_code = #{parentGroupName} AND is_active =true),
+			(SELECT rec_id FROM group_for_ledger WHERE group_code = #{subGroupName} AND is_active =true),
+			(SELECT rec_id FROM commodity WHERE commodity_code = #{ledgerName} AND is_active=true)
+		);
+			
+		INSERT INTO ledger_balance(
+			rec_id, 
+			obj_id, 
+			updated_by, 
+			updated_on,
+		    date_of_creation, 
+			is_active,
+		    ledger, 
+		    month, 
+		    year, 
+		    opening_balance, 
+		    current_balance, 
+		    is_current
+		)VALUES(
+			(select uuid_generate_v4()), 
+		    #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+			(SELECT extract(epoch FROM now())), 
+			(SELECT extract(epoch FROM now())), 
+			true,
+			(SELECT rec_id FROM ledger WHERE ledger_code ilike #{ledgerName} AND is_active =true),
+			(SELECT EXTRACT(MONTH FROM (SELECT now()))), 
+			(SELECT EXTRACT(YEAR FROM (SELECT now()))),
+			#{openingBal}, 
+			#{openingBal}, 
+			true
+		);
+	</insert>
+	
+	<!-- added by sourav.bhadra on 04-09-2017 to update ledger for commodities -->
+	<update id="updateCommodityLedgers" parameterType="com.qts.icam.model.common.Ledger">
+		UPDATE
+			ledger
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id ilike #{updatedBy} AND is_active = true),
+			updated_on = extract(epoch FROM now()),
+			ledger_code = #{ledgerName},
+			ledger_name = #{ledgerName}
+		WHERE
+			ledger_holder = (SELECT rec_id FROM commodity WHERE commodity_code = #{ledgerName} AND is_active=true)
+		AND
+			is_active = true;
+	</update>
+	
+	<!-- added by sourav.bhadra on 11-09-2017 -->
+	<select id="selectLedgerOfACommodity" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT 
+			ledger_name 
+		FROM 
+			ledger
+		WHERE 
+			ledger_holder = (SELECT rec_id FROM commodity WHERE commodity_name = #{commodity} AND  is_active=true)
+		AND 
+			is_active = true
+	</select>
+	
+	<!-- added by sourav.bhadra on 11-09-2017 -->
+	<insert id="createTransactionForCommodityReceive" parameterType="com.qts.icam.model.finance.Transaction">
+		<selectKey keyProperty="voucherTypeName"  resultType="String" order="BEFORE">
+			(select('VOW-' ||(select COALESCE((SELECT MAX(transaction_id) FROM transaction), 0 )+1)));
+		</selectKey>
+		INSERT INTO transaction(
+				rec_id, 
+				obj_id, 
+				updated_by, 
+				updated_on, 
+				date_of_creation, 
+				is_active, 
+				date, 
+				voucher_type,
+				voucher_number, 
+				narration,
+				ticket
+			)VALUES(
+				(select uuid_generate_v4()), 
+				 #{objectId},
+				(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())), 
+				true,
+				(SELECT extract(epoch FROM now())),
+				(SELECT rec_id FROM voucher_type WHERE voucher_type_code =#{voucherTypeCode} AND is_active = true),
+				#{voucherTypeName}, 
+				#{narration},
+				(SELECT rec_id FROM ticket WHERE ticket_code = #{jobType} AND is_active = true)
+			);
+		<foreach collection="trDetList" item="trDt" open="" close="" separator=";">
+			INSERT INTO transaction_details(
+				 rec_id,
+				 obj_id, 
+				 updated_by, 
+				 updated_on, 
+				 date_of_creation, 
+				 is_active, 
+				 transaction, 
+				 ledger, 
+				 amount, 
+				 is_debit
+			)VALUES(
+				 (select uuid_generate_v4()),
+				 #{objectId},
+				 (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+				 (SELECT extract(epoch FROM now())), 
+				 (SELECT extract(epoch FROM now())), 
+				  true,
+				 (SELECT rec_id FROM transaction WHERE voucher_number =#{voucherTypeName} AND is_active =true),
+				 (SELECT rec_id FROM ledger WHERE ledger_code =#{trDt.ledger} AND is_active =true),
+				 #{trDt.amount}, 
+				 #{trDt.isDebit}
+			);			
+		</foreach>
+	</insert>
+	
+<!-- 	Added by naimisha 24042018 -->
+	
+	<select id="nextCommodityRequisitionCode" resultType="java.lang.String">
+		(SELECT ('CRO-' ||(select COALESCE((SELECT MAX(serial_id) FROM commodity_requisition), 0 )+1)));
+	</select>
+	
+	
+	<insert id="createCommodityRequisition" parameterType="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		INSERT INTO commodity_requisition(
+					rec_id,
+					obj_id,
+					updated_by, 
+					updated_on, 
+					date_of_creation, 
+					commodity_requisition_code, 
+					commodity_requisition_desc, 
+					total_qty_ordered, 
+					vendor, 
+					department, 
+					financial_year,
+					total_amount)
+    	VALUES (	(SELECT uuid_generate_v4()),
+					#{objId},
+					(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+					(SELECT extract(epoch FROM now())), 
+					(SELECT extract(epoch FROM now())),
+					#{purchaseOrderCode}, 
+					#{purchaseOrderCode}, 
+					#{totalQtyOrdered},
+					(SELECT rec_id FROM vendor WHERE vendor_code =#{vendorCode} AND is_active=true),
+					(SELECT rec_id FROM department WHERE department_code =#{departmentCode} AND is_active=true), 
+					(SELECT fy.rec_id FROM financial_year fy JOIN status_flag sf ON (fy.year_status = sf.rec_id AND sf.is_active = true) AND fy.is_active = true AND sf.status_sym = 'C'),
+					#{amount}
+            );
+		
+	</insert>
+	<insert id="createCommodityRequisitionDetails" parameterType="com.qts.icam.model.inventory.CommodityPurchaseOrderDetails">
+		INSERT INTO commodity_requisition_details(
+				rec_id, 
+				obj_id, 
+				updated_by, 
+				updated_on, 
+				date_of_creation, 
+				qty_ordered, 
+				commodity_requisition, 
+				commodity, 
+				unit,
+				rate, 
+				amount)
+   		 VALUES (	(SELECT uuid_generate_v4()),
+					#{objId},
+					(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+					(SELECT extract(epoch FROM now())), 
+					(SELECT extract(epoch FROM now())),
+					#{qtyOrdered},
+					(SELECT rec_id FROM commodity_requisition WHERE  commodity_requisition_code=#{commodityPurchaseOrderCode} AND is_active=true), 
+					(SELECT rec_id FROM commodity WHERE  commodity_code=#{commodity} AND is_active=true),
+					#{paymentType},
+					#{rate}, 
+					#{amount}
+            );
+		
+	</insert>
+	
+	<select id="commodityRequisitionList" resultType="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		SELECT
+			cr.commodity_requisition_code as purchaseOrderCode,
+			cr.total_qty_ordered as totalQtyOrdered,
+			cr.total_amount as netTotal,
+			v.vendor_code as vendorCode,
+			v.vendor_name as vendorName,
+			d.department_code as departmentCode,
+			d.department_name as departmentName,
+			to_char((SELECT to_timestamp(cr.date_of_creation)),'DD/MM/YYYY') as purchaseOrderOpenDate
+		FROM
+			commodity_requisition cr
+		JOIN vendor v ON(cr.vendor=v.rec_id AND v.is_active=true)
+		JOIN department d ON(cr.department=d.rec_id AND d.is_active=true)
+		WHERE
+			cr.is_active=true; 
+	</select>
+	
+	
+	<resultMap id="commodityRequisitionDetailsRM" type="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		<id property="purchaseOrderCode" column="commodity_requisition_code" jdbcType="VARCHAR" />
+		<result property="totalQtyOrdered" column="total_qty_ordered" jdbcType="DOUBLE" />
+		<result property="netTotal" column="total_amount"	jdbcType="DOUBLE" />
+		<result property="vendorCode" column="vendor_code" jdbcType="VARCHAR" />
+		<result property="vendorName" column="vendor_name" jdbcType="VARCHAR" />
+		<result property="departmentCode" column="department_code" jdbcType="VARCHAR" />
+		<result property="departmentName" column="department_name" jdbcType="VARCHAR" />
+		<result property="purchaseOrderOpenDate" column="purchaseOrderOpenDate" jdbcType="VARCHAR" />
+		<result property="totalQtyOrdered" column="total_qty_ordered" jdbcType="DOUBLE" />
+		<result property="payAmount" column="total_amount" jdbcType="DOUBLE" />
+		<collection property="commodityPurchaseOrderDetailsList" ofType="com.qts.icam.model.inventory.CommodityPurchaseOrderDetails">
+			<id property="commodity" column="commodity_name" jdbcType="VARCHAR" />
+			<result property="qtyOrdered" column="qty_ordered" jdbcType="DOUBLE" />
+			<result property="paymentType" column="unit" jdbcType="VARCHAR" />
+			<result property="rate" column="rate" jdbcType="DOUBLE" />
+			<result property="amount" column="amount" jdbcType="DOUBLE" />
+		</collection>
+	</resultMap>
+	<select id="commodityRequisitionDetails" parameterType="java.lang.String" resultMap="commodityRequisitionDetailsRM">
+		SELECT
+			cr.commodity_requisition_code,
+			cr.total_qty_ordered,
+			cr.total_amount,
+			v.vendor_code ,
+			v.vendor_name ,
+			d.department_code,
+			d.department_name ,
+			to_char((SELECT to_timestamp(cr.date_of_creation)),'DD/MM/YYYY') as purchaseOrderOpenDate,
+			commodity_name,
+			qty_ordered,
+			crd.unit,
+			rate,
+			amount,
+			total_qty_ordered,
+			total_amount
+		FROM
+			commodity_requisition cr
+		JOIN vendor v ON(cr.vendor=v.rec_id AND v.is_active=true)
+		JOIN department d ON(cr.department=d.rec_id AND d.is_active=true)
+		JOIN commodity_requisition_details crd ON (crd.commodity_requisition = cr.rec_id AND crd.is_active = true)
+		JOIN commodity c ON (crd.commodity = c.rec_id AND c.is_active = true)
+		WHERE
+			cr.is_active=true
+		AND
+			commodity_requisition_code = #{requisitionCode};
+		 
+	</select>
+	
+	<select id="selectCommodityAgainstCommodityCodeVendorAndFinancialYear" parameterType="com.qts.icam.model.inventory.Commodity" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			c.commodity_name as commodityName,
+			c.unit as modelNo, 
+			commodity_price as sellingRate,
+			v.vendor_code as vendor
+		FROM
+			commodity_vendor_mapping cvm
+		JOIN vendor v ON(v.rec_id=cvm.vendor AND v.is_active=true)
+		JOIN commodity c ON(c.rec_id=cvm.commodity AND c.is_active=true)
+		JOIN financial_year fy ON(cvm.financial_year = fy.rec_id)
+		WHERE
+			v.vendor_code = #{vendor}
+		AND
+			financial_year_code = #{date}
+		AND
+			commodity_code = #{commodityCode}
+		AND
+			cvm.is_active=true;
+	</select>
+	
+	<select id="commodityListMappedForAFinancialYear" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			DISTINCT c.commodity_name as commodityName
+		FROM
+			commodity_vendor_mapping cvm
+		JOIN commodity c ON(c.rec_id=cvm.commodity AND c.is_active=true)
+		JOIN financial_year fy ON(cvm.financial_year = fy.rec_id)
+		WHERE
+			
+			financial_year_code = #{financialYear}
+		AND
+			cvm.is_active=true;
+	</select>
+	
+	<select id="getVendorListMappedForAFinancialYearAndCommodity" parameterType="com.qts.icam.model.inventory.Commodity" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			c.unit as modelNo, 
+			commodity_price as sellingRate,
+			v.vendor_code as vendorCode,
+			v.vendor_name as vendor
+		FROM
+			commodity_vendor_mapping cvm
+		JOIN vendor v ON(v.rec_id=cvm.vendor AND v.is_active=true)
+		JOIN commodity c ON(c.rec_id=cvm.commodity AND c.is_active=true)
+		JOIN financial_year fy ON(cvm.financial_year = fy.rec_id)
+		WHERE
+			financial_year_code = #{date}
+		AND
+			commodity_code = #{commodityName}
+		AND
+			cvm.is_active=true;
+	</select>
+	
+	<insert id="saveTenderWisePricing" parameterType="com.qts.icam.model.common.Vendor">
+		INSERT INTO item_tender_mapping(
+           rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+           financial_year, commodity_vendor_mapping)
+    VALUES (
+		(SELECT uuid_generate_v4()),
+		 #{vendorObjectId},
+		(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active=true),
+		(SELECT extract(epoch FROM now())), 
+		(SELECT extract(epoch FROM now())),
+		(SELECT rec_id FROM financial_year WHERE financial_year_code = #{financialYear} AND is_active = true), 
+		(SELECT cvm.rec_id FROM commodity_vendor_mapping cvm JOIN commodity c ON (cvm.commodity = c.rec_id AND c.is_active = true)
+		JOIN vendor v ON (cvm.vendor = v.rec_id AND v.is_active = true)JOIN financial_year fy ON (cvm.financial_year = fy.rec_id AND fy.is_active = true)
+		AND c.commodity_code = #{commodityName} AND v.vendor_code = #{vendorCode} AND fy.financial_year_code = #{financialYear} AND cvm.is_active = true));
+	</insert>
+	
+	<!-- Added by naimisha ghosh 07052018 -->
+	<select id="vendorCommodityListAccordingToTender" parameterType="com.qts.icam.model.common.Vendor" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			c.commodity_name as commodityName,
+			c.unit as modelNo, 
+			commodity_price as sellingRate,
+			v.vendor_code as vendor
+		FROM
+			commodity_vendor_mapping cvm
+		JOIN item_tender_mapping itm ON (cvm.rec_id = itm.commodity_vendor_mapping AND itm.is_active = true)
+		JOIN vendor v ON(v.rec_id=cvm.vendor AND v.is_active=true)
+		JOIN commodity c ON(c.rec_id=cvm.commodity AND c.is_active=true)
+		JOIN financial_year fy ON(cvm.financial_year = fy.rec_id)
+		WHERE
+			v.vendor_code = #{vendorCode}
+		AND
+			financial_year_code = #{financialYear}
+		AND
+			cvm.is_active=true;
+
+
+
+	</select>
+	
+	<select id="getVendorsListFromItemTenderPricing" parameterType="com.qts.icam.model.inventory.Commodity" resultType="com.qts.icam.model.inventory.Commodity">
+		
+		SELECT
+			c.commodity_name as commodityName,
+			c.unit as modelNo, 
+			commodity_price as sellingRate,
+			v.vendor_code as vendorCode,
+			v.vendor_name as vendor
+		FROM
+			commodity_vendor_mapping cvm
+		JOIN item_tender_mapping itm ON (cvm.rec_id = itm.commodity_vendor_mapping AND itm.is_active = true)
+		JOIN vendor v ON(v.rec_id=cvm.vendor AND v.is_active=true)
+		JOIN commodity c ON(c.rec_id=cvm.commodity AND c.is_active=true)
+		JOIN financial_year fy ON(cvm.financial_year = fy.rec_id)
+		WHERE
+			financial_year_code = #{date}
+		AND
+			commodity_code = #{commodityName}
+		AND
+			cvm.is_active=true;
+	</select>
+	
+	<select id="checkLedgerNameExistOrNot" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Ledger">
+		
+		SELECT 
+			ledger_code as ledgerCode,
+			ledger_name as ledgerName
+		FROM 
+			ledger 
+		WHERE 
+			ledger_name = #{ledgerName}
+		AND
+			is_active = true;
+	</select>
+	
+	<select id="commodityRequisitionListNotPresentInPO" resultType="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		SELECT
+			cr.commodity_requisition_code as purchaseOrderCode,
+			cr.total_qty_ordered as totalQtyOrdered,
+			cr.total_amount as netTotal,
+			to_char((SELECT to_timestamp(cr.date_of_creation)),'DD/MM/YYYY') as purchaseOrderOpenDate
+		FROM
+			commodity_requisition cr
+		WHERE
+			cr.is_active=true
+		AND
+			cr.rec_id NOT IN(SELECT commodity_requisition FROM commodity_order WHERE is_active =  true ); 
+	</select>
+	
+	
+	<!-- Added by naimisha 09052018 -->
+	
+	<select id="getTaskNoListForAUser" resultType="com.qts.icam.model.common.Task" parameterType="java.lang.String">
+		SELECT 
+			task_details_code as taskCode
+		FROM
+			task_details td 
+		JOIN
+			resource r ON (td.actualowner_id = r.rec_id AND r.is_active = true)
+		JOIN
+			task_status ts ON (td.task_status = ts.rec_id AND ts.is_active = true)
+		WHERE
+			r.user_id = #{userId}
+		AND
+			td.is_active = true
+		AND
+			ts.type NOT IN ('CLOSED','COMPLETED','REJECTED');
+	</select>
+	
+	<select id="selectTicketNoAgainstTaskCode" resultType="com.qts.icam.model.ticket.Ticket" parameterType="java.lang.String">
+		SELECT 
+			ticket_code as ticketCode
+		FROM
+			task_details td 
+		JOIN
+			ticket r ON (td.ticket = r.rec_id AND r.is_active = true)
+		WHERE
+			task_details_code = #{taskCode}
+		AND
+			td.is_active = true;
+	</select>
+	
+	<insert id="insertIntoTicketTaskTablenameMapping" parameterType="com.qts.icam.model.ticket.Ticket">
+		INSERT INTO ticket_task_tablename_mapping(
+	    rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            table_name, ticket, task_details,record_id,reason)
+    	VALUES (
+			(SELECT uuid_generate_v4()),
+			#{ticketObjectId},
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())), 
+			(SELECT extract(epoch FROM now())),
+			 #{tableName}, 
+			(SELECT rec_id FROM ticket WHERE ticket_code = #{ticketCode} AND is_active = true),
+			(SELECT rec_id FROM task_details WHERE task_details_code = #{ticketDesc} AND is_active = true),
+			#{ticketRecId}::uuid,
+			#{status});
+		
+	</insert>
+	
+	<select id="selectTableListForATask" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT
+			table_name
+		FROM
+			module_functionality_table_mapping mftm 
+		JOIN
+			module_functionality mf ON(mftm.module_functionality = mf.rec_id AND mf.is_active = true)
+		JOIN
+			task t ON (t.functionality = mf.rec_id AND mf.is_active = true)
+		JOIN
+			task_details td ON (td.task = t.rec_id AND td.is_active = true)
+		WHERE
+			mftm.is_active = true
+		AND
+			task_details_code = #{purchaseId}
+	</select>
+	
+	<select id="getAllCommodityName" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			commodity_code as commodityCode,
+			commodity_name as commodityName
+			<!-- commodity_desc as commodityDesc,
+			unit as modelNo, 
+			commodity_type as commodityType,
+			commodity_sub_type as commoditySubType -->
+		FROM
+			inventory_master_catalogue
+		WHERE
+			is_active=true;
+	</select>
+	
+	<select id="getCommodityUnit" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT
+			unit as commodityUnit
+		FROM
+			inventory_master_catalogue
+		WHERE
+			is_active=true
+		AND
+			commodity_name =  #{commodityName};
+	</select>
+	
+</mapper>

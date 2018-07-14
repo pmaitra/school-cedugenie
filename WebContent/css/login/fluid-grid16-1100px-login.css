@@ -1,0 +1,223 @@
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead {
+    margin: 0;
+    padding: 0;
+}
+
+.grids{
+	max-width:986px;
+	clear:both;
+	padding:0px 0px 0px 0px;
+	margin:0 auto;
+	list-style:none;
+}
+
+footer{
+	height:40px;
+	font-family:bahamas,'Open Sans',sans-serif;
+	color:#666666;
+	font-size:12px;	
+	text-align:center;
+	margin-top: 2%;	
+}
+
+.clear {
+	clear:both;
+}
+
+[class^="grid-"]{
+	float:left;
+	margin:0px 0px 0px 0px;
+}
+.grids [class^="grid-"]{
+	margin:0% 0% 0% 0%;
+}
+
+/*
+Nested grids won't work with fluid layouts :(
+*/
+
+@font-face {
+    font-family: 'MyriadWebProRegular';
+    src: url('/icam/fonts/myriadwebpro.eot');
+    src: url('/icam/fonts/myriadwebpro.eot') format('embedded-opentype'),
+         url('/icam/fonts/myriadwebpro.woff') format('woff'),
+         url('/icam/fonts/myriadwebpro.ttf') format('truetype'),
+         url('/icam/fonts/myriadwebpro.svg#MyriadWebProRegular') format('svg');
+}
+
+body {
+	margin:0;
+	padding:0;
+	font:normal 14px/20px bahamas,'MyriadWebProRegular',arial;
+	color:#8d9195;
+    background-color: #1F262D;
+    margin: 0;
+    overflow-x: hidden;
+    padding: 0;
+}
+
+header {
+	background-color:#1f262c;
+	text-align:left;
+	padding:1px 15px;
+	display:block;
+	overflow:hidden;
+	border-bottom: medium;
+	border-bottom-style: double;
+	border-bottom-color: #6d8832;
+}
+
+.bodydiv {
+	background: #1f262d;
+	height:100%;
+	
+}
+
+.wrapper { 	
+	margin:0 auto 0;
+	padding:0px 0 0 650px;
+}
+
+article, aside {
+ 	width:auto; 
+	padding:0 3%;
+	display:inline-block;
+	vertical-align:top;
+	text-align:center;
+}
+
+aside {
+	text-align:left;	
+	padding-left:30px;
+}
+	
+.loginbx {
+	background:url(/icam/images/login-block-bg.png) left top repeat-x #3b424b;
+	border:1px solid #6e7276;
+	border-radius:10px;
+	-moz-border-radius:10px;
+	-webkit-border-radius:10px;
+	-khtml-border-radius:10px;
+	padding:10px 25px 30px;
+	box-shadow:0 0 5px #000;
+	-moz-box-shadow:0 0 5px #000;
+	-webkit-box-shadow:0 0 5px #000;
+	-khtml-box-shadow:0 0 5px #000;
+	min-height:281px;
+}
+	
+.loginbx h1 {
+	text-align:center;
+	color:#949da6;
+	font-size:30px;
+	font-weight:normal;
+	text-transform:uppercase;
+	line-height:57px;
+	height:57px;
+	margin:0 0 15px 0;
+}
+	
+.loginbx h1 img{
+	vertical-align:top;
+}
+	
+.loginbx .field{
+	font-size:0;
+	letter-spacing:0;
+	text-align:left;
+	word-spacing:0;
+}
+	
+.loginbx label{
+	vertical-align:middle;
+	font-size:16px;
+	line-height:33px;
+	width:30%;
+	text-transform:uppercase;
+	margin:10px 2% 10px 0;
+	display:inline-block;
+	color:#fff;
+	text-align:left;
+}
+	
+.loginbx .txtfld{
+	vertical-align:middle;
+	font-size:16px;
+	text-align:left;
+	color:#fff;
+	border-radius:2px;
+	-moz-border-radius:2px;
+	-webkit-border-radius:2px;
+	-khtml-border-radius:2px;
+	height:33px;
+	border:1px dotted #3f454c;
+	line-height:33px;
+	width:67%;
+	margin:0;
+	background-color:#131c24;
+	box-shadow:0 0 5px #000 inset;
+	-moz-box-shadow:0 0 5px #000 inset;
+	-webkit-box-shadow:0 0 5px #000 inset;
+	-khtml-box-shadow:0 0 5px #000 inset;
+	display:inline-block;
+}
+	
+.loginbx .resetbt{
+	vertical-align:middle;
+	font-size:16px;
+	text-align: center;
+	color:#fff;
+	height:31px;
+	border:none;
+	line-height:31px;
+	width:82px;
+	cursor:pointer;
+	text-shadow:0 0 3px #000;
+	text-transform:uppercase;
+	margin:25px 10px 0 90px;
+	background-color:none;
+	background:url(/icam/images/reset-btbg.png);
+	display:inline-block;
+}
+	
+.loginbx .logbt{
+	vertical-align:middle;
+	font-size:16px;
+	text-align: center;
+	color:#fff;
+	height:31px;
+	border:none;
+	line-height:31px;
+	width:98px;
+	cursor:pointer;
+	text-shadow:0 0 3px #000;
+	text-transform:uppercase;
+	margin:25px 10px 0 0;
+	background-color:none;
+	background:url(/icam/images/login-btbg.png);
+	display:inline-block;
+}
+
+img.shadow {
+	margin:25px 0 0 0;
+}
+
+article img.previcon {
+	max-width:201px;
+	width:100%;
+	text-align:center;
+	margin:0 auto;
+	padding:80px 0 0;
+}
+
+.prevwrap {
+	padding:60px 0 0;
+}
+
+
+@media (min-width: 1000px) and (max-width: 1190px){
+
+
+
+
+}

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qts.icam.mapper.survey.SurveyMapper">
+
+	<insert id="insertQuestionMaster" parameterType="com.qts.icam.model.survey.QuestionMaster">
+		<foreach item="question" collection="questionList"  open="" close="" separator=";">
+			INSERT INTO program_survey_question_master(
+				rec_id, obj_id, updated_by, 
+				updated_on, date_of_creation, survey_id, survey_name, 
+				question_id, question, must_answer)
+		    VALUES ((select uuid_generate_v4()), 'OBJ-ID',
+				(SELECT rec_id FROM resource WHERE user_id  ilike #{question.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+		         #{question.surveyId}, #{question.surveyName}, #{question.questionId}, 
+		         #{question.question}, #{question.mustAnswer})
+		</foreach>
+	</insert>
+	
+	<insert id="insertAnswerMaster" parameterType="com.qts.icam.model.survey.AnswerMaster">
+		<foreach item="answer" collection="answerList"  open="" close="" separator=";">
+			INSERT INTO program_survey_answer_master(
+	            rec_id, obj_id, updated_by, 
+	            updated_on, date_of_creation, answer_id, 
+	            initial_value, weightage, input_type, question_id)
+		    VALUES ((select uuid_generate_v4()), 'OBJ-ID',
+			    (SELECT rec_id FROM resource WHERE user_id  ilike #{answer.updatedBy} AND is_active = true),
+			    (SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			    (SELECT ('A'||(select COALESCE((SELECT MAX(program_survey_answer_master_id) FROM program_survey_answer_master), 0 )+1))), #{answer.answerId}, 
+		        #{answer.weightage}, #{answer.inputType},
+		        (SELECT question_id FROm program_survey_question_master WHERE program_survey_question_master_id = (SELECT MAX(program_survey_question_master_id) FROM program_survey_question_master)))
+		</foreach>
+	</insert>
+	
+	<select id="selectSurveyForQuestionMaster" resultType="com.qts.icam.model.survey.Question">
+		SELECT 
+			survey_id as surveyId,
+			survey_name as surveyName
+		FROM 
+			program_survey_question_master
+		WHERE
+			survey_id = #{surveyId};
+	</select>
+	
+	<insert id="insertFeedBAckData" parameterType="com.qts.icam.model.survey.Question">
+		<foreach item="answerId" collection="answerList"  open="" close="" separator=";">
+			INSERT INTO program_survey_answer_slave(
+	            rec_id, obj_id, updated_by, updated_on, 
+	            date_of_creation, roll_number, name, question_id, answer,survey_id)
+		    VALUES ((select uuid_generate_v4()), #{objectId},
+			    (SELECT rec_id FROM resource WHERE user_id  ilike #{answerId.updatedBy} AND is_active = true),
+			    (SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())), 
+		         #{answerId.rollNumber}, #{answerId.name}, #{answerId.questionId}, #{answerId.answerId},#{surveyId});
+
+		</foreach>
+	</insert>
+	
+	<insert id="insertConfigureSurveyQuestion" parameterType="com.qts.icam.model.survey.Question">
+		INSERT INTO program_survey_question_master(
+             rec_id, 
+             obj_id, 
+             updated_by, 
+             updated_on, 
+             date_of_creation, 
+             question_id, 
+             question_name)
+	    VALUES ( 	
+			    	(select uuid_generate_v4()), 
+					#{objectId},
+					(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+					(SELECT extract(epoch FROM now())),
+					(SELECT extract(epoch FROM now())),
+					(SELECT ('Q'||(select COALESCE((SELECT MAX(program_survey_question_master_id) FROM program_survey_question_master), 0 )+1))),
+					 #{question});
+
+	</insert>
+	
+	<select id="selectQuestionListNotMappedWithAnswer" resultType="com.qts.icam.model.survey.Question">
+		SELECT
+			question_id as questionId,
+			question_name as question
+		FROM
+			program_survey_question_master psqm
+		WHERE
+			psqm.question_id NOT IN(SELECT psam.question_id FROM program_survey_answer_master psam);
+	</select>
+	
+	<select id="selectQuestionListMappedWithAnswer" resultType="com.qts.icam.model.survey.Question">
+		SELECT 
+			DISTINCT psqm.question_id as questionId,
+			question_name as question,
+			input_type as inputType
+		FROM
+			program_survey_question_master psqm 
+		JOIN
+			program_survey_answer_master psam ON (psqm.question_id = psam.question_id AND psam.is_active = true)
+		AND
+			psqm.is_active = true;
+	</select>
+	
+	<select id="selectMaxSurveyQuestionAnswerId" resultType="java.lang.Integer">
+		   SELECT COALESCE((SELECT MAX(program_survey_question_slave_id) FROM program_survey_question_slave), 0 )+1 as maxId;
+
+	</select>
+	
+	<insert id="insertSurveyQuestionAnswer" parameterType="com.qts.icam.model.survey.QuestionMaster">
+		<foreach item="question" collection="questionList"  open="" close="" separator=";">
+			INSERT INTO program_survey_question_slave(
+	            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+	            survey_id, survey_name, question_id,course)
+		    VALUES ((select uuid_generate_v4()), #{question.objectId},
+			    (SELECT rec_id FROM resource WHERE user_id  ilike #{question.updatedBy} AND is_active = true),
+			    (SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			    #{question.surveyId}, 
+            	#{question.surveyName},#{question.questionId},(SELECT rec_id FROM course WHERE course_code = #{question.course} AND is_active = true))
+		</foreach>
+	</insert>
+	
+	
+	<resultMap id="fetchQuestionAnswerForXMLWriteRM" type="com.qts.icam.model.survey.QuestionMaster">
+		<id property="surveyId" column="survey_id" jdbcType="VARCHAR" />
+		<result property="surveyName" column="survey_name" jdbcType="VARCHAR" />	
+		<collection property="questionList" ofType="com.qts.icam.model.survey.Question">
+			<id property="questionId" column="question" jdbcType="VARCHAR" />
+			<result property="question" column="question_name" jdbcType="VARCHAR" />
+			<collection property="answerList" ofType="com.qts.icam.model.survey.Answer">
+				<id property="answerId" column="answer_id" jdbcType="VARCHAR" />
+				<result property="initialValue" column="initial_value" jdbcType="VARCHAR" />
+				<result property="inputType" column="input_type" jdbcType="VARCHAR" />
+				<result property="weightage" column="weightage" jdbcType="VARCHAR" />
+			</collection>
+		</collection>
+	</resultMap>
+	<select id="fetchQuestionAnswerForXMLWrite" resultMap="fetchQuestionAnswerForXMLWriteRM">
+		SELECT
+			survey_id,
+			survey_name,
+			psqm.question_id as question,
+			question_name,
+			answer_id,
+			initial_value,
+			input_type,
+			weightage
+		FROM
+			program_survey_question_slave psqs 
+		JOIN
+			program_survey_question_master psqm ON (psqs.question_id = psqm.question_id)
+		JOIN
+			program_survey_answer_master psam ON (psam.question_id = psqm.question_id)
+		WHERE 
+			survey_id = (SELECT survey_id FROM program_survey_question_slave WHERE program_survey_question_slave_id = (SELECT MAX(program_survey_question_slave_id) FROM program_survey_question_slave))
+		ORDER BY 
+			psqm.question_id;
+	</select>
+	
+	<select id="fetchSurveyForAProgramme" resultType="com.qts.icam.model.survey.Question" parameterType = "com.qts.icam.model.survey.Question">
+		SELECT
+			DISTINCT survey_id as surveyId,
+			survey_name as surveyName,
+			course_name as course
+		FROM
+			program_survey_question_slave psqs
+		JOIN
+			course c ON (psqs.course = c.rec_id AND c.is_active = true)
+		JOIN
+			student_course_mapping scm ON (scm.course = c.rec_id AND scm.is_active = true)
+		WHERE
+			c.course_code = #{course}
+		AND
+			user_id = #{updatedBy}
+		AND
+			psqs.is_active = true
+		AND
+			psqs.survey_id NOT IN (SELECT survey_id FROM program_survey_answer_slave );
+	</select>
+	
+	<select id="fetchStudentInfoAgainstUserId" resultType="com.qts.icam.model.common.Student" parameterType = "com.qts.icam.model.common.Student">
+		SELECT
+			scm.user_id as userId,
+			scm.roll_number as roll,
+			r.first_name || ' ' || COALESCE(r.middle_name ,'') || ' ' || COALESCE(r.last_name ,' ') as studentName
+		FROM
+			resource r
+		JOIN
+			student_course_mapping scm ON (scm.user_id = r.user_id AND scm.is_active = true)
+		JOIN
+			course c ON (scm.course = c.rec_id AND c.is_active = true)
+		WHERE
+			scm.user_id = #{userId}
+		AND
+			c.course_code = #{courseId}
+		AND
+			r.is_active = true;
+	</select>
+	<select id="checkSurveyConfigurationStatus" resultType="com.qts.icam.model.survey.Question" parameterType = "com.qts.icam.model.survey.Question">
+		SELECT
+			DISTINCT psqs.survey_id as surveyId,
+			psqs.survey_name as surveyName,
+			c.course_name as course
+		FROM
+			program_survey_question_slave psqs
+		JOIN
+			course c ON (psqs.course = c.rec_id AND c.is_active = true)
+		WHERE
+			survey_name = #{surveyName}
+		AND
+		
+			c.course_code = #{course}
+		AND
+			psqs.is_active = true;
+	</select>
+	
+	<select id="checkSuestionStatus" resultType="com.qts.icam.model.survey.Question" parameterType = "com.qts.icam.model.survey.Question">
+		SELECT
+			question_name as question
+		FROM
+			program_survey_question_master 
+		
+		WHERE
+			question_name = #{question}
+		AND
+			is_active = true;
+	</select>
+</mapper>

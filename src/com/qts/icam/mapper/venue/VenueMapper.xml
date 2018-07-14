@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.mapper.venue.VenueMapper">
+	
+	<insert id="insertZone"  parameterType="com.qts.icam.model.venue.Venue">
+		INSERT INTO zone(
+			      rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			      zone_code, zone_name, zone_desc)
+		VALUES ((select uuid_generate_v4()), #{objectId}, 
+			     (SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true), 
+			     (SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())), 
+			      (SELECT ('ZoneCode' ||(select COALESCE((SELECT MAX(serial_id) FROM zone), 0 )+1))),  #{zoneName}, #{zoneDesc});
+	</insert>
+
+	<select id="listZone" resultType = "com.qts.icam.model.venue.Venue">
+
+		SELECT
+			zone_code as zoneCode,
+			zone_name as zoneName,
+			zone_desc as zoneDesc
+		FROM
+			zone
+		WHERE 
+			is_active = true;
+		
+	</select>
+	
+	<update id="editZone" parameterType="com.qts.icam.model.venue.Venue">
+
+		UPDATE
+			zone
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+			updated_on =(SELECT extract(epoch FROM now())),
+			zone_name = #{zoneName},
+			zone_desc = #{zoneDesc}
+		WHERE
+			zone_code = #{zoneCode};
+	</update>
+	
+	<select id="listStateAgainstZone" resultType = "com.qts.icam.model.common.State">
+		SELECT 
+			state_code as stateCode,
+			state_name as stateName
+		FROM
+			state
+		WHERE 
+			zone = (select rec_id from zone where zone_code = #{zoneCode});
+				
+	</select>
+	
+	<insert id="insertLocation"  parameterType="com.qts.icam.model.common.Location">
+		INSERT INTO location(
+			rec_id, obj_id, 
+			updated_by,
+			updated_on, date_of_creation, 
+			location_code,
+			location_name, location_desc, 
+			pin, area, city, 
+			country, 
+			state,
+			zone)
+    VALUES 
+			((select uuid_generate_v4()), #{objectId}, 
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())), 
+			(SELECT ('LocationCode' ||(select COALESCE((SELECT MAX(serial_id) FROM location), 0 )+1))), 
+			#{locationName}, #{locationDesc},#{pin},#{area},#{city},
+			(SELECT rec_id FROM country WHERE country_code  ilike #{country} AND is_active = true),
+			(SELECT rec_id FROM state WHERE state_code  ilike #{state} AND is_active = true), 
+			(SELECT rec_id FROM zone WHERE zone_code  ilike #{zone} AND is_active = true));
+	</insert>
+	
+	<select id="listLocation" resultType = "com.qts.icam.model.common.Location">
+
+		SELECT 
+			l.location_code as locationCode,
+			l.location_name as locationName,
+			l.area as area,
+			s.state_name as state,
+			l.city as city,
+			c.country_name as country,
+			z.zone_name as zone,
+			l.pin as pin
+		FROM
+			location l
+		JOIN
+			state s ON(l.state = s.rec_id AND s.is_active = true)
+		JOIN
+			country c ON (l.country = c.rec_id AND c.is_active =true)
+		JOIN
+			zone z ON (l.zone = z.rec_id AND z.is_active = true)
+		AND
+			l.is_active = true;
+		
+	</select>
+	<update id="editLocation" parameterType="com.qts.icam.model.common.Location">
+
+		UPDATE
+			location
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+			updated_on =(SELECT extract(epoch FROM now())),
+			location_name = #{locationName}
+		WHERE
+			location_code = #{locationCode};
+	</update>
+	
+	<update id="inactiveLocation" parameterType="com.qts.icam.model.common.Location">
+
+		UPDATE
+			location
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+			updated_on =(SELECT extract(epoch FROM now())),
+			is_active = false
+		WHERE
+			location_code = #{locationCode};
+	</update>
+	
+	<insert id="insertVenue"  parameterType="com.qts.icam.model.venue.Venue">
+		INSERT INTO venue(
+		    rec_id, obj_id,
+		    updated_by, 
+		    updated_on, date_of_creation, 
+		    venue_code, venue_name, venue_desc, building, floor, 
+		    room_no, location, no_of_seats,venue_type,parent_venue)
+   		 VALUES (		
+		   (select uuid_generate_v4()), #{objectId}, 
+		   (SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true), 
+		   (SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+		   (SELECT ('VenueCode' ||(select COALESCE((SELECT MAX(serial_id) FROM venue), 0 )+1))),  
+		    #{venueName}, #{venueDesc}, #{building}, #{floor},#{roomNo},
+		    (SELECT rec_id FROM location WHERE location_code  ilike #{location} AND is_active = true), 
+		     #{availableSeat},
+		     (SELECT rec_id FROM venue_type WHERE venue_type_code = #{venueTypeCode} AND is_active = true),
+		     (SELECT rec_id FROM venue WHERE venue_code = #{venueCode} AND is_active = true));
+		
+	</insert>
+	
+	<!-- modified by saurav.bhadra 05042017 -->
+	
+	<select id="listVenue" resultType = "com.qts.icam.model.venue.Venue">
+		SELECT
+			venue_code as venueCode,
+			venue_name as venueName,
+			building as building,
+			floor as floor,
+			room_no as roomNo,
+			no_of_seats as availableSeat,
+			l.location_name as location,
+			v.availability as availability,
+			v.is_active as status
+		FROM
+			venue v
+		JOIN 
+			location l ON(l.rec_id = v.location AND l.is_active = true)
+		WHERE
+			v.is_active = true;
+		
+	</select>
+	
+	<!-- modified by ranita.sur on 29032017-->
+	
+	<update id="editVenue" parameterType="com.qts.icam.model.venue.Venue">
+		
+		UPDATE 
+			venue
+		SET 
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+			updated_on =(SELECT extract(epoch FROM now())),
+			venue_name=#{venueName},
+			availability  = #{availability}::BOOLEAN
+		WHERE 
+			 venue_code = #{venueCode};
+							
+	</update>
+	
+	<select id="listFacility" resultType = "com.qts.icam.model.facility.Facility">
+		SELECT
+			facility_code as facilityCode,
+			facility_name as facilityName,
+			facility_desc as facilityDesc
+		FROM
+			facility
+		WHERE
+			is_active =true;
+		
+	</select>
+	
+	<insert id="insertVenueFacilityMapping"  parameterType="com.qts.icam.model.venue.Venue">
+		<foreach item="facility" collection="facilityList"  open="" close="" separator=";">
+			INSERT INTO venue_facility_mapping(
+	            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+	            venue, facility)
+	    	VALUES (
+	    		(select uuid_generate_v4()), #{objectId}, 
+	    		(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+	    		(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+	    		(SELECT rec_id FROM venue WHERE venue_code  ilike #{venueCode} AND is_active = true),  
+	            (SELECT rec_id FROM facility WHERE facility_code  ilike #{facility.facilityCode} AND is_active = true));
+		</foreach>
+	</insert>
+	
+	<select id="listFacilityAgainstVenue" resultType = "com.qts.icam.model.venue.Venue" parameterType="java.lang.String">
+		SELECT
+			v.venue_name as venueName,
+			v.venue_code as venueCode,
+			f.facility_code as status,
+			f.facility_name as facility
+		FROM
+			venue_facility_mapping vfm
+		JOIN
+			venue v ON (vfm.venue = v.rec_id AND v.is_active =true)
+		JOIN
+			facility f ON (f.rec_id = vfm.facility AND f.is_active = true)
+		WHERE
+			v.venue_code = #{venueCode}
+		AND
+			vfm.is_active = true 
+		
+	</select>
+	<update id="inactiveVenueFacilityMapping" parameterType="com.qts.icam.model.venue.Venue">
+	 	<foreach item="facility" collection="facilityList"  open="" close="" separator=";">
+			UPDATE venue_facility_mapping SET
+				updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+				updated_on = extract(epoch FROM now()),
+				is_active = false
+			WHERE
+				venue = (SELECT rec_id FROM venue WHERE venue_code =#{venueCode} AND is_active = true)
+			AND
+				is_active = true;
+		</foreach>
+	</update>
+	<select id="listVenueType" resultType = "com.qts.icam.model.venue.Venue">
+		SELECT
+			venue_type_code as venueTypeCode,
+			venue_type_name as venueTypeName
+		FROM
+			venue_type
+		WHERE
+			is_active =true;
+		
+	</select>
+	<select id="listVenueAgainstVenueType" resultType = "com.qts.icam.model.venue.Venue"  parameterType="java.lang.String">
+		SELECT
+			venue_code as venueCode,
+			venue_name as venueName
+		FROM
+			venue
+		WHERE
+			venue_type =(SELECT rec_id FROM venue_type WHERE venue_type_code =#{venueTypeCode}AND is_active = true) 
+		AND
+			is_active =true;
+		
+	</select>
+	<select id="buildingAgainstName" resultType = "java.lang.String"  parameterType="java.lang.String">
+		SELECT
+			 building as buildingName 
+		FROM
+			 venue
+		WHERE
+			venue_code = #{venueCode};
+			
+	</select>
+	
+	<insert id="insertIntoVenueAllocation"  parameterType="com.qts.icam.model.venue.Venue">
+		INSERT INTO venue_allocation(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            venue, description, start_date, end_date, start_time, 
+            end_time)
+	    VALUES (
+			(select uuid_generate_v4()),#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())), 
+			(SELECT rec_id FROM venue WHERE venue_code ilike #{venueCode}AND is_active = true),
+			#{zoneDesc},(SELECT extract(epoch from (SELECT to_timestamp(#{startDate}, 'DD/MM/YYYY')))),
+			(SELECT extract(epoch from (SELECT to_timestamp(#{endDate}, 'DD/MM/YYYY')))), #{startTime},#{endTime});
+
+	</insert>
+	<select id="listAllAllocatedVenue" resultType = "com.qts.icam.model.venue.Venue">
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(start_date)), 'DD/MM/YYYY')) as startDate,
+			(SELECT to_char((SELECT to_timestamp(end_date)), 'DD/MM/YYYY')) as endDate,
+			start_time as startTime,
+			end_time as endTime,
+			v.venue_name as venueName
+			
+		FROM 	
+			venue_allocation va
+		JOIN 
+			venue v ON (va.venue = v.rec_id AND v.is_active = true)
+		WHERE 	
+			va.is_active=true;
+				
+	</select>
+	
+	<select id="listAllocatedVenueAgainstAVenue" resultType = "com.qts.icam.model.venue.Venue">
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(start_date)), 'DD/MM/YYYY')) as startDate,
+			(SELECT to_char((SELECT to_timestamp(end_date)), 'DD/MM/YYYY')) as endDate,
+			start_time as startTime,
+			end_time as endTime
+		FROM 	
+			venue_allocation va
+		JOIN 
+			venue v ON (va.venue = v.rec_id AND v.is_active = true)
+		WHERE 	
+			va.is_active=true;
+				
+	</select>
+	<!-- 
+	<insert id="checkVenueStatus" parameterType="com.qts.icam.model.venue.Venue" statementType="CALLABLE">
+		select check_venue_allocation_status(
+			#{value_for_venue_code, mode=IN, jdbcType=VARCHAR},
+			#{value_for_start_date, mode=IN, jdbcType=VARCHAR},
+			#{value_for_end_date, mode=IN, jdbcType=VARCHAR},
+			#{value_for_start_time, mode=IN, jdbcType=VARCHAR},
+			#{value_for_end_time, mode=IN, jdbcType=VARCHAR},
+			#{msg_for_venue_allocation, mode=OUT, jdbcType=VARCHAR});	
+	</insert>
+	 -->
+	<parameterMap id="checkVenueStatusMap" type="com.qts.icam.model.venue.Venue">
+		<parameter property="venueCode" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="startDate" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="endDate" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="startTime" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="endTime" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="status" jdbcType="VARCHAR" mode="OUT" />
+	</parameterMap>
+
+	 <select id="checkVenueStatus" parameterMap="checkVenueStatusMap" statementType="CALLABLE">
+		{? = call check_venue_allocation_status(?,?,?,?,?)}
+	</select>
+	
+		<select id="listVenueFacility" resultType = "com.qts.icam.model.venue.Venue">
+		SELECT
+			venue_code as venueCode,
+			venue_name as venueName
+		FROM
+			venue v
+		WHERE
+			v.is_active = true;
+		
+	</select>
+	
+	<update id="inactiveVenue" parameterType="com.qts.icam.model.venue.Venue">
+	 	
+			UPDATE 
+				venue
+			SET
+				updated_by=(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+				updated_on=extract(epoch FROM now()),
+				is_active=false
+			WHERE
+				venue_code =  #{venueCode}
+			AND
+				is_active=true;
+			
+		
+	</update>
+	<!-- created by ranita.sur -->
+	<select id="listVenueForUpdateDetails" resultType = "com.qts.icam.model.venue.Venue">
+		SELECT
+			parent_venue as building
+		FROM
+			venue v
+		WHERE
+			v.parent_venue = (SELECT rec_id FROM venue WHERE venue_code = #{venueCode})
+		AND
+			v.is_active=true;
+	</select>
+	
+	<update id="editVenueDetail" parameterType="com.qts.icam.model.venue.Venue">
+		
+		UPDATE
+			venue
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+			updated_on =(SELECT extract(epoch FROM now())),
+			availability = #{availability}::BOOLEAN
+		WHERE
+			venue.parent_venue = (SELECT rec_id FROM venue WHERE venue_code = #{venueCode});
+			
+	</update>
+
+</mapper>

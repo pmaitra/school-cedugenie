@@ -1,0 +1,1148 @@
+package com.qts.icam.controller.login;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import net.sf.ehcache.store.chm.ConcurrentHashMap;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.dhtmlx.planner.DHXPlanner;
+import com.dhtmlx.planner.DHXSkin;
+import com.dhtmlx.planner.data.DHXDataFormat;
+import com.google.gson.Gson;
+import com.qts.icam.model.administrator.AccessType;
+import com.qts.icam.model.administrator.Functionality;
+import com.qts.icam.model.administrator.Role;
+import com.qts.icam.model.administrator.ServerConfiguration;
+import com.qts.icam.model.backoffice.CalendarEvent;
+import com.qts.icam.model.backoffice.Exam;
+import com.qts.icam.model.common.AcademicYear;
+import com.qts.icam.model.common.Image;
+import com.qts.icam.model.common.MajorEvents;
+import com.qts.icam.model.common.NoticeBoard;
+import com.qts.icam.model.common.Notification;
+import com.qts.icam.model.common.Resource;
+import com.qts.icam.model.common.SchoolDetails;
+import com.qts.icam.model.common.SessionObject;
+import com.qts.icam.model.login.LoginForm;
+import com.qts.icam.service.common.CommonService;
+import com.qts.icam.service.login.LoginService;
+import com.qts.icam.utility.customexception.CustomException;
+import com.qts.icam.utility.mailservice.EmailReceiver;
+import com.qts.icam.utility.uploaddownload.FileUploadDownload;
+
+@Controller 
+@SessionAttributes("sessionObject")
+public class LoginController {
+
+	@Autowired
+	LoginService loginService = null;
+	
+	@Autowired
+	CommonService commonService = null;
+	
+	@Autowired
+	EmailReceiver emailReceiver;
+	
+	@Autowired
+	ServletContext servletContext;
+	
+	@Autowired
+	FileUploadDownload fileUploadDownload;
+	
+	@Value("${max.loginActiveUsers}")
+	private String maxLoginActiveUsers;
+	
+	@Value("${LOGIN_ERROR}")
+	private String LOGIN_ERROR;
+	
+	public static Logger logger = Logger.getLogger(LoginController.class);
+	
+	public static String MODULE_NAME_TO_DISPLAY_ITS_CHARTS = null;
+	public static String ROLE_NAME_TO_DISPLAY_ITS_CHARTS = null;
+	
+	
+	
+	
+	
+	@RequestMapping(value = "/login", method = RequestMethod.GET)
+	public String serveLoginPage(HttpServletRequest request,
+								 HttpServletResponse response, ModelMap model,
+								 LoginForm login,
+								 @RequestParam(value = "status", required = false) String status) {
+		String strView=null;
+		try {
+			if(model.containsAttribute("sessionObject")) model.remove("sessionObject");
+			HttpSession session = request.getSession(false);
+			if(session!=null)session.invalidate();
+			SchoolDetails schoolDetails = loginService.getSchoolDetails();
+			model.addAttribute("SchoolDetails", schoolDetails);
+			List<NoticeBoard> noticelist;
+			noticelist = commonService.getNoticeList();
+			model.addAttribute("noticelist", noticelist);	
+			
+			if(null!=status){			
+				if(null=="sessionExpired"){
+					login.setMessage("Session Expired");
+				}			
+			}
+			model.addAttribute("loginForm", login);
+		} catch (CustomException e) {
+			logger.error("",e);
+		} catch (Exception e) {
+			logger.error("",e);
+		}
+		strView="common/loginForm";		
+		return strView;
+	}
+	
+	@RequestMapping(value ="/home")
+	public String home(HttpServletRequest request,
+			HttpServletResponse response, LoginForm login, ModelMap model) {
+			String strView = null;
+			List<Notification>notificationList =null;
+			List<Notification>taskNotificationList = null;
+		try{
+			if(!model.containsAttribute("sessionObject")){
+				login.setUserId(login.getUserId().trim().toLowerCase());
+//				boolean authenticateStatus = validateLogin(request, response, login, model);
+//				logger.info("STATUS : Login Authenticate for "+login.getUserId()+" :::::::::::::::: "+authenticateStatus);				 	
+				if(true){
+						Integer maxActiveUsers = checkMaxActiveUsers(login);
+						System.out.println(maxActiveUsers);
+						if(maxActiveUsers != null){
+							if((maxActiveUsers < loginService.getMaxLoginActiveUsersForLicense() && maxActiveUsers >= 0) || (maxActiveUsers == -1)){
+								strView = getResourceInfo(request,response,login,model);
+								notificationList = getListForNotification(request,response,login,model);
+								taskNotificationList = getTaskNotificationList(request,response,login,model);  //for notification of task
+								int taskCount = notificationList.size() + taskNotificationList.size();
+								model.addAttribute("taskCount",taskCount);
+								
+							}else{
+								login.setMessage("Login exceeds maximum allowed users");
+								strView = serveLoginPage(request,response, model,login,null);
+							}
+					   }else{
+							login.setMessage("Max Limit Reached");
+							strView = serveLoginPage(request,response, model,login,null);
+						}
+				}else{
+						login.setMessage("Login authentication failed!!");
+						strView = serveLoginPage(request,response, model,login,null);
+					}
+			}else{
+				strView = getResourceInfo(request,response,login,model);
+			}
+		}catch(Exception e){
+			logger.error("Login Failed for "+login.getUserId()+"!!",e);
+			login.setMessage("Login Failed!!");
+			strView = serveLoginPage(request, response, model, login, null);				
+		}
+		return strView;
+	}
+	
+	
+	
+	@RequestMapping(value = "/dashboard", method = RequestMethod.GET)
+	public ModelAndView dashboard(ModelMap model,
+			@ModelAttribute("sessionObject") SessionObject sessionObject) {
+		String strView = null;
+			logger.info("Opening Dashboard Page");
+			
+			//System.out.println("Current Role Or Access"+sessionObject.getCurrentRoleOrAccess());
+			//System.out.println("Current UserId"+sessionObject.getUserId());
+			
+			/***************************Start Report*******************************/
+			
+			
+			
+			/***************************End Report*******************************/
+			
+			List<MajorEvents> majorEventList = loginService.getMajorEvents();
+			model.addAttribute("majorEventList",majorEventList);
+			
+			Resource resource = loginService.getAccessTypeAndRoleList(sessionObject.getUserId());
+			if(null != resource.getImage()){
+        		Image i = new Image();
+        		i.setImagepath(fileUploadDownload.getBase64Image(resource.getImage().getImagepath()));
+        		resource.setImage(i);
+	        }
+			model.addAttribute("resourceDetails",resource);
+			
+			/***************************Start Calendar*******************************/
+						
+			DHXPlanner p = new DHXPlanner("./codebase/", DHXSkin.TERRACE);
+			
+			Calendar now = Calendar.getInstance();
+			 
+            p.setInitialDate(now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DATE));
+            p.setWidth(900);
+            p.load("/icam/myevents.html?UsrId="+sessionObject.getUserId(), DHXDataFormat.JSON);
+            p.data.dataprocessor.setURL("/icam/myevents.html?UsrId="+sessionObject.getUserId());
+            
+            ModelAndView mnv = new ModelAndView("common/dashboard");
+            
+            try {
+				mnv.addObject("body", p.render());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            
+            return mnv;
+            
+            /***************************End Calendar*******************************/
+			//strView = "common/dashboard";
+		//return new ModelAndView(strView);
+	}
+	
+	@RequestMapping(value ="/myevents")
+	@ResponseBody public String events(HttpServletRequest request, @RequestParam("UsrId") String usrId) {
+		ServerConfiguration serverConfiguration = loginService.getServerConfigurationDB();
+		String urlAsParameter = "jdbc:postgresql://"+serverConfiguration.getJdbcURL()+":"+serverConfiguration.getJdbcPort()+"/"+serverConfiguration.getJdbcDatabaseName();
+		
+		String userName = serverConfiguration.getJdbcUserName();
+		String passwordAsParameter = serverConfiguration.getJdbcPassword();
+		String driverClassName = serverConfiguration.getJdbcDriverClassName();
+		CustomEventsManager evs = new CustomEventsManager(request, usrId, urlAsParameter, userName, passwordAsParameter, driverClassName);
+        return evs.run();
+    }
+	
+	
+	
+		
+	public Integer checkMaxActiveUsers(LoginForm loginForm){
+		Integer maxActiveUsers = null;
+		try{
+			maxActiveUsers = loginService.getMaxActiveUsers(loginForm);
+		}catch(Exception e){
+			logger.error("",e);
+		}
+		return maxActiveUsers;
+	}
+	
+	
+	public boolean validateLogin(HttpServletRequest request,HttpServletResponse response, LoginForm login,ModelMap model) {
+		boolean authenticateStatus = false;
+		try{			
+			 if(!model.containsAttribute("PasswordChangeFailStatus")){
+				 authenticateStatus=loginService.authenticate(login);
+			 }else{
+				 authenticateStatus = true;
+			 }
+		}
+		catch(Exception e){
+			logger.error("",e);
+		}
+	return  authenticateStatus;
+	}
+	
+	public String getResourceInfo(HttpServletRequest request,HttpServletResponse response, LoginForm login,ModelMap model) {		
+		String strView=null;
+		try{	
+			SessionObject sessionObject = new SessionObject();
+			Resource resource = loginService.getAccessTypeAndRoleList(login.getUserId());
+			
+			
+			
+			
+			Map<String, String> availableRolesAndAccess = new ConcurrentHashMap<String, String>();		
+			Set<String> roles = new HashSet<String>();
+			if(null != resource ){				
+		        sessionObject.setUserId(login.getUserId());					        
+		        sessionObject.setUserName(resource.getName());
+		        sessionObject.setResourceTpye(resource.getResourceTypeName());	
+		        
+		        if(null != resource.getImage()){
+	        		Image i = new Image();
+	        		i.setImagepath(fileUploadDownload.getBase64Image(resource.getImage().getImagepath()));
+	        		resource.setImage(i);
+		        }
+		        
+				model.addAttribute("resource",resource);
+				
+				if(null!=resource.getLastVisitedOn()){
+		        	sessionObject.setLastVisitedOn(resource.getLastVisitedOn());
+			    }		        
+		        if(!model.containsAttribute("sessionObject")){
+		        	model.addAttribute("sessionObject", sessionObject);
+		        }
+				if(resource.getImage()!=null){
+					sessionObject.setUserImage(resource.getImage().getImageName());								
+				}
+				
+				
+				
+				if(resource.getResourceTypeName().equalsIgnoreCase("STUDENT")){
+					System.out.println("Student Login Not Allowed Cotrrently");
+				}
+				else{
+					if(
+						(resource.getRoleList()!=null && resource.getRoleList().size()!=0 )
+						|| (resource.getAccessTypeList()!=null && resource.getAccessTypeList().size()!=0 )
+					){
+						/* Extracts Access Type List From  Resource Bean*/
+						List<AccessType> accessTypeList = resource.getAccessTypeList();
+						/* Extracts Role List From  Resource Bean*/
+						List <Role> roleList = resource.getRoleList();		
+						
+						
+						
+						if(accessTypeList!=null && accessTypeList.size()!=0){							
+							for(AccessType accessType : accessTypeList){							
+								availableRolesAndAccess.put(accessType.getAccessTypeName(),"AccessType");
+								for(Role role : accessType.getRoleList()){
+									availableRolesAndAccess.put(role.getRoleName(),"Role");
+									roles.add(role.getRoleName());
+								}
+							}
+						}else{
+							logger.info("accessTypeList not found");
+						}
+						
+						if(roleList!=null && roleList.size()!=0){							
+							for(Role role : roleList){
+								/* Check availableRolesAndAccess doesn't contains duplicate entry */
+								if(availableRolesAndAccess!=null && availableRolesAndAccess.size()!=0 ){
+									for (Map.Entry<String, String> entry : availableRolesAndAccess.entrySet()) {
+										if(!(entry.getKey().equalsIgnoreCase(role.getRoleName()))){
+											availableRolesAndAccess.put(role.getRoleName(),"Role");
+											roles.add(role.getRoleName());
+										}	
+									}
+								}else{
+									availableRolesAndAccess.put(role.getRoleName(),"Role");
+									roles.add(role.getRoleName());
+								}								
+							}
+						}else{
+							logger.info("roleList not found");
+						}
+						
+						sessionObject.setAvailableRoles(roles);
+						if(availableRolesAndAccess!=null && availableRolesAndAccess.keySet()!=null && availableRolesAndAccess.keySet().size()!=0){
+							sessionObject.setAvailableRolesAndAccess(availableRolesAndAccess);						
+						}
+						else{
+							logger.info("Roles and accesstype not found");										
+						}
+						
+						
+						List<Role> tempRoleList=new ArrayList<Role>();
+						if(resource.getAccessTypeList()!=null && resource.getAccessTypeList().size()!=0){
+							sessionObject.setCurrentRoleOrAccess(resource.getAccessTypeList().get(0).getAccessTypeName());
+							login.setAccessType(resource.getAccessTypeList().get(0).getAccessTypeName());
+							model.addAttribute("roleList", resource.getAccessTypeList().get(0).getRoleList());
+							tempRoleList=resource.getAccessTypeList().get(0).getRoleList();
+						}else{
+							login.setRole(resource.getRoleList().get(0).getRoleName());
+							sessionObject.setCurrentRoleOrAccess(resource.getRoleList().get(0).getRoleName());	
+							Role roleFromDB=resource.getRoleList().get(0);
+							List<Role> roleListFromDB=new ArrayList<Role>();
+							roleListFromDB.add(roleFromDB);
+							model.addAttribute("roleList", roleListFromDB);
+							tempRoleList=roleListFromDB;
+						}	
+						if(!model.containsAttribute("requestFromNotificationPage")){
+							String clientIp = getClientIpAddr(request);
+							login.setIp(clientIp);
+							login.setHttpSessionId(RequestContextHolder.currentRequestAttributes().getSessionId());
+							loginService.insertLoginDetails(login);
+						}						
+					
+					
+					
+					
+					
+					
+						List<Functionality> functionalityList= new ArrayList<Functionality>();
+						String getCurrentRoleOrAccess = sessionObject.getCurrentRoleOrAccess();
+						if(sessionObject!= null && sessionObject.getUserId()!=null){
+							if(getCurrentRoleOrAccess!=null && availableRolesAndAccess!=null){
+								String value = availableRolesAndAccess.get(getCurrentRoleOrAccess);
+								for(Role r:tempRoleList){
+									if(value!=null && value.equalsIgnoreCase("AccessType")){
+										AccessType accessType =new AccessType();
+										accessType.setAccessTypeName(getCurrentRoleOrAccess);
+										accessType.setModuleName(r.getModuleName());
+										functionalityList=loginService.getFunctionalityListForAccessType(accessType);				
+									}else{
+										Role role=new Role();
+										role.setModuleName(r.getModuleName());
+										role.setRoleName(getCurrentRoleOrAccess);
+										functionalityList=loginService.getFunctionalityListForRole(role);
+									}
+									MODULE_NAME_TO_DISPLAY_ITS_CHARTS = r.getModuleName();
+									ROLE_NAME_TO_DISPLAY_ITS_CHARTS = r.getRoleName();
+									model.addAttribute(r.getModuleName().replace(" ", "")+"functionalityList",functionalityList);
+								}
+								
+							}
+						}
+						strView="common/navigation";
+					
+					
+					
+					
+					
+					}else{
+						login.setMessage("No Roles Found For Provided User Id");
+						strView = serveLoginPage(request,response, model,login,null);			
+					}
+				}
+				ModelMap modelFromNotification=getEventsAndNotes(request,response,login,model, sessionObject);
+		        model=modelFromNotification;
+			}else{
+				login.setMessage("User Details Not Found");
+				strView = serveLoginPage(request,response, model,login,null);	
+			}
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		catch(Exception e){
+			logger.error("",e);
+		}	
+		return strView;
+	}
+	
+	public ModelMap getEventsAndNotes(HttpServletRequest request,HttpServletResponse response, LoginForm login,ModelMap model,
+			@ModelAttribute("sessionObject") SessionObject sessionObject) {		
+		List<Role> eventFromDb = null;
+		List<CalendarEvent> eventForAllUserFromDb = null;
+		List<CalendarEvent> eventCountForAllUserFromDb = null;
+		List<CalendarEvent> eventForSuperadminFromDb = null;
+		List<CalendarEvent> eventCountForSuperadminFromDb = null;
+		List<Exam> listAssignedExam = null;
+		List<Exam> listAssignedExamCount = null;
+		CalendarEvent calendarEvent = new CalendarEvent();
+		try{
+			
+			commonService.insertEmailDetails(emailReceiver.readEmail(login.getUserId().trim(), login.getUserId().trim(),servletContext),login.getUserId().trim());
+			
+			
+			Notification notification = loginService.getNewNotifications(login.getUserId().trim());			
+			if( notification != null){				
+				model.addAttribute("notification", notification);				
+			}
+			List<Notification> notificationList = commonService.getNotificationDescriptionList(sessionObject.getUserId().trim());			
+			if(null!=notificationList && notificationList.size()!=0){
+				model.addAttribute("notificationList", notificationList);
+			}
+			Notification emailNotification = commonService.getEmailDetails(login.getUserId().trim());
+			if(null!=emailNotification){
+				if(null!=emailNotification.getEmailDetailsList() && emailNotification.getEmailDetailsList().size()!=0){
+					model.addAttribute("emailDetailsList", emailNotification.getEmailDetailsList());
+				}
+			}			
+			calendarEvent.setCalendarEventBy(sessionObject.getCurrentRoleOrAccess());
+			calendarEvent.setUpdatedBy(login.getUserId());
+			eventFromDb = loginService.getEventUserBased(calendarEvent);						
+			if(eventFromDb != null && eventFromDb.size() !=0){
+				model.addAttribute("eventFromDb", eventFromDb);
+			}
+			eventForAllUserFromDb = loginService.getEventForAllUserFromDb();
+			if(eventForAllUserFromDb != null && eventForAllUserFromDb.size() !=0){
+				model.addAttribute("eventForAllUserFromDb", eventForAllUserFromDb);
+			}
+			eventCountForAllUserFromDb = loginService.getEventCountForAllUserFromDb();
+			if(eventCountForAllUserFromDb != null && eventCountForAllUserFromDb.size() !=0){
+				model.addAttribute("eventCountForAllUserFromDb", eventCountForAllUserFromDb);
+			}
+			eventForSuperadminFromDb = loginService.getEventForSuperadminFromDb();
+			if(eventForSuperadminFromDb != null && eventForSuperadminFromDb.size() !=0){
+				model.addAttribute("eventForSuperadminFromDb", eventForSuperadminFromDb);
+			}
+			eventCountForSuperadminFromDb = loginService.getEventCountForSuperadminFromDb();
+			if(eventCountForSuperadminFromDb != null && eventCountForSuperadminFromDb.size() !=0){
+				model.addAttribute("eventCountForSuperadminFromDb", eventCountForSuperadminFromDb);
+			}
+			listAssignedExam = loginService.getListAssignedExamFromDb();			
+			if(listAssignedExam != null && listAssignedExam.size() !=0){
+				model.addAttribute("listAssignedExam", listAssignedExam);
+			}			
+			listAssignedExamCount = loginService.getListAssignedExamCountFromDb();			
+			if(listAssignedExamCount != null && listAssignedExamCount.size() !=0){
+				model.addAttribute("listAssignedExamCount", listAssignedExamCount);
+			}
+
+			AcademicYear currentYear = commonService.getCurrentAcademicYear();
+			if (currentYear != null) {
+					String strYearArr[] = currentYear.getAcademicYearName().split("-");
+					List<AcademicYear> ayList = new ArrayList<AcademicYear>();
+					for (int i = 0; i < strYearArr.length; i++) {
+						AcademicYear ay = new AcademicYear();
+						ay.setAcademicYearName(strYearArr[i]);
+						ayList.add(ay);
+					}
+					model.addAttribute("year", currentYear);
+				}
+		}
+		catch(Exception e){
+			logger.error(e);
+		}
+		return model;
+	}
+	
+	/**
+	 * 
+	 * @param request
+	 * @param response
+	 * @param model
+	 * @return
+	 */
+	@RequestMapping(value = "/logOut", method = RequestMethod.GET)
+	public String logOut(HttpServletRequest request,HttpServletResponse response,
+						 ModelMap model,LoginForm loginForm,SessionStatus sessionStatus,
+						 @ModelAttribute("sessionObject") SessionObject sessionObject,HttpSession session) {
+		if(model.containsAttribute("sessionObject")){			
+			//ChatController chatController = new ChatController();
+			//chatController.removeUser(sessionObject.getUserName());
+			loginForm.setUserId(sessionObject.getUserId());
+			loginService.updateLoginDetails(loginForm);
+			if(model.containsAttribute("sessionObject")) model.remove("sessionObject");
+			sessionStatus.setComplete();
+			session.invalidate();
+			if(loginForm.getMessage()==null){
+				loginForm.setMessage("You have been logged out");
+			}
+		}
+		return serveLoginPage(request,response, model,loginForm,null);
+	}
+	
+
+/*
+ *     Switches roleType on change of Drop Down in links.jsp
+ * 
+ */
+
+	@RequestMapping(value = "/changeRoleForUser", method = RequestMethod.POST)
+	public String changeRoleForUser(HttpServletRequest request, HttpServletResponse response,
+												ModelMap model,
+												Role role,
+												@ModelAttribute("sessionObject") SessionObject sessionObject
+											   ) {
+		String strView=null;
+		List<Role> eventFromDb = null;
+		Set<String> roles = new HashSet<String>();
+		List<Notification>notificationList = null;
+		try{	
+			Resource resource = loginService.getAccessTypeAndRoleList(sessionObject.getUserId());
+			if(model.containsAttribute("sessionObject")){
+				if(resource != null ){
+					if(null != resource.getImage()){
+		        		Image i = new Image();
+		        		i.setImagepath(fileUploadDownload.getBase64Image(resource.getImage().getImagepath()));
+		        		resource.setImage(i);
+			        }
+					model.addAttribute("resource",resource);
+				}				
+			}			
+			if(resource != null ){		
+				if((resource.getRoleList() != null && resource.getRoleList().size() != 0 )|| (resource.getAccessTypeList()!=null && resource.getAccessTypeList().size()!=0 )){
+					/* Extracts Access Type List From  Resource Bean*/
+					List<AccessType> accessTypeList = resource.getAccessTypeList();
+					/* Extracts Role List From  Resource Bean*/
+					List <Role> roleList = resource.getRoleList();	
+					
+					Map<String, String> availableRolesAndAccess =new ConcurrentHashMap<>();
+					availableRolesAndAccess =sessionObject.getAvailableRolesAndAccess();					
+					
+					if(null != availableRolesAndAccess){
+						List<Role> tempRoleList=new ArrayList<Role>();
+						//System.out.println("role.getRoleName()"+role.getRoleName());
+						String value = availableRolesAndAccess.get(role.getRoleName());
+						//System.out.println("VALUES.................."+value);
+							if(value=="AccessType"){
+								AccessType accessType = new AccessType();								
+								accessType.setAccessTypeName(role.getRoleName());		
+								resource.setUserId(sessionObject.getUserId());
+								resource.setAccessType(accessType);
+								AccessType accesstypeFromDB = new AccessType();
+								accesstypeFromDB=loginService.getAccessTypeDetails(resource);
+								if(accesstypeFromDB!=null && accesstypeFromDB.getRoleList()!=null && accesstypeFromDB.getRoleList().size()!=0){
+									sessionObject.setCurrentRoleOrAccess(accesstypeFromDB.getAccessTypeName());
+									model.addAttribute("roleList",accesstypeFromDB.getRoleList());
+									tempRoleList=accesstypeFromDB.getRoleList();
+								}
+							}else if(value=="Role"){								
+								Role roleFromDB = loginService.getRoleDetails(role);
+								if(roleFromDB!=null && roleFromDB.getFunctionalityList()!=null && roleFromDB.getFunctionalityList().size()!=0){							
+									sessionObject.setCurrentRoleOrAccess(roleFromDB.getRoleName());							
+									List<Role> roleListForNavigation= new ArrayList<Role>();
+									roleListForNavigation.add(roleFromDB);
+									model.addAttribute("roleList", roleListForNavigation);
+									tempRoleList=roleListForNavigation;
+								}
+							}
+							else{
+								LoginForm login = new LoginForm();
+								login.setMessage("No Roles Found For User Id "+sessionObject.getUserId());
+								strView = serveLoginPage(request,response, model,login,null);
+							}
+							List<Functionality> functionalityList= new ArrayList<Functionality>();
+							String getCurrentRoleOrAccess = sessionObject.getCurrentRoleOrAccess();
+							//System.out.println("getCurrentRoleOrAccess:"+getCurrentRoleOrAccess);
+							if(sessionObject!= null && sessionObject.getUserId()!=null){
+								if(getCurrentRoleOrAccess!=null && availableRolesAndAccess!=null){
+									for(Role r:tempRoleList){
+										if(value!=null && value.equalsIgnoreCase("AccessType")){
+											AccessType accessType =new AccessType();
+											accessType.setAccessTypeName(getCurrentRoleOrAccess);
+											accessType.setModuleName(r.getModuleName());
+											functionalityList=loginService.getFunctionalityListForAccessType(accessType);
+										}else{
+											Role role1=new Role();
+											role1.setModuleName(r.getModuleName());
+											System.out.println("=========================================MODULA NAME:"+r.getModuleName()+"=========");
+											
+											role1.setRoleName(getCurrentRoleOrAccess);
+											functionalityList=loginService.getFunctionalityListForRole(role1);
+										}
+										System.out.println("sdsds"+r.getRoleName());
+										MODULE_NAME_TO_DISPLAY_ITS_CHARTS = r.getModuleName();
+										ROLE_NAME_TO_DISPLAY_ITS_CHARTS = r.getRoleName();
+										model.addAttribute(r.getModuleName().replace(" ", "")+"functionalityList",functionalityList);
+									}
+								}
+							}
+							LoginForm login = new LoginForm();
+							login.setUserId(sessionObject.getUserId());
+							notificationList = getListForNotification(request,response,login,model);
+							System.out.println("notificationList size ================"+notificationList.size());
+							int taskCount = notificationList.size();
+							model.addAttribute("taskCount",taskCount);
+							strView="common/navigation";
+						
+									
+					}else{
+						LoginForm login = new LoginForm();
+						login.setMessage("Session Expired..Please Login Again");
+						strView = serveLoginPage(request,response, model,login,null);
+						}	
+					
+					if(accessTypeList!=null && accessTypeList.size()!=0){							
+						for(AccessType accessType : accessTypeList){
+							roles.add(accessType.getAccessTypeName());
+							for(Role r : accessType.getRoleList()){
+								//System.out.println(""+r.getRoleName());
+								roles.add(r.getRoleName());
+							}
+						}
+					}
+					if(roleList!=null && roleList.size()!=0){							
+						for(Role r : roleList){
+							roles.add(r.getRoleName());
+						}
+					}
+					if(roles.contains(role.getRoleName())){
+						 roles.remove(role.getRoleName()); 
+					 }
+					 sessionObject.setAvailableRoles(roles);
+			}
+		}else{
+			LoginForm login = new LoginForm();
+			login.setMessage("Session Expired..Please Login Again");
+			strView = serveLoginPage(request,response, model,login,null);
+		}
+			
+	}catch(Exception e){		
+		logger.error("Error in changeRoleForUser method of Login Controller", e);
+	}		
+		return (strView);
+	}
+	
+	
+	
+	@RequestMapping(value = "/getModuleDetails", method = RequestMethod.GET)
+	public ModelAndView getModuleDetails(HttpServletRequest request,
+		HttpServletResponse response, ModelMap model,@RequestParam("moduleName") String moduleName,
+		@ModelAttribute("sessionObject") SessionObject sessionObject) {
+		String strView=null;
+		List<Functionality> functionalityList= new ArrayList<Functionality>();
+		if(sessionObject!= null){
+		String getCurrentRoleOrAccess = sessionObject.getCurrentRoleOrAccess();
+		try{		
+		Map<String, String> availableRolesAndAccess =sessionObject.getAvailableRolesAndAccess();
+		if(getCurrentRoleOrAccess!=null && moduleName!=null && availableRolesAndAccess!=null){
+			String value = availableRolesAndAccess.get(getCurrentRoleOrAccess);		
+			if(value!=null && value.equalsIgnoreCase("AccessType")){
+				AccessType accessType =new AccessType();
+				accessType.setAccessTypeName(getCurrentRoleOrAccess);
+				accessType.setModuleName(moduleName);
+				functionalityList=loginService.getFunctionalityListForAccessType(accessType);				
+			}	
+			else{
+				Role role=new Role();
+				role.setModuleName(moduleName);
+				role.setRoleName(getCurrentRoleOrAccess);
+				functionalityList=loginService.getFunctionalityListForRole(role);
+			}	
+		}if(sessionObject.getUserId()!=null){
+			Resource resource = loginService.getAccessTypeAndRoleList(sessionObject.getUserId());
+			if(resource!=null){
+				
+				if(null != resource.getImage()){
+	        		Image i = new Image();
+	        		i.setImagepath(fileUploadDownload.getBase64Image(resource.getImage().getImagepath()));
+	        		resource.setImage(i);
+		        }			
+				
+				model.addAttribute("resource",resource);
+				
+				sessionObject.setAvailableRolesAndAccess(availableRolesAndAccess);
+				sessionObject.setCurrentRoleOrAccess(getCurrentRoleOrAccess);
+				if(functionalityList!=null && functionalityList.size()!=0){
+					Role role = new Role();
+					role.setFunctionalityList(functionalityList);
+					model.addAttribute("role",role);
+					strView="common/navigation";					
+				}
+				else{
+					LoginForm login = new LoginForm();
+					login.setMessage("Access Denied To The Module");
+					strView = serveLoginPage(request,response, model,login,null);;
+			}
+				}
+			else{
+				LoginForm login = new LoginForm();
+				login.setMessage("Access Denied To The Module");
+				strView = serveLoginPage(request,response, model,login,null);
+			}
+		}else{
+			LoginForm login = new LoginForm();
+			login.setMessage("Session Expired...");
+			strView = serveLoginPage(request,response, model,login,null);
+		}
+	}
+		catch(Exception e){
+			logger.error("",e);
+		}
+	}
+		else{
+			LoginForm login = new LoginForm();
+			login.setMessage("Session Expired...");
+			strView = serveLoginPage(request,response, model,login,null);
+		}
+		return new ModelAndView(strView);
+	}
+
+	
+	@RequestMapping(value = "/notificationPage", method = RequestMethod.GET)
+	public String notificationPage(HttpServletRequest request,
+										 HttpServletResponse response,
+										 ModelMap model,
+										 SessionStatus sessionStatus,
+										 @ModelAttribute("sessionObject") SessionObject sessionObject,
+										 HttpSession session) {
+		
+		if((sessionObject != null)){			
+			Role role =new Role();
+			role.setRoleName(sessionObject.getCurrentRoleOrAccess());			
+			model.addAttribute("requestFromNotificationPage", "requestFromNotificationPage");
+			return changeRoleForUser(request, response, model,role,sessionObject) ;
+		}		
+		else{
+			LoginForm login = new LoginForm();
+			login.setMessage("Your Session Has Expired. Please Login Again");
+			return logOut(request, response, model, login,sessionStatus,sessionObject,session);
+		}
+		
+	}
+		
+	
+	@RequestMapping(value = "/studentNavigationPage", method = RequestMethod.GET)
+	public String studentNavigationPage(HttpServletRequest request,
+										 HttpServletResponse response,
+										 ModelMap model,
+										 @ModelAttribute("sessionObject") SessionObject sessionObject) {		
+		String strView=null;
+		try{		
+			if(sessionObject != null){
+				Resource resource = loginService.getAccessTypeAndRoleList(sessionObject.getUserId());			
+				if(resource!=null){
+					commonService.insertEmailDetails(emailReceiver.readEmail(sessionObject.getUserId(), sessionObject.getUserId(),servletContext),sessionObject.getUserId());
+					model.addAttribute("resource",resource);
+					Notification notification = loginService.getNewNotifications(sessionObject.getUserId());
+					if( notification != null){						
+						model.addAttribute("notification", notification);
+					}
+					List<Notification> notificationList = commonService.getNotificationDescriptionList(sessionObject.getUserId().trim());			
+					if(null!=notificationList && notificationList.size()!=0){
+						model.addAttribute("notificationList", notificationList);
+					}
+					Notification emailNotification = commonService.getEmailDetails(sessionObject.getUserId());
+					if(null!=emailNotification){
+						if(null!=emailNotification.getEmailDetailsList() && emailNotification.getEmailDetailsList().size()!=0){
+							model.addAttribute("emailDetailsList", emailNotification.getEmailDetailsList());
+						}
+					}
+					strView="studentAccessablePages/studentNavigation";
+				}
+				else{
+					LoginForm login = new LoginForm();
+					login.setMessage("User Details Not Found");
+					strView = serveLoginPage(request,response, model,login,null);
+				}
+			}
+			else{
+				LoginForm login = new LoginForm();
+				login.setMessage("Session Expired...");
+				strView = serveLoginPage(request,response, model,login,null);
+			}
+		}
+		catch(Exception e){
+			logger.error("",e);
+		}		
+		return strView;
+	}
+	
+	@RequestMapping(value = "/studentNotificationPage", method = RequestMethod.GET)
+	public String studentNotificationPage(HttpServletRequest request,
+										 HttpServletResponse response,
+										 ModelMap model,
+										 @ModelAttribute("sessionObject") SessionObject sessionObject,
+										 SessionStatus sessionStatus,HttpSession  session) {		
+		LoginForm loginForm=new LoginForm();
+		List<Role> eventFromDb = null;
+		List<CalendarEvent> eventForAllUserFromDb = null;
+		List<CalendarEvent> eventCountForAllUserFromDb = null;
+		List<CalendarEvent> eventForSuperadminFromDb = null;
+		List<CalendarEvent> eventCountForSuperadminFromDb = null;
+		List<Exam> listAssignedExam = null;
+		List<Exam> listAssignedExamCount = null;
+
+		CalendarEvent calendarEvent = new CalendarEvent();	
+		try {
+			if((sessionObject.getUserId()!=null && sessionObject.getUserId().trim().length()!=0)){
+				loginForm.setUserId(sessionObject.getUserId());
+				commonService.insertEmailDetails(emailReceiver.readEmail(sessionObject.getUserId(), sessionObject.getUserId(),servletContext),sessionObject.getUserId());
+				Notification notification = loginService.getNewNotifications(sessionObject.getUserId());
+				if( notification != null){				
+					model.addAttribute("notification", notification);
+				}
+				List<Notification> notificationList;
+				
+					notificationList = commonService.getNotificationDescriptionList(sessionObject.getUserId().trim());
+							
+				if(null!=notificationList && notificationList.size()!=0){
+					model.addAttribute("notificationList", notificationList);
+				}
+				Notification emailNotification = commonService.getEmailDetails(sessionObject.getUserId());
+				if(null!=emailNotification){
+					if(null!=emailNotification.getEmailDetailsList() && emailNotification.getEmailDetailsList().size()!=0){
+						model.addAttribute("emailDetailsList", emailNotification.getEmailDetailsList());
+					}
+				}
+				Resource resource = loginService.getAccessTypeAndRoleList(sessionObject.getUserId());					
+				if(resource!=null ){
+			        if(!model.containsAttribute("userId")){
+			        	model.addAttribute("userId",sessionObject.getUserId());
+			        }					
+			        calendarEvent.setUpdatedBy(sessionObject.getUserId());
+					calendarEvent.setCalendarEventBy(sessionObject.getCurrentRoleOrAccess());
+					eventFromDb = loginService.getEventUserBased(calendarEvent);						
+					if(eventFromDb != null && eventFromDb.size() !=0){
+						model.addAttribute("eventFromDb", eventFromDb);
+					}
+					eventForAllUserFromDb = loginService.getEventForAllUserFromDb();
+					if(eventForAllUserFromDb != null && eventForAllUserFromDb.size() !=0){
+						model.addAttribute("eventForAllUserFromDb", eventForAllUserFromDb);
+					}
+					eventCountForAllUserFromDb = loginService.getEventCountForAllUserFromDb();
+					if(eventCountForAllUserFromDb != null && eventCountForAllUserFromDb.size() !=0){
+						model.addAttribute("eventCountForAllUserFromDb", eventCountForAllUserFromDb);
+					}
+					
+					eventForSuperadminFromDb = loginService.getEventForSuperadminFromDb();
+					if(eventForSuperadminFromDb != null && eventForSuperadminFromDb.size() !=0){
+						model.addAttribute("eventForSuperadminFromDb", eventForSuperadminFromDb);
+					}
+					eventCountForSuperadminFromDb = loginService.getEventCountForSuperadminFromDb();
+					if(eventCountForSuperadminFromDb != null && eventCountForSuperadminFromDb.size() !=0){
+						model.addAttribute("eventCountForSuperadminFromDb", eventCountForSuperadminFromDb);
+					}
+					listAssignedExam = loginService.getListAssignedExamFromDb();			
+					if(listAssignedExam != null && listAssignedExam.size() !=0){
+						model.addAttribute("listAssignedExam", listAssignedExam);
+					}			
+					listAssignedExamCount = loginService.getListAssignedExamCountFromDb();			
+					if(listAssignedExamCount != null && listAssignedExamCount.size() !=0){
+						model.addAttribute("listAssignedExamCount", listAssignedExamCount);
+					}
+					AcademicYear currentYear = commonService.getCurrentAcademicYear();
+					if (currentYear != null) {
+							String strYearArr[] = currentYear.getAcademicYearName().split("-");
+							List<AcademicYear> ayList = new ArrayList<AcademicYear>();
+							for (int i = 0; i < strYearArr.length; i++) {
+								AcademicYear ay = new AcademicYear();
+								ay.setAcademicYearName(strYearArr[i]);
+								ayList.add(ay);
+							}
+							model.addAttribute("year", currentYear);
+						}
+					model.addAttribute("resource",resource);
+				}
+				return "studentAccessablePages/studentNotificationPage";
+			}
+			else{
+					loginForm.setMessage("Your Session Has Expired. Please Login Again");
+					return logOut(request, response, model, loginForm,sessionStatus,sessionObject,session);
+			}
+		} catch (CustomException e) {
+			logger.error("",e);
+		}
+		catch (Exception e) {
+			logger.error("",e);
+		}return null;	
+	}
+	
+	
+	@RequestMapping(value = "/userServices", method = RequestMethod.GET)
+	public String userServices(HttpServletRequest request,
+										 HttpServletResponse response,
+										 ModelMap model,
+										 @ModelAttribute("sessionObject") SessionObject sessionObject) {		
+		String strView=null;
+		try{		
+			if(sessionObject!=null){
+				Resource resource = loginService.getAccessTypeAndRoleList(sessionObject.getUserId());			
+				if(resource!=null){
+					
+					if(null != resource.getImage()){
+		        		Image i = new Image();
+		        		i.setImagepath(fileUploadDownload.getBase64Image(resource.getImage().getImagepath()));
+		        		resource.setImage(i);
+			        }
+					
+					
+					model.addAttribute("resource",resource);
+					commonService.insertEmailDetails(emailReceiver.readEmail(sessionObject.getUserId(), sessionObject.getUserId(),servletContext),sessionObject.getUserId());
+					Notification notification = loginService.getNewNotifications(sessionObject.getUserId());
+					if( notification != null){						
+						model.addAttribute("notification", notification);
+					}
+					List<Notification> notificationList = commonService.getNotificationDescriptionList(sessionObject.getUserId().trim());			
+					if(null!=notificationList && notificationList.size()!=0){
+						model.addAttribute("notificationList", notificationList);
+					}
+					Notification emailNotification = commonService.getEmailDetails(sessionObject.getUserId());
+					if(null!=emailNotification){
+						if(null!=emailNotification.getEmailDetailsList() && emailNotification.getEmailDetailsList().size()!=0){
+							model.addAttribute("emailDetailsList", emailNotification.getEmailDetailsList());
+						}
+					}
+					strView="common/myServices";
+				}
+				else{
+					LoginForm login = new LoginForm();
+					login.setMessage("User Details Not Found");
+					strView = serveLoginPage(request,response, model,login,null);
+				}
+			}
+			else{
+				LoginForm login = new LoginForm();
+				login.setMessage("Session Expired...");
+				strView = serveLoginPage(request,response, model,login,null);
+			}
+		}
+		catch(Exception e){
+			logger.error("",e);
+		}		
+		return strView;
+	}
+	
+	
+	
+		
+	
+	public String getClientIpAddr(HttpServletRequest request) {  
+	    String ip = request.getHeader("X-Forwarded-For");  
+	    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	        ip = request.getHeader("Proxy-Client-IP");  
+	    }  
+	    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	        ip = request.getHeader("WL-Proxy-Client-IP");  
+	    }  
+	    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	        ip = request.getHeader("HTTP_X_FORWARDED_FOR");  
+	    }  
+	    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	        ip = request.getHeader("HTTP_X_FORWARDED");  
+	    }  
+	    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	        ip = request.getHeader("HTTP_X_CLUSTER_CLIENT_IP");  
+	    }  
+	    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	        ip = request.getHeader("HTTP_CLIENT_IP");  
+	    }  
+	    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	        ip = request.getHeader("HTTP_FORWARDED_FOR");  
+	    }  
+	    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	        ip = request.getHeader("HTTP_FORWARDED");  
+	    }  
+	    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	        ip = request.getHeader("HTTP_VIA");  
+	    }  
+	    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	        ip = request.getHeader("REMOTE_ADDR");  
+	    }  
+	    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+	        ip = request.getRemoteAddr();  
+	    }  
+	    return ip;  
+	}   
+	
+	
+	/**
+	 * this method is used to change password 
+	 * 
+	 * @param request
+	 * @param response
+	 * @param model
+	 * @param userId
+	 * @param login
+	 * @return String
+	 */
+	@RequestMapping(value = "/updatePassword", method = RequestMethod.POST)
+	public String updatePasswordByUser(HttpServletRequest request,HttpServletResponse response,
+									   ModelMap model,@ModelAttribute("sessionObject") SessionObject sessionObject,LoginForm login,
+									   SessionStatus sessionStatus){
+		String passwordStatus="fail";
+		try{
+			if(login.getNewPassword().equals(login.getReTypeNewPassword())){
+				if(sessionObject!=null && sessionObject.getUserId() != null){
+					login.setUserId(sessionObject.getUserId());
+					if(loginService.authenticate(login)){
+						login.setStatus("ByUser");
+						login.setUpdatedBy(sessionObject.getUserId());
+						passwordStatus = loginService.updatePassword(login);
+						loginService.updateLoginDetails(login);
+					}
+				}
+			}
+		}catch(Exception e){
+			logger.error("",e);
+		}
+		if("success".equals(passwordStatus)){
+			login.setMessage("Password changed successfully");
+			return serveLoginPage(request,response, model,login,null);
+		}else if(login.getStatus().equals("changeUserPassword")){
+			login.setUserId(sessionObject.getUserId());
+			model.addAttribute("PasswordChangeFailStatus", "updateFail");
+			return home(request,response,login,model);
+		}else{
+			model.addAttribute("message", passwordStatus);
+			return "common/changePassword";
+		}
+	}
+	
+	
+	/**
+	 * @author naimisha.ghosh
+	 * */
+	
+	public List<Notification> getListForNotification(HttpServletRequest request,HttpServletResponse response, LoginForm login,ModelMap model) {
+		List<Notification> listOfNotification = null;
+		try{			
+			String user_id = login.getUserId();
+			listOfNotification = loginService.getNotificationList(user_id);
+		}
+		catch(Exception e){
+			logger.error("",e);
+		}
+	return  listOfNotification;
+	}
+	
+	
+	
+
+	@RequestMapping(value = "/updateTaskNotification", method = RequestMethod.GET)
+	public @ResponseBody
+	String updateTaskNotification(ModelMap model,
+			@ModelAttribute("sessionObject") SessionObject sessionObject) {
+		List<Notification> listOfNotification = null;
+		List<Notification> listOfNotificationForTask = null;
+		int status = 0;
+		int taskCount =0;
+		String msgForNotification = null;
+		StringBuffer json = new StringBuffer();
+		try{	
+			
+			String user_id = sessionObject.getUserId();
+			listOfNotification = loginService.getNotificationList(user_id);
+			
+			if(listOfNotification != null){
+				//for(Notification notification : listOfNotification){
+				status = loginService.updateTaskNotification(listOfNotification);
+					
+				//}
+			}
+			listOfNotificationForTask = loginService.getNotificationListForTask(user_id);
+			
+			/*if(listOfNotificationForTask != null){
+				
+				status = loginService.updateTaskDetailsForNotification(listOfNotificationForTask);
+			}*/
+			for(Notification notofication : listOfNotificationForTask){
+				msgForNotification = msgForNotification +";"+ notofication.getNotificationDesc();
+			}
+			if(status  == 1){
+				taskCount = 0;
+				json.append(taskCount);
+			}
+		}
+		catch(Exception e){
+			logger.error("within updateTaskNotification()",e);
+		}
+		//return (new Gson().toJson(json.toString()));
+		return (new Gson().toJson(msgForNotification));
+	}
+	
+	
+	public List<Notification> getTaskNotificationList(HttpServletRequest request,HttpServletResponse response, LoginForm login,ModelMap model) {
+		List<Notification> listOfNotification = null;
+		try{			
+			String user_id = login.getUserId();
+			listOfNotification = loginService.getNotificationListForTask(user_id);
+		}
+		catch(Exception e){
+			logger.error("Within getTaskNotificationList()",e);
+		}
+	return  listOfNotification;
+	}
+}

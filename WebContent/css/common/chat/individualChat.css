@@ -1,0 +1,116 @@
+@charset "utf-8";
+
+.form-signin {
+	max-width: 500px;
+	padding: 19px 29px 29px;
+	margin: 0 auto 20px;
+	background-color: #fff;
+	border: 1px solid #e5e5e5;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	-webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+	-moz-box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+}
+
+.form-signin .form-signin-heading,.form-signin .checkbox {
+	margin-bottom: 10px;
+}
+
+.form-signin input[type="text"],.form-signin input[type="password"] {
+	font-size: 16px;
+	height: auto;
+	margin-bottom: 15px;
+	padding: 7px 9px;
+}
+
+#chatroom {
+	font-size: 16px;
+	height: 40px;
+	line-height: 40px;
+	width: 300px;
+}
+#chat-wrapper{
+	overflow: auto;
+}
+.received {	
+	color: white;
+    font-size: 14px;
+    width: 160px;
+}
+
+#mask{
+    z-index: 500;
+    position: fixed;
+    display: none; /* removes the element completely from the document, it doesn't take up any space. */
+    /* visibility: hidden; -- hides the element, but it still takes up space in the layout. */
+    background: transparent;
+    background-color: #ccc;
+    height: 100%;
+    width: 100%;
+    top: 0px;
+    left: 0px;
+
+}
+
+#pop {
+   z-index:502;
+   position:absolute;
+   border: 1px solid #333333;
+   text-align:center;
+   background:#ffffff;
+}
+
+#close {
+   float:right;
+   margin-right:5px;
+   cursor:pointer;
+   font: bahamas,Verdana, Arial, Helvetica, sans-serif;
+   font-size:12px;
+   font-weight:bold;
+   color:#FFFFFF;
+   background-color:#666666;
+   width:12px;
+   position:relative;
+   margin-top:-1px;
+   text-align:center;
+}
+
+.chat{
+  font-family: bahamas,Helvetica, Arial, sans-serif;
+  position:relative;
+  margin:0 auto;
+  width:500px;
+  color:#777;
+  border-radius:10px;
+  border:1px solid #aaa;
+  overflow: auto;  
+  background-color: black;
+}
+.chat .message{
+  	background: none repeat scroll 0 0 black;
+    color: white;
+    font-size: 26px;
+    height: 100%;
+    overflow: hidden;
+    width: 100%;
+}
+
+.chat .messages:hover{
+  overflow-y:scroll;
+}
+.chat .messages > div{
+  padding:15px;
+  border-bottom:1px dashed #999;
+}
+.controls > textarea{
+  font-family: bahamas,Helvetica, Arial, sans-serif;
+  resize: vertical;
+  font-size:15px;
+  width:270px;
+  height:100px;
+  border:0;
+  padding:10px 15px;
+  background:#ddd;
+}

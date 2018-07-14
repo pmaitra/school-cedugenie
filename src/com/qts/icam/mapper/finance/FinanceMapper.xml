@@ -1,0 +1,3226 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.mapper.finance.FinanceMapper">
+
+	<select id="getGroupTypeList" resultType="com.qts.icam.model.finance.Group">
+		SELECT
+			gt.group_type_code as groupTypeCode,
+			gt.group_type_name as groupTypeName
+		FROM
+			group_type gt
+		
+		 WHERE
+			gt.is_active=true;
+	</select>
+	
+	<select id="getGroupList" resultType="com.qts.icam.model.finance.Group">
+		SELECT
+			gfl.group_code as groupCode,
+			gfl.group_name as groupName,
+			g1.group_code as parentGroupCode,
+			g1.group_name as parentGroupName,
+			gt.group_type_code as groupTypeCode,
+			gt.group_type_name as groupTypeName
+		FROM
+			group_for_ledger gfl
+		
+		LEFT JOIN group_for_ledger g1 ON( gfl.parent_group = g1.rec_id)
+		LEFT JOIN group_type gt ON(gfl.group_type = gt.rec_id)
+		WHERE
+			gfl.is_active=true;
+	</select>
+	
+	
+	<select id="getParentGroupList" resultType="com.qts.icam.model.finance.Group">
+		
+		SELECT 	
+			group_name as parentGroupName
+		FROM 
+			group_for_ledger
+		where
+			parent_group IS NULL
+		AND 	
+			is_active=true;
+	</select>
+	
+		<select id="getChildGroupList" resultType="com.qts.icam.model.finance.Group" parameterType="java.lang.String">
+		SELECT
+			group_name as childName,
+			group_code as childCode
+		FROM
+			group_for_ledger
+		WHERE
+			parent_group=(SELECT rec_id from group_for_ledger where group_code=#{groupCode} and is_active=true)
+		AND 
+			is_active=true;
+	</select>
+	
+	
+
+	
+	<insert id="createGroup" parameterType="com.qts.icam.model.finance.Group">
+			INSERT INTO group_for_ledger(
+				rec_id,
+				obj_id, 
+				updated_by,
+				updated_on,
+			    date_of_creation, 
+				is_active,
+				group_code,
+				group_name, 
+				parent_group, 
+				group_type)
+			VALUES (
+				(uuid_generate_v4()), 
+				#{objectId},
+				(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())),
+			    true,
+				upper(#{groupCode}),
+				upper(#{groupName}),
+				(SELECT rec_id FROM group_for_ledger WHERE group_code =#{parentGroupCode} AND is_active =true),
+				(SELECT rec_id FROM group_type WHERE group_type_code =#{groupTypeCode} AND is_active =true));
+	</insert>
+	
+	<!-- naimisha.ghosh 24062017 -->
+	<!-- modified by sourav.bhadra on 24-04-2018 to insert ledger type -->
+	<insert id="createLedger" parameterType="com.qts.icam.model.common.Ledger">
+		INSERT INTO ledger(
+				rec_id,
+				obj_id, 
+				updated_by,
+				updated_on,
+				date_of_creation, 
+				is_active,
+				ledger_code,
+				ledger_name,
+				parent_ledger,
+				parent_group,
+				subgroup,
+				ledger_type
+		)VALUES(
+				(uuid_generate_v4()), 
+			    #{objectId},
+				(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())),
+				true,
+				upper(#{ledgerCode}),
+				upper(#{ledgerName}),
+				(SELECT rec_id FROM ledger WHERE ledger_code =#{parentLedgerCode} AND is_active =true),
+				(SELECT rec_id FROM group_for_ledger WHERE group_code =#{parentGroupCode} AND is_active =true),
+				(SELECT rec_id FROM group_for_ledger WHERE group_code=#{subGroupName} AND is_active=true),
+				#{parentLedgerName}
+			);
+			
+	INSERT INTO ledger_balance(
+				rec_id, 
+				obj_id, 
+				updated_by, 
+				updated_on,
+			    date_of_creation, 
+				is_active,
+			    ledger, 
+			    month, 
+			    year, 
+			    opening_balance, 
+			    current_balance, 
+			    is_current)
+	VALUES (
+				(select uuid_generate_v4()), 
+			    #{objectId},
+				(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+				(SELECT extract(epoch FROM now())), 
+				(SELECT extract(epoch FROM now())), 
+				true,
+				(SELECT rec_id FROM ledger WHERE ledger_code ilike #{ledgerCode} AND is_active =true),
+				(SELECT EXTRACT(MONTH FROM (SELECT now()))), 
+				(SELECT EXTRACT(YEAR FROM (SELECT now()))),
+				#{openingBal}, 
+				#{openingBal}, 
+				true
+			);
+	</insert>
+	
+	<!-- /*Naimisha 01062017*/ -->
+	<select id="getLedgerList" resultType="com.qts.icam.model.common.Ledger">
+	<!-- modified by sourav.bhadra on 11-08-2017 -->
+		SELECT
+			l.ledger_code as ledgerCode,
+			l.ledger_name as ledgerName,
+			g3.group_name as parentLedgerCode,		<!-- added by sourav.bhadra on 22-08-2017 -->
+			l1.ledger_name as parentLedgerName,
+			g.group_code as parentGroupCode,
+			g.group_name as parentGroupName,
+			g2.group_name as subGroupDesc 
+		FROM
+			ledger l
+		<!-- modified by sourav.bhadra on 11-08-2017 -->
+		LEFT JOIN ledger l1 ON(l.parent_ledger = l1.rec_id AND l1.is_active = true)
+		LEFT JOIN group_for_ledger g ON(l.parent_group = g.rec_id AND g.is_active = true)
+		LEFT JOIN group_for_ledger g2 ON(l.subgroup = g2.rec_id AND g2.is_active = true)
+		<!-- added by sourav.bhadra on 22-08-2017 -->
+		LEFT JOIN group_for_ledger g3 ON(g.parent_group = g3.rec_id AND g3.is_active = true)
+		WHERE
+			l.is_active=true;
+
+	</select>
+	
+	<!-- sourav.bhadra 27062017 -->
+	<!-- modified by sourav.bhadra on 24-04-2018 to insert ticket no -->
+	<insert id="createTransaction" parameterType="com.qts.icam.model.finance.Transaction">
+		<selectKey keyProperty="voucherTypeName"  resultType="String" order="BEFORE">
+			(select('VOW-' ||(select COALESCE((SELECT MAX(transaction_id) FROM transaction), 0 )+1)));
+		</selectKey>
+		<!-- added by sourav.bhadra on 23-08-2017 to 
+			insert in transaction when payment mode is null -->
+		<if test="paymentMode == null || paymentMode == ''">
+			INSERT INTO transaction(
+				rec_id, 
+				obj_id, 
+				updated_by, 
+				updated_on, 
+				date_of_creation, 
+				is_active, 
+				date, 
+				voucher_type,
+				voucher_number, 
+				narration,
+				ticket
+			)VALUES(
+				(select uuid_generate_v4()), 
+				 #{objectId},
+				(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())), 
+				true,
+				(SELECT extract(epoch from (SELECT to_timestamp(#{transactionDate},'DD-MM-YYYY')))),
+				(SELECT rec_id FROM voucher_type WHERE voucher_type_code =#{voucherTypeCode} AND is_active = true),
+				 #{voucherTypeName}, 
+				 #{narration},
+				 (SELECT rec_id FROM ticket WHERE ticket_code ilike #{jobType} AND is_active = true)
+			);
+		</if>
+		<!-- modified by ranita.sur on 25082017 for petty cash entry -->
+		<if test="paymentMode == 'CASH' || paymentMode == 'PETTY_CASH'">
+			INSERT INTO transaction(
+				rec_id, 
+				obj_id, 
+				updated_by, 
+				updated_on, 
+				date_of_creation, 
+				is_active, 
+				date, 
+				voucher_type,
+				voucher_number, 
+				narration,
+				payment_mode,
+				ticket
+			)VALUES(
+				(select uuid_generate_v4()), 
+				 #{objectId},
+				(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())), 
+				true,
+				(SELECT extract(epoch from (SELECT to_timestamp(#{transactionDate},'DD-MM-YYYY')))),
+				(SELECT rec_id FROM voucher_type WHERE voucher_type_code =#{voucherTypeCode} AND is_active = true),
+				 #{voucherTypeName}, 
+				 #{narration},
+				 #{paymentMode},
+				 (SELECT rec_id FROM ticket WHERE ticket_code ilike #{jobType} AND is_active = true)
+			);
+		</if>
+		<if test="paymentMode == 'BANK'">
+			INSERT INTO transaction(
+				rec_id, 
+				obj_id, 
+				updated_by, 
+				updated_on, 
+				date_of_creation, 
+				is_active, 
+				date, 
+				voucher_type,
+				voucher_number, 
+				narration,
+				payment_mode,
+				bank_name,
+				cheque_number,
+				bank_account_no,
+				bank_branch_code,
+				bank_location,
+				ticket
+			)VALUES(
+				(select uuid_generate_v4()), 
+				 #{objectId},
+				(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())), 
+				true,
+				(SELECT extract(epoch from (SELECT to_timestamp(#{transactionDate},'DD-MM-YYYY')))),
+				(SELECT rec_id FROM voucher_type WHERE voucher_type_code =#{voucherTypeCode} AND is_active = true),
+				 #{voucherTypeName}, 
+				 #{narration},
+				 #{paymentMode},
+				 #{bankName},
+				 #{chequeNo},
+				 #{bankAccountNo}::bigint,
+				 #{bankCode},
+				 #{bankLocation},
+				 (SELECT rec_id FROM ticket WHERE ticket_code ilike #{jobType} AND is_active = true)
+			);
+		</if>
+		<if test="paymentMode == 'MONEY_TRANSFER'">
+			INSERT INTO transaction(
+				rec_id, 
+				obj_id, 
+				updated_by, 
+				updated_on, 
+				date_of_creation, 
+				is_active, 
+				date, 
+				voucher_type,
+				voucher_number, 
+				narration,
+				payment_mode,
+				bank_name,
+				bank_account_no,
+				bank_ifsc_code,
+				bank_branch_code,
+				bank_location,
+				ticket
+			)VALUES(
+				(select uuid_generate_v4()), 
+				 #{objectId},
+				(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())), 
+				true,
+				(SELECT extract(epoch from (SELECT to_timestamp(#{transactionDate},'DD-MM-YYYY')))),
+				(SELECT rec_id FROM voucher_type WHERE voucher_type_code =#{voucherTypeCode} AND is_active = true),
+				 #{voucherTypeName}, 
+				 #{narration},
+				 #{paymentMode},
+				 #{bankName},
+				 #{bankAccountNo}::bigint,
+				 #{bankIFSCCode},
+				 #{bankCode},
+				 #{bankLocation},
+				 (SELECT rec_id FROM ticket WHERE ticket_code ilike #{jobType} AND is_active = true)
+			);
+		</if>
+		<foreach collection="trDetList" item="trDt" open="" close="" separator=";">
+			INSERT INTO transaction_details(
+				 rec_id,
+				 obj_id, 
+				 updated_by, 
+				 updated_on, 
+				 date_of_creation, 
+				 is_active, 
+				 transaction, 
+				 ledger, 
+				 amount, 
+				 is_debit
+			)VALUES(
+				 (select uuid_generate_v4()),
+				 #{objectId},
+				 (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+				 (SELECT extract(epoch FROM now())), 
+				 (SELECT extract(epoch FROM now())), 
+				  true,
+				 (SELECT rec_id FROM transaction WHERE voucher_number =#{voucherTypeName} AND is_active =true),
+				 (SELECT rec_id FROM ledger WHERE ledger_code ilike #{trDt.ledger} AND is_active =true),
+				 #{trDt.amount}, 
+				 #{trDt.isDebit}
+			);			
+		</foreach>
+	</insert>
+	
+	
+
+	<update id="updateLedgerBalanceDebit" parameterType="com.qts.icam.model.finance.TransactionDetails">
+		UPDATE ledger_balance SET current_balance=(current_balance-#{amount})
+		 		WHERE ledger=(SELECT rec_id FROM ledger WHERE ledger_code =#{ledger}
+		 		AND is_active =true);	
+	</update>
+	
+	<update id="updateLedgerBalanceCredit" parameterType="com.qts.icam.model.finance.TransactionDetails">
+		UPDATE ledger_balance SET current_balance=(current_balance+#{amount})
+		 		WHERE ledger=(SELECT rec_id FROM ledger WHERE ledger_code =#{ledger}
+		 		AND is_active =true);
+	</update>
+	
+	<select id="getGroupTypeOfLedger" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			gt.group_type_name as ledgerGroupType
+		FROM
+			ledger l
+		JOIN group_for_ledger gfl ON(l.parent_group=gfl.rec_id )
+		JOIN group_type gt ON(gfl.group_type=gt.rec_id )
+		WHERE
+			l.ledger_code=#{ledger}
+			AND
+			l.is_active=true;
+	</select>
+	
+	<select id="checkForBankGroup" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT g.group_name as ledgerGroupType FROM ledger l JOIN group_for_ledger g ON(l.parent_group=g.rec_id) where l.ledger_code=#{ledger};
+	</select>
+	
+	<!-- modified by sourav.bhadra on 17-08-2017
+	  to fetch all ledgers of all LIABILITY groups -->
+	<select id="liabilityLedgerListForTB" resultType="java.lang.String">
+		SELECT 
+			l.ledger_name as ledgerList
+		FROM ledger l
+		JOIN 
+			group_for_ledger gfl ON (l.parent_group = gfl.rec_id AND gfl.is_active=true)
+		WHERE
+			l.rec_id NOT IN (SELECT parent_ledger FROM ledger WHERE is_active = true AND parent_ledger IS NOT NULL)
+		AND
+			l.is_active = true
+		AND
+			gfl.group_name IN ('SHAREHOLDERS FUNDS','CURRENT LIABILITIES','NON-CURRENT LIABILITIES','SHARE APPLICATION MONEY PENDING ALLOTMENT');
+	</select>
+	
+	<!-- modified by sourav.bhadra on 09-08-2017
+	  to fetch ledgers those are not in any INCOME EXPENCE group -->
+	<!-- <select id="ledgerListInTransactionForTB" resultType="java.lang.String">
+		SELECT
+			DISTINCT ledger_name as ledgerListInTransaction		modified by sourav.bhadra on 16-08-2017
+		FROM
+			transaction_details td
+		JOIN    
+			ledger l ON (td.ledger=l.rec_id  AND l.is_active = true)
+		JOIN 
+			group_for_ledger gfl ON (l.parent_group = gfl.rec_id AND gfl.is_active=true)
+		WHERE
+			gfl.group_name NOT IN ('INCOME','DIRECT INCOME','OTHER INCOME','EXPENSE','DIRECT EXPENSE','OTHER EXPENSE')
+		AND
+			td.is_active= true;
+	</select> -->
+	
+	<!--  modified by sourav.bhadra on 09-08-2017 -->
+	<!-- <select id="debitAmountForLedgerForTB" resultType="java.lang.Double" parameterType="java.util.Map">
+		SELECT 
+			SUM(amount) as debitAmountForLedger 
+		FROM 
+			transaction_details td
+		JOIN 
+			ledger l ON (td.ledger=l.rec_id)
+		WHERE
+			l.ledger_name=#{ledger}		modified by sourav.bhadra on 16-08-2017
+		AND			
+			td.date_of_creation &gt;= (SELECT extract(epoch from (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+		AND
+			td.date_of_creation &lt;= (SELECT extract(epoch from (SELECT to_timestamp(#{to}, 'DD/MM/YYYY'))))
+		AND
+			is_debit=true; 
+	</select> -->
+	
+	<!--  modified by sourav.bhadra on 09-08-2017 -->
+	<!-- <select id="creditAmountForLedgerForTB" resultType="java.lang.Double" parameterType="java.util.Map">
+		SELECT 
+			SUM(amount) as creditAmount 
+		FROM 
+			transaction_details td
+		JOIN 
+			ledger l ON (td.ledger=l.rec_id)
+		WHERE
+			l.ledger_name=#{ledger}		modified by sourav.bhadra on 16-08-2017
+		AND			
+			td.date_of_creation &gt;= (SELECT extract(epoch from (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+		AND
+			td.date_of_creation &lt;= (SELECT extract(epoch from (SELECT to_timestamp(#{to}, 'DD/MM/YYYY'))))
+		AND
+			is_debit=false;
+	</select> -->
+	
+	<!-- <select id="openingBalanceForLedgerForTB" resultType="java.lang.Double" parameterType="java.lang.String">
+		SELECT opening_balance as openingBalance from ledger_balance lb
+		JOIN ledger l ON (lb.ledger=l.rec_id)
+		where
+		l.ledger_name=#{s}		modified by sourav.bhadra on 16-08-2017
+		AND
+		lb.is_current=true;
+	</select> -->
+
+	<!-- query modified by sourav.bhadra on 16-08-2017
+		to get updated current balance of a ledger -->	
+	<!-- <select id="currentBalanceForLedgerForTB" resultType="java.lang.Double" parameterType="java.lang.String">
+		SELECT
+			current_balance
+		FROM
+			ledger_balance
+		WHERE
+			date_of_creation=(SELECT MAX(date_of_creation) FROM ledger_balance WHERE ledger = (SELECT rec_id FROM ledger WHERE ledger_name = #{s} AND is_active=true))
+		AND
+			ledger = (SELECT rec_id FROM ledger WHERE ledger_name = #{s} AND is_active=true)
+		AND
+			is_active=true;
+	</select> -->
+	
+	<!-- ranita.sur 29062017 -->
+	
+	<select id="getIncomeAndExpenseDebit" resultType="com.qts.icam.model.finance.IncomeAndExpense" parameterType="java.util.Map">
+		SELECT
+			l.ledger_code as ledger,
+			sum(td.amount) as amount,
+			gt.group_type_name as incomeExpense
+		FROM
+			transaction_details td
+		JOIN ledger l on (td.ledger=l.rec_id)
+		JOIN group_for_ledger g on (l.parent_group=g.rec_id)
+		JOIN group_type gt on (g.group_type=gt.rec_id)
+		where
+			gt.group_type_name in ('INCOME','EXPENSE')
+		AND			
+			td.date_of_creation &gt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+		AND
+			td.date_of_creation &lt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:MI:SS'))))
+		AND
+			td.is_debit=true
+		group by 
+			l.ledger_code,td.is_debit,gt.group_type_name,td.amount;
+	</select>
+	
+	<!-- ranita.sur 29062017 -->
+	
+	<select id="getIncomeAndExpenseCredit" resultType="com.qts.icam.model.finance.IncomeAndExpense" parameterType="java.util.Map">
+		SELECT distinct
+			l.ledger_code as ledger,
+			sum(td.amount) as amount,			   
+			gt.group_type_name as incomeExpense
+		FROM
+			transaction_details td
+		JOIN ledger l on (td.ledger=l.rec_id)
+		JOIN group_for_ledger g on (l.parent_group=g.rec_id)
+		JOIN group_type gt on (g.group_type=gt.rec_id)
+		where
+			gt.group_type_name in ('INCOME','EXPENSE')
+		AND			
+			td.date_of_creation &gt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+		AND
+			td.date_of_creation &lt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:MI:SS'))))
+		AND
+			td.is_debit=false
+		group by 
+			l.ledger_code,td.is_debit,gt.group_type_name,td.amount;
+	</select>
+	
+	<select id="getCashBookDebit" resultType="com.qts.icam.model.finance.CashBook" parameterType="java.util.Map">
+		<!-- SELECT	
+			l.ledger_name as ledger,
+			sum(td.amount) as amount,
+			g.group_name as cashBank
+		FROM
+			transaction_details td
+		LEFT JOIN ledger l ON(td.ledger=l.rec_id)
+		LEFT JOIN group_for_ledger g ON(l.parent_group=g.rec_id)
+		WHERE
+			g.group_code IN('CURRENT ASSET', 'BANK ACCOUNT')
+			AND			
+			td.date_of_creation &gt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+			AND
+			td.date_of_creation &lt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY'))))
+			AND
+			is_debit = TRUE
+		group by l.ledger_name, g.group_name; -->
+		SELECT	
+			l.ledger_name as ledger,
+			td.amount as amount,
+			(to_char((SELECT to_timestamp(td.date_of_creation)), 'DD/MM/YYYY')) as dateOfCreation
+			
+		FROM
+			transaction_details td
+		JOIN transaction t ON (td.transaction = t.rec_id AND t.is_active = true)
+		LEFT JOIN ledger l ON(td.ledger=l.rec_id AND l.is_active = true)
+		
+		WHERE
+					
+			td.date_of_creation &gt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+		AND
+			td.date_of_creation &lt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY'))))
+		AND
+			is_debit = TRUE
+		AND
+			td.is_active = true
+		AND
+			t.payment_mode = 'CASH';
+		<!-- GROUP BY
+			l.ledger_name,td.date_of_creation; -->
+	</select>
+	<!-- modified by ranita.sur on 18/08/2017 for duplicate entry in cashbook -->
+	<select id="getCashBookDetails" resultType="com.qts.icam.model.finance.TransactionalWorkingArea" parameterType="java.util.Map">
+		SELECT
+			l.ledger_code as transactionalWorkingAreaDesc,
+			td.amount as netAmount,
+			td.is_debit as debit,
+			vt.voucher_type_code as transactionalWorkingAreaCode,
+			t.voucher_number as objectId,
+			t.narration as transactionalWorkingAreaName ,
+			(SELECT to_char((SELECT to_timestamp(t.date)), 'DD/MM/YYYY')) as transactionDate ,
+			
+			td.cheque_number as chequeNo
+		FROM 
+			transaction_details td
+		JOIN 
+			transaction t ON (td.transaction = t.rec_id)
+		JOIN 
+			voucher_type vt ON (t.voucher_type = vt.rec_id)	
+		JOIN 
+			ledger l ON (td.ledger = l.rec_id)
+		WHERE
+			l.ledger_code ='CASH'
+		AND
+			t.date &gt;= (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+		AND 
+			t.date &lt;= (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:MI:SS'))))
+		AND
+			td.is_active = true	;
+		
+	</select>
+	
+	<select id="getAllBankNames" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT l.ledger_name as bankNames
+		FROM ledger l
+		JOIN group_for_ledger g ON(l.parent_group=g.rec_id)
+		WHERE g.group_name='BANK ACCOUNT';
+	</select>
+	
+	<insert id="savePassbook" parameterType="com.qts.icam.model.finance.Passbook">
+		INSERT INTO passbook(
+	            rec_id,
+	            obj_id,
+	            updated_by, 
+	            updated_on,
+	            date_of_creation, 
+	            is_active,
+	            bank,
+	            entry_date,
+	            particulars,
+	            withdraw, 
+	            instrument_number, 
+	            instrument_date,
+	            debit,
+	            balance)
+	    VALUES (
+        	(select uuid_generate_v4()),
+	         #{objectId},
+		    (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+		    (SELECT extract(epoch FROM now())), 
+		    (SELECT extract(epoch FROM now())),
+		     true,
+		    (SELECT rec_id FROM ledger WHERE ledger_name =#{bank} AND is_active = true),
+		    (SELECT extract(epoch from (SELECT to_timestamp(#{date},'DD/MM/YYYY')))),
+		     #{particulars},
+		     #{withdraw},
+		     #{instrumentNumber},
+		    (SELECT extract(epoch from (SELECT to_timestamp(#{instrumentDate},'DD/MM/YYYY')))),
+		     #{debit}, 
+		     #{balance});
+	</insert>
+	
+	
+	
+	<select id="getAllChequeNumberFromPassbook" resultType="com.qts.icam.model.finance.Brs" parameterType="java.util.Map">
+	SELECT
+			pb.instrument_number as chequeNumber,
+			pb.balance as amount,
+			pb.debit as debit,
+			(SELECT to_char((SELECT to_timestamp(pb.entry_date)), 'DD/MM/YYYY')) as entryDate,
+			(SELECT to_char((SELECT to_timestamp(pb.instrument_date)), 'DD/MM/YYYY')) as instrumentDate,
+			pb.particulars as narration,
+			pb.withdraw
+		FROM
+			passbook pb
+		JOIN ledger l ON(l.rec_id=pb.bank)
+		WHERE
+			l.ledger_code = #{bank}
+			AND			
+			pb.date_of_creation &gt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+			AND
+			pb.date_of_creation &lt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY'))))
+			AND
+			pb.instrument_number is not null;
+	</select>
+	
+	<select id="selectFeesPayable" parameterType="com.qts.icam.model.finance.StudentFeesPayment" resultType="com.qts.icam.model.finance.StudentFeesPaymentDetails">
+		SELECT   
+			fees_name as fees,
+			amount as totalAmount,
+			l.ledger_code as ledger
+		FROM
+			fees_template_details ftd
+		JOIN fees_template ft ON(ftd.fees_template=ft.rec_id)
+		JOIN fees f ON(ftd.fees=f.rec_id)
+		LEFT JOIN ledger l ON(f.ledger=l.rec_id)
+		JOIN standard s ON (s.rec_id=ft.standard)
+		JOIN social_category sc ON (sc.rec_id=ftd.social_category)
+		JOIN resource r ON (sc.rec_id=r.social_category)
+		JOIN section se ON (se.rec_id=r.section)
+		WHERE
+			standard_code=#{standard}
+			AND
+			roll_number=#{rollNumber}::integer
+			AND
+			applied=true
+			AND
+			ftd.is_active=true;
+	</select>
+	<select id="selectFeesPaid" parameterType="com.qts.icam.model.finance.StudentFeesPayment" resultType="com.qts.icam.model.finance.StudentFeesPaymentDetails">
+		SELECT
+			fees_name as fees,
+			fees_amount as totalAmount,
+			paid_amount as paidAmount,
+			balance_amount as pendingAmount,
+			l.ledger_code as ledger
+		FROM student_fees_payment_details sfpd
+		JOIN student_fees_payment sfp ON(sfpd.student_fees_payment=sfp.rec_id)
+		JOIN fees f ON(sfpd.fees=f.rec_id)
+		LEFT JOIN ledger l ON(f.ledger=l.rec_id)
+		JOIN academic_year ay ON(sfp.academic_year=ay.rec_id)
+		JOIN status_flag sf ON(ay.year_status=sf.rec_id)
+		WHERE
+			roll_number=#{rollNumber}
+			AND
+			sf.status_sym='C';
+	</select>
+	
+	<insert id="saveStudentFees" parameterType="com.qts.icam.model.finance.StudentFeesPayment">
+		<if test="status == 'NEW'">
+			INSERT INTO student_fees_payment(
+				rec_id, obj_id, updated_by, updated_on, 
+				date_of_creation, academic_year, 
+				roll_number, fees_status)
+			VALUES ((select uuid_generate_v4()), #{objectId},
+		    	(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+				(SELECT rec_id FROM academic_year WHERE year_status =(
+					SELECT rec_id FROM status_flag WHERE status_sym='C')),
+				#{rollNumber}, #{feesStatus});
+			<foreach item="studentFees" collection="studentFeesPaymentDetailsList" index="index" open="" close="" separator=";">
+				INSERT INTO student_fees_payment_details(
+					rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+					student_fees_payment, fees, fees_amount, paid_amount, balance_amount)
+				VALUES ((select uuid_generate_v4()), #{objectId},
+		    	(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+				(SELECT rec_id FROM student_fees_payment WHERE roll_number = #{rollNumber} AND academic_year=
+					(SELECT rec_id FROM academic_year WHERE year_status =(
+						SELECT rec_id FROM status_flag WHERE status_sym='C'))),
+				(SELECT rec_id FROM fees WHERE fees_code =#{studentFees.fees} AND is_active = true),
+				#{studentFees.totalAmount}, #{studentFees.paidAmount}, #{studentFees.pendingAmount})
+			</foreach>
+		</if>
+		<if test="status == 'OLD'">
+			UPDATE student_fees_payment SET
+				updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+				updated_on=(SELECT extract(epoch FROM now())),
+				fees_status=#{feesStatus}
+			WHERE
+				academic_year=(SELECT rec_id FROM academic_year WHERE year_status =(
+								SELECT rec_id FROM status_flag WHERE status_sym='C'))
+				AND
+				roll_number=#{rollNumber};
+			<foreach item="studentFees" collection="studentFeesPaymentDetailsList" index="index" open="" close="" separator=";">
+				UPDATE student_fees_payment_details SET
+					updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+					updated_on=(SELECT extract(epoch FROM now())),
+					fees_amount=#{studentFees.totalAmount},
+					paid_amount=#{studentFees.paidAmount},
+					balance_amount=#{studentFees.pendingAmount}
+				WHERE
+					student_fees_payment=(SELECT rec_id FROM student_fees_payment WHERE roll_number = #{rollNumber}
+												AND academic_year=(SELECT rec_id FROM academic_year WHERE year_status =(
+														SELECT rec_id FROM status_flag WHERE status_sym='C')))
+					AND
+					fees=(SELECT rec_id FROM fees WHERE fees_code =#{studentFees.fees} AND is_active = true);
+			</foreach>
+		</if>
+	</insert>
+	<update id="saveFeesLedgerMapping" parameterType="java.util.List">
+	 	<foreach item="feesLedger" collection="list" index="index" open="" close="" separator=";">
+			UPDATE fees SET
+				updated_by=(SELECT rec_id FROM resource WHERE user_id =#{feesLedger.updatedBy} AND is_active = true),
+				updated_on=extract(epoch FROM now()),
+				ledger=(SELECT rec_id FROM ledger WHERE ledger_code =#{feesLedger.ledger} AND is_active = true)
+			WHERE
+				fees_code=#{feesLedger.feesCode}
+				AND
+				is_active=true
+		</foreach>
+	</update>
+	
+	
+	
+	
+	
+	<update id="updateDebitBalance" parameterType="com.qts.icam.model.finance.TransactionDetails">
+		UPDATE ledger_balance SET current_balance=(current_balance-#{amount})
+		 		WHERE ledger=(SELECT rec_id FROM ledger WHERE ledger_code =#{ledger}
+		 		AND is_active =true);
+	
+	</update>
+	<update id="updateCreditBalance" parameterType="com.qts.icam.model.finance.TransactionDetails">
+		UPDATE ledger_balance SET current_balance=(current_balance+#{amount})
+		 		WHERE ledger=(SELECT rec_id FROM ledger WHERE ledger_code =#{ledger}
+		 		AND is_active =true);
+	</update>
+	
+	<insert id="insertTransaction" parameterType="com.qts.icam.model.finance.Transaction">
+		<selectKey keyProperty="voucherNumber"  resultType="String" order="BEFORE">
+			(select('VOW-' ||(select COALESCE((SELECT MAX(transaction_id) FROM transaction), 0 )+1)));
+		</selectKey>
+		
+		INSERT INTO transaction(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, date, voucher_number,
+			receipt_challan, receipt_challan_id, receipt_challan_number, narration, id, year, reason, voucher_type)
+		VALUES((select uuid_generate_v4()), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch from (SELECT to_timestamp(#{date},'DD-MM-YYYY')))),
+			#{voucherNumber}, #{receiptChallan},
+			
+			<if test="receiptChallan == 'RECEIPT'">
+				(select COALESCE((SELECT MAX(receipt_challan_id) FROM transaction WHERE receipt_challan=#{receiptChallan}), 0 )+1),
+				(select('REC-' ||(select COALESCE((SELECT MAX(receipt_challan_id) FROM transaction WHERE receipt_challan='RECEIPT'), 0 )+1))),
+			</if>
+			<if test="receiptChallan == 'CHALLAN'">
+				(select COALESCE((SELECT MAX(receipt_challan_id) FROM transaction WHERE receipt_challan=#{receiptChallan}), 0 )+1),
+				(select('CHA-' ||(select COALESCE((SELECT MAX(receipt_challan_id) FROM transaction WHERE receipt_challan='CHALLAN'), 0 )+1))),
+			</if>
+			<if test="receiptChallan == null">
+				null,
+				null,
+			</if>
+			 #{narration}, #{id},
+			 <if test="yearType == 'ACADEMIC'">
+			 (SELECT academic_year_name FROM academic_year WHERE year_status =(
+				SELECT rec_id FROM status_flag WHERE status_sym='C')),
+			</if>
+			<if test="yearType == 'FINANTIAL'">
+			 (SELECT financial_year_name FROM financial_year WHERE year_status =(
+				SELECT rec_id FROM status_flag WHERE status_sym='C')),
+			</if>
+				#{reason}, #{voucherType});
+			
+		<foreach collection="transactionDetailsList" item="trDt" open="" close="" separator=";">
+			INSERT INTO transaction_details(
+				 rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				 transaction, ledger, amount, is_debit, cheque_number)
+			VALUES((select uuid_generate_v4()), #{objectId},
+				 (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+				 (SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+				 (SELECT rec_id FROM transaction WHERE voucher_number =#{voucherNumber} AND is_active =true),
+				 (SELECT rec_id FROM ledger WHERE ledger_code =#{trDt.ledger} AND is_active =true),
+				 #{trDt.amount}, #{trDt.isDebit}, #{trDt.chequeNumber});			
+		</foreach>
+	</insert>
+	
+	
+	
+	
+	<select id="selectAllNonTenderPOList" resultType="com.qts.icam.model.finance.VendorPayment">
+		SELECT
+			intpo.non_tender_purchase_order_code as poCode,
+			intpo.vendor as vendor,
+			intpo.vendor_contact_no as vendorContact,
+			intpo.vendor_address as vendorAddress,
+			(to_char((SELECT to_timestamp(intpo.non_tender_purchase_order_open_date)), 'DD/MM/YYYY')) as openDate,
+			(to_char((SELECT to_timestamp(intpo.non_tender_purchase_order_close_date)), 'DD/MM/YYYY')) as closeDate,
+			--intpo.paid_amount || '/' || SUM(intpod.quantity_received * intpod.rate) as status,
+			'NON-TENDER' as status,
+			paid_amount as totalAmount,
+			intpo.paid_amount as paidAmount,
+			sf1.status_desc as paidStatus,
+			sf2.status_desc as receiveStatus,
+			sf3.status_desc as orderStatus
+		FROM
+			inventory_non_tender_purchase_order intpo
+		--JOIN inventory_non_tender_purchase_order intpo ON(intpo.rec_id=intpod.inventory_non_tender_purchase_order)
+		JOIN status_flag sf1 ON (sf1.rec_id=intpo.paid_status)
+		JOIN status_flag sf2 ON (sf2.rec_id=intpo.receive_status)
+		JOIN status_flag sf3 ON (sf3.rec_id=intpo.order_status)
+		WHERE
+			-- sf3.status_desc='OPEN'
+		-- 	AND
+			sf1.status_desc IN('PENDING','PARTIAL')
+		GROUP BY
+			intpo.non_tender_purchase_order_code, intpo.vendor, intpo.vendor_contact_no, intpo.vendor_address,
+			openDate, closeDate, sf1.status_desc, sf2.status_desc, sf3.status_desc, intpo.paid_amount;
+	</select>
+	
+	
+	<select id="selectAllTenderPOList" resultType="com.qts.icam.model.finance.VendorPayment">
+		SELECT
+			ipo.purchase_order_code as poCode,
+			v.vendor_name as vendor,
+			v.vendor_contact_number as vendorContact,
+			v.vendor_address as vendorAddress,
+			(to_char((SELECT to_timestamp(ipo.purchase_order_open_date)), 'DD/MM/YYYY')) as openDate,
+			(to_char((SELECT to_timestamp(ipo.purchase_order_close_date)), 'DD/MM/YYYY')) as closeDate,
+			'TENDER' as status,
+			SUM(ipod.quantity_received * ipod.rate) as totalAmount,
+			ipo.paid_amount as paidAmount,
+			sf1.status_desc as paidStatus,
+			sf2.status_desc as receiveStatus,
+			sf3.status_desc as orderStatus
+			
+		FROM
+			inventory_purchase_order_details ipod
+		JOIN inventory_purchase_order ipo ON(ipo.rec_id=ipod.inventory_purchase_order)
+		JOIN vendor v ON(ipo.vendor=v.rec_id)
+		JOIN status_flag sf1 ON (sf1.rec_id=ipo.paid_status)
+		JOIN status_flag sf2 ON (sf2.rec_id=ipo.receive_status)
+		JOIN status_flag sf3 ON (sf3.rec_id=ipo.order_status)
+		WHERE
+			-- sf3.status_desc='OPEN'
+		-- 	AND
+			sf1.status_desc IN('PENDING','PARTIAL')
+		GROUP BY
+			ipo.purchase_order_code, v.vendor_name, v.vendor_contact_number, v.vendor_address, openDate,
+			closeDate, sf1.status_desc, sf2.status_desc, sf3.status_desc, ipo.paid_amount;
+	</select>
+	
+	
+	<select id="selectAllMessPOList" resultType="com.qts.icam.model.finance.VendorPayment">
+		SELECT
+			intpo.mess_daily_ration_purchase_order_code as poCode,
+			intpo.vendor as vendor,
+			intpo.vendor_contact_no as vendorContact,
+			intpo.vendor_address as vendorAddress,
+			(to_char((SELECT to_timestamp(intpo.mess_daily_ration_purchase_order_open_date)), 'DD/MM/YYYY')) as openDate,
+			(to_char((SELECT to_timestamp(intpo.mess_daily_ration_purchase_order_close_date)), 'DD/MM/YYYY')) as closeDate,
+			--intpo.paid_amount || '/' || SUM(intpod.quantity_received * intpod.rate) as status,
+			'MESS' as status,
+			SUM(intpod.quantity_received * intpod.rate) as totalAmount,
+			intpo.paid_amount as paidAmount,
+			sf1.status_desc as paidStatus,
+			sf2.status_desc as receiveStatus,
+			sf3.status_desc as orderStatus	
+		FROM
+			mess_daily_ration_purchase_order_details intpod
+		JOIN mess_daily_ration_purchase_order intpo ON(intpo.rec_id=intpod.mess_daily_ration_purchase_order)
+		JOIN status_flag sf1 ON (sf1.rec_id=intpo.paid_status)
+		JOIN status_flag sf2 ON (sf2.rec_id=intpo.receive_status)
+		JOIN status_flag sf3 ON (sf3.rec_id=intpo.order_status)
+		WHERE
+			-- sf3.status_desc='OPEN'
+		-- 	AND
+			sf1.status_desc IN('PENDING','PARTIAL')
+		GROUP BY
+			intpo.mess_daily_ration_purchase_order_code, intpo.vendor, intpo.vendor_contact_no, intpo.vendor_address,
+			openDate, closeDate, sf1.status_desc, sf2.status_desc, sf3.status_desc, intpo.paid_amount;
+	</select>
+	
+	<update id="makeVendorPayment" parameterType="com.qts.icam.model.finance.VendorPayment">
+	UPDATE
+		<if test="status == 'MESS'">
+			mess_daily_ration_purchase_order
+		</if>			
+		<if test="status == 'TENDER'">
+			inventory_purchase_order
+		</if>
+		<if test="status == 'NON-TENDER'">
+			inventory_non_tender_purchase_order
+		</if>
+		SET
+			paid_amount=#{payAmount},
+			paid_status=(SELECT rec_id FROM status_flag WHERE status_desc=#{paidStatus})			
+		WHERE
+			<if test="status == 'MESS'">
+				mess_daily_ration_purchase_order_code=#{poCode};
+			</if>
+			<if test="status == 'TENDER'">
+				purchase_order_code=#{poCode};
+			</if>
+			<if test="status == 'NON-TENDER'">
+				non_tender_purchase_order_code=#{poCode};
+			</if>
+	</update>
+	
+	
+	
+	
+	
+	<select id="selectNewStudents" resultType="com.qts.icam.model.common.Student" parameterType="com.qts.icam.model.common.Student">
+		select roll_number as rollNumber, candidate_first_name || ' ' || COALESCE(candidate_middle_name ,'') || ' ' || candidate_last_name as studentName from admission_form where standard=#{standard};
+	</select>
+	
+	<select id="selectFeesPayableForNewCandidate" parameterType="com.qts.icam.model.finance.StudentFeesPayment" resultType="com.qts.icam.model.finance.StudentFeesPaymentDetails">
+		SELECT   
+			fees_name as fees,
+			amount as totalAmount,
+			l.ledger_code as ledger
+		FROM
+			fees_template_details ftd
+		JOIN fees_template ft ON(ftd.fees_template=ft.rec_id)
+		JOIN fees f ON(ftd.fees=f.rec_id)
+		LEFT JOIN ledger l ON(f.ledger=l.rec_id)
+		JOIN standard s ON (s.rec_id=ft.standard)
+		JOIN social_category sc ON (sc.rec_id=ftd.social_category)
+		JOIN admission_form r ON (sc.social_category_code=r.category)
+		WHERE
+			standard_code=#{standard}
+			AND  
+			roll_number=#{rollNumber}::integer
+			AND
+			applied=true
+			AND
+			ftd.is_active=true;
+	</select>
+	
+	<select id="selectEmployeeCodeList" resultType="com.qts.icam.model.erp.Employee">
+		SELECT	
+		ed.erp_code  as employeeCode,
+		r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || r.last_name as "resource.name"
+		FROM
+		resource r		
+		JOIN resource_type rt ON (r.resource_type= rt.rec_id AND rt.is_active = true)
+		JOIN employee_details ed ON (ed.resource= r.rec_id AND ed.is_active = true)		
+		WHERE
+		rt.resource_type_name !='SUPERADMIN'
+		AND
+		rt.resource_type_name !='STUDENT'
+		AND
+		r.is_active = true
+		AND
+		ed.is_retired=false;	
+	</select>
+
+	<select id="selectStaffSalaryDetails" resultType="com.qts.icam.model.finance.StaffSalaryDetails" parameterType="String">
+		SELECT salary_template_name as "salaryTemplate.salaryTemplateCode",  
+		       pay_band_name as "salaryTemplate.fixationOfPay.fixationOfPayName",
+		       pay_band_code as "salaryTemplate.fixationOfPay.fixationOfPayCode",
+		       pay_band_start_range as "salaryTemplate.fixationOfPay.fixationOfPayStartRange",
+		       pay_band_end_range as "salaryTemplate.fixationOfPay.fixationOfPayEndRange",
+ 		       appointment_to_posts_with_gp as "salaryTemplate.fixationOfPay.fixationOfPayId",
+ 		       pay_band_details_code as "salaryTemplate.fixationOfPay.fixationOfPayDesc",
+		       basic as basic,
+		       gpf as gpf,
+		       ed as ed,
+		       wc as wc,
+		       free_electric_unit as freeElectricCharge, 
+		       ip as ip,
+		       gip as gip,
+		       pt as pt, 
+		       nps as nps, 
+		       nps_both  as npsBoth 
+		  FROM staff_salary_details ssd
+		  JOIN employee_details ed ON (ssd.employee_details=ed.rec_id AND ed.is_active=true)
+		  JOIN salary_template st ON (ssd.salary_template = st.rec_id AND st.is_active = true)
+		  JOIN pay_band pb ON (ssd.pay_band = pb.rec_id AND pb.is_active=true)
+		  JOIN pay_band_details pbd ON (ssd.pay_band_details = pbd.rec_id AND pbd.is_active=true)
+		  WHERE ed.erp_code = #{strEmployeeCode}
+		  AND
+			ed.is_active = true
+		AND
+			ed.is_retired=false;
+	</select>
+	
+	<select id="selectSalaryBreakUpList" resultType="com.qts.icam.model.finance.SalaryBreakUp">
+		SELECT 
+			sbup.salarybreakup_name as salaryBreakUpName,
+			sbup.salarybreakup_code as salaryBreakUpCode,
+			sbup.salarybreakup_type as salaryBreakUpType
+		FROM salary_break_up sbup
+		WHERE 
+			sbup.is_active = 'TRUE'
+			order by sbup.salarybreakup_id
+	</select>
+	
+	
+	<update id= "updateStaffSalaryDetails" parameterType="com.qts.icam.model.finance.StaffSalaryDetails">
+		UPDATE staff_salary_details
+   		SET 
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+			updated_on=(SELECT extract(epoch FROM now())), 
+	    	salary_template=(SELECT rec_id from salary_template WHERE salary_template_code = #{salaryTemplate.salaryTemplateCode} AND is_active=true),        
+            pay_band=(SELECT rec_id from pay_band WHERE pay_band_code = #{salaryTemplate.fixationOfPay.fixationOfPayCode} AND salary_template = (SELECT rec_id from salary_template WHERE salary_template_code = #{salaryTemplate.salaryTemplateCode} AND is_active=true) AND is_active = true),          
+          	pay_band_details=(
+          		SELECT pbd.rec_id			
+				FROM pay_band_details pbd
+			    JOIN pay_band pb ON (pb.rec_id = pbd.pay_band AND pbd.is_active = true AND pb.is_active = true)
+			    JOIN salary_template st ON (st.rec_id = pb.salary_template AND st.is_active = true)
+				WHERE	
+					st.salary_template_code =  #{salaryTemplate.salaryTemplateCode}
+				AND
+					pb.pay_band_code = #{salaryTemplate.fixationOfPay.fixationOfPayCode}
+				AND 
+					pay_band_details_code =	#{salaryTemplate.fixationOfPay.fixationOfPayDetails.fixationOfPayDetailsCode}),	   
+       		basic=#{basic}, 
+       		gpf=#{gpf}, 
+       		ed=#{ed}, 
+       		wc=#{wc}, 
+       		free_electric_unit=#{freeElectricCharge}, 
+       		ip=#{ip}, 
+       		gip=#{gip}, 
+       		pt=#{pt}, 
+       		nps=#{nps}, 
+       		nps_both=#{npsBoth}
+ 		WHERE employee_details = (SELECT rec_id FROM employee_details WHERE erp_code = #{employee.employeeCode} AND is_active=true AND is_retired=false)
+ 		AND is_active = true;
+ 		
+ 		
+	</update>	
+	
+	<select id="saveDesignationSalaryDetails" parameterType="com.qts.icam.model.finance.DesignationSalaryDetails">
+	INSERT INTO designation_salary_details(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            designation, da, tptl, smahma, ma, sa, gpf, cpf, metercharge, 
+            upto100ecrate, above100ecrate)
+    VALUES (uuid_generate_v4(),
+		   #{objectId},
+		   (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+		   (SELECT extract(epoch FROM now())), 
+		   (SELECT extract(epoch FROM now())),
+		   (SELECT rec_id FROM designation WHERE designation_code = #{designation} AND is_active= true), 
+           #{da}, #{tptl}, #{smaHma},#{ma},#{sa}, #{gpf}, #{cpf}, #{meterCharge}, #{upto100ECRate}, #{above100ECRate}
+           );
+	</select>
+	
+	<update id= "updateDesignationSalaryDetails" parameterType="com.qts.icam.model.finance.DesignationSalaryDetails">
+	 UPDATE designation_salary_details
+   SET updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+        updated_on=(SELECT extract(epoch FROM now())), 
+        da=#{da}, tptl=#{tptl}, 
+        smahma=#{smaHma}, ma=#{ma}, sa=#{sa}, gpf=#{gpf}, cpf=#{cpf}, metercharge=#{meterCharge}, upto100ecrate=#{upto100ECRate}, 
+       above100ecrate=#{above100ECRate}
+   WHERE 
+       designation = (SELECT rec_id FROM designation WHERE designation_code = #{designation} AND is_active=true)
+	 	AND 
+	 	is_active = true;
+	</update>
+	<select id="getEmployeeDesignation" parameterType="java.lang.String" resultType="java.lang.String">
+	   Select 
+	        d.designation_code
+	   From 
+	       employee_details ed
+	   JOIN designation d ON (d.rec_id=ed.designation)
+	   where
+	        erp_code=#{designation};
+	</select>
+	
+	<select id="selectDesignationSalaryDetails" parameterType="java.lang.String" resultType="com.qts.icam.model.finance.DesignationSalaryDetails">
+	   SELECT 
+	        da as da, 
+	        tptl as tptl, 
+	        smahma as smaHma, 
+	        ma as ma, 
+	        sa as sa, 
+	        gpf as gpf,
+	        cpf as cpf,
+	        metercharge as meterCharge, 
+	       upto100ecrate as upto100ECRate, 
+	       above100ecrate as above100ECRate
+	   FROM designation_salary_details dsd
+	   JOIN designation d ON (d.rec_id=dsd.designation)
+	   where 
+	      designation_code=#{designation};
+	</select>
+	
+	
+	<select id="getResourceCountForResourceType" resultType="java.lang.Integer" parameterType="java.lang.String">	
+       select  count(*)
+       From 
+             resource 
+       where
+             resource_type=(select rec_id from resource_type where resource_type_name=#{resourceTypeName})
+	</select>
+	<select id="getDisbursedSalaryCount" resultType="java.lang.Integer" parameterType="com.qts.icam.model.finance.SalaryDisbursementList">
+	 select count(*)
+     from 
+          salary_disbursement
+     where
+         month=#{month}
+      AND
+      resource_type=(select rec_id from resource_type where resource_type_name=#{resourceType})
+
+	    </select>
+	    
+	 <select id="selectStaffCodeListToDisburseSalary" resultType="com.qts.icam.model.erp.Employee" parameterType="com.qts.icam.model.finance.SalaryDisbursementList">
+	    SELECT	
+		     ed.erp_code  as employeeCode,
+		     r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || r.last_name as "resource.name"
+		FROM
+		     resource r		
+		JOIN resource_type rt ON (r.resource_type= rt.rec_id AND rt.is_active = true)
+		JOIN employee_details ed ON (ed.resource= r.rec_id AND ed.is_active = true)		
+		WHERE
+		     rt.resource_type_name =#{resourceType}
+		AND
+		     r.is_active = true
+		AND
+		     ed.is_retired=false
+		AND
+		     ed.erp_code not in (
+		select ed1.erp_code from salary_disbursement sd1
+		JOIN employee_details ed1 ON (ed1.rec_id=sd1.employee)
+		JOIN resource_type rt1 ON (rt1.rec_id=sd1.resource_type)
+		where
+		    sd1.month=#{month}
+		    AND
+		    rt1.resource_type_name=#{resourceType});	
+	</select>
+	
+	
+	<insert id="saveSalaryDisbursement" parameterType="com.qts.icam.model.finance.DisbursementSalaryDetails">
+		INSERT INTO salary_disbursement(
+            rec_id, obj_id, updated_by, updated_on, 
+            date_of_creation, employee, resource_type, month, 
+            basic, grade_pay, pay, da, pay_da, tptl, sma_hma, ma, sa, arrear, 
+            misc_e, ed, total_all, nps, gross, gpf, cpf, nps_both, wc, ec, 
+            ip, pfl, fa, gip, pt, it, misc_ex, total, net_sal, meter)
+	    VALUES ((select uuid_generate_v4()), #{objectId},
+		 (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+		 (SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+		 (SELECT rec_id FROM employee_details WHERE erp_code =#{employee} AND is_active =true AND is_retired=false),
+		 (SELECT rec_id FROM resource_type WHERE resource_type_name =#{resourceType} AND is_active =true), #{month},
+		 #{basic}, #{gradePay}, #{pay}, #{da}, (#{pay}+#{da}), #{tptl}, #{smaHma}, #{ma}, #{sa}, #{arrear}, #{miscInc},
+		 #{ed}, (#{pay} + #{da} + #{tptl} + #{smaHma} + #{ma} + #{sa} + #{arrear} + #{miscInc} + #{ed}), #{nps},
+		 (#{pay} + #{da} + #{tptl} + #{smaHma} + #{ma} + #{sa} + #{arrear} + #{miscInc} + #{ed} + #{nps}), #{gpf},
+		 #{cpf}, #{npsBoth}, #{wc}, #{electricCharge}, #{ip}, #{pfl}, #{fa}, #{gip}, #{pt}, #{it}, #{miscExpenses},
+		 (#{gpf}+ #{cpf} + #{npsBoth} + #{wc} + #{electricCharge} + #{ip} + #{pfl} + #{fa} + #{gip} + #{pt} + #{it} + #{miscExpenses}),
+		 ((#{pay} + #{da} + #{tptl} + #{smaHma} + #{ma} + #{sa} + #{arrear} + #{miscInc} + #{ed} + #{nps}) - 
+		 (#{gpf}+ #{cpf} + #{npsBoth} + #{wc} + #{electricCharge} + #{ip} + #{pfl} + #{fa} + #{gip} + #{pt} + #{it} + #{miscExpenses})),	 
+		 #{electricMeterConsumed});
+	</insert>
+	
+	<select id="selectSalaryDisbursedStaffList" resultType="com.qts.icam.model.erp.Employee" parameterType="com.qts.icam.model.finance.SalaryDisbursementList">
+		select ed1.erp_code  as employeeCode,
+		r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || r.last_name as "resource.name"
+		from salary_disbursement sd1
+		JOIN employee_details ed1 ON (ed1.rec_id=sd1.employee)
+		JOIN resource r ON (r.rec_id=ed1.resource)
+		JOIN resource_type rt1 ON (rt1.rec_id=sd1.resource_type)
+		
+		where
+		    sd1.month=#{month}
+		    AND
+		    rt1.resource_type_name=#{resourceType};
+	</select>
+	
+	<select id="selectStaffDisbursedSalaryDetails" parameterType="com.qts.icam.model.finance.DisbursementSalaryDetails" resultType="com.qts.icam.model.finance.DisbursementSalaryDetails">
+		SELECT
+	       sd.basic as basic, sd.grade_pay as gradePay, sd.pay as pay, sd.da as da,
+	       sd.pay_da as payDa, sd.tptl as tptl, sd.sma_hma as smaHma, sd.ma as ma,
+	       sd.sa as sa, sd.arrear as arrear, sd.misc_e as miscInc, sd.ed as ed,
+	       sd.total_all as totalAll, sd.nps as nps, sd.gross as gross, sd.gpf as gpf,
+	       sd.cpf as cpf, sd.nps_both as npsBoth, sd.wc as wc, sd.ec as electricCharge,
+	       sd.ip as ip, sd.pfl as pfl, sd.fa as fa, sd.gip as gip, sd.pt as pt, sd.it as it,
+	       sd.misc_ex as miscExpenses, sd.total as total, sd.net_sal as netSalary,
+	       sd.meter as electricMeterConsumed
+	  FROM salary_disbursement sd
+	  JOIN employee_details ed ON(ed.rec_id=sd.employee)
+	  WHERE
+		month=#{month}
+		AND
+		ed.erp_code=#{employee};
+	</select>
+	
+	<select id="getBalanceSheetCredit" resultType="com.qts.icam.model.finance.BalanceSheet" parameterType="java.util.Map">
+		SELECT distinct
+			l.ledger_code as ledger,
+			sum(td.amount) as amount,			
+			gt.group_type_name as assetLiablity
+		FROM
+			transaction_details td
+		JOIN ledger l on (td.ledger=l.rec_id)
+		JOIN group_for_ledger g on (l.parent_group=g.rec_id)
+		JOIN group_type gt on (g.group_type=gt.rec_id)
+		where
+			gt.group_type_name in ('ASSET','LIABLITY')
+			AND			
+			td.date_of_creation &gt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+			AND
+			td.date_of_creation &lt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY'))))
+			AND
+			td.is_debit=false
+		group by 
+			l.ledger_code,td.is_debit,gt.group_type_name;
+	</select>
+
+	
+		<select id="getBalanceSheetDebit" resultType="com.qts.icam.model.finance.BalanceSheet" parameterType="java.util.Map">
+	
+		SELECT distinct
+		l.ledger_code as ledger,
+		sum(td.amount) as amount,			
+		gt.group_type_name as assetLiablity
+	FROM
+		transaction_details td
+	JOIN ledger l on (td.ledger=l.rec_id)
+	JOIN group_for_ledger g on (l.parent_group=g.rec_id)
+	JOIN group_type gt on (g.group_type=gt.rec_id)
+	where
+		gt.group_type_name in ('ASSET','LIABLITY')
+		AND			
+		td.date_of_creation &gt;(SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+		AND
+		td.date_of_creation &lt;(SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY'))))
+		AND
+		td.is_debit=true
+	group by 
+		l.ledger_code,td.is_debit,gt.group_type_name;	
+	</select>
+	
+	
+	<!-- modified by sourav.bhadra on 20-04-2018 -->
+	<select id="getVoucherTypeList" resultType="com.qts.icam.model.finance.VoucherType">
+		SELECT
+			voucher_type_code as voucherTypeCode,
+			voucher_type_name as voucherTypeName,
+			department as department,
+			income_expense as incExp,
+			ticket_no as ticketNo,
+			multi_debit as multipleDebitLedger
+		FROM
+			voucher_type		
+		WHERE
+			is_active=true;
+	</select>
+	
+	<!-- sourav.bhadra 24062017 -->
+	
+	<select id="getAcademicYearForDate1" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT financial_year_name from financial_year 
+		WHERE 
+			session_start_date &lt;= (SELECT extract(epoch from (SELECT to_timestamp(#{date}, 'DD-MM-YYYY'))))
+		AND 
+			session_end_date &gt;= (SELECT extract(epoch from (SELECT to_timestamp(#{date}, 'DD-MM-YYYY'))));
+	</select>
+		
+	<select id="getAcademicYearForDate2" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT financial_year_name from financial_year 
+		WHERE 
+			session_start_date &lt;= (SELECT extract(epoch from (SELECT to_timestamp(#{date}, 'DD-MM-YYYY'))))
+		AND 
+			session_end_date &gt;= (SELECT extract(epoch from (SELECT to_timestamp(#{date}, 'DD-MM-YYYY'))));
+	</select>
+	
+	<!--  
+	 * @author ranita.sur
+	 * changes taken on 29072017*/-->
+	
+	<update id="updateBudgetForIncomeExpenseAmount" parameterType="com.qts.icam.model.common.Budget">
+		UPDATE budget SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on=(SELECT extract(epoch FROM now())), 
+			total_expence=(total_expence+(#{actualExpense})),
+			balance=(balance-(#{actualExpense})),
+			reserve_balance=(reserve_balance-(#{actualExpense}))
+		 WHERE
+			financial_year=(SELECT rec_id FROM financial_year WHERE financial_year_name=#{academicYear} AND is_active=true)
+		AND
+			department=(select rec_id from department where department_code=#{department} and is_active=true)
+		AND
+			is_active=true;
+	</update>
+	
+	
+	<select id="getResourceNameForCANDIDATE" parameterType="java.lang.Integer" resultType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		SELECT
+			(first_name || ' ' || COALESCE(middle_name,'') || ' ' || last_name) as resource,
+			print_admission_form_code as codeId
+		FROM
+			print_admission_form
+		WHERE
+			print_admission_form_id = #{resourceId};
+	</select>
+	
+	<select id="getResourceNameForVENDOR" parameterType="java.lang.Integer" resultType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		SELECT
+			vendor_name as resource,
+			vendor_code as codeId
+		FROM
+			vendor
+		WHERE
+			vendor_id = #{resourceId};
+	</select>
+	
+	<select id="getResourceNameForTEACHER" parameterType="java.lang.Integer" resultType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		SELECT
+			(first_name || ' ' || COALESCE(middle_name,'') || ' ' || last_name) as resource,
+			user_id as codeId
+		FROM
+			resource
+		WHERE
+			resource_id = #{resourceId};
+	</select>
+	
+	<select id="getResourceNameForSTUDENT" parameterType="java.lang.Integer" resultType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		SELECT
+			(first_name || ' ' || COALESCE(middle_name,'') || ' ' || last_name) as resource,
+			registration_id as codeId
+		FROM
+			resource
+		WHERE
+			resource_id = #{resourceId};
+	</select>
+	
+	<!-- modified by sourav.bhadra on 18-04-2018 -->
+	<resultMap id="getTransactionWorkingAreaDetailsRM" type="com.qts.icam.model.finance.TransactionalWorkingArea">
+		<id property="transactionalWorkingAreaCode" column="transactional_working_area_code" jdbcType="VARCHAR" />
+		<result property="reasonOfTransaction" column="reason_of_transaction" jdbcType="VARCHAR" />
+		<result property="transactionalWorkingAreaName" column="transactional_working_area_name" jdbcType="VARCHAR" />
+		<result property="resourceType" column="resource_type" jdbcType="VARCHAR" />
+		<result property="transactionMode" column="transaction_mode" jdbcType="VARCHAR" />
+		<result property="bankName" column="bank_name" jdbcType="VARCHAR" />
+		<result property="chequeNo" column="cheque_no" jdbcType="VARCHAR" />		
+		<result property="resource" column="resource" jdbcType="INTEGER" />		
+		<result property="transactionDate" column="transactionDate" jdbcType="VARCHAR" />		
+		<result property="transactionYear" column="transaction_year" jdbcType="VARCHAR" />
+		<result property="transactionMonth" column="transaction_month" jdbcType="VARCHAR" />
+		<result property="grossAmount" column="gross_amount" jdbcType="DOUBLE" />
+		<result property="netAmount" column="net_amount" jdbcType="DOUBLE" />
+		<result property="transactionStatus" column="transaction_status" jdbcType="VARCHAR" />
+		<result property="bankAmount" column="bank_amount" jdbcType="DOUBLE" />
+		<result property="cashAmount" column="cash_amount" jdbcType="DOUBLE" />
+		<result property="academicYear" column="academic_year" jdbcType="VARCHAR" />
+		<result property="transactionStatus" column="transaction_status" jdbcType="VARCHAR" />		
+		<result property="department" column="department" jdbcType="VARCHAR" />
+		<result property="incomeExpense" column="income_expense" jdbcType="VARCHAR" />
+		<result property="paidAgainst" column="paid_against" jdbcType="VARCHAR" />
+		<result property="codeId" column="ticket_code" jdbcType="VARCHAR" />
+		<collection property="trWorkingDetList" ofType="com.qts.icam.model.finance.TransactionWorkingAreaDetails">
+			<id property="transactionalWorkingAreaDetailsCode" column="transactional_working_area_details_code" jdbcType="VARCHAR" />
+			<result property="transactionHeadName" column="transaction_head_name" jdbcType="VARCHAR" />
+			<result property="transactionHeadAmount" column="transaction_head_amount" jdbcType="DOUBLE" />
+		</collection>
+	</resultMap>
+	
+	<!-- modified by sourav.bhadra on 18-04-2018 -->
+	<select id="getTransactionWorkingAreaDetails" parameterType="java.lang.String" resultMap="getTransactionWorkingAreaDetailsRM" >
+		SELECT
+			twa.reason_of_transaction,
+			twa.transactional_working_area_code,
+			twa.transactional_working_area_name,
+			twa.resource_type,
+			twa.transaction_mode,
+			twa.bank_name,
+			twa.cheque_no,
+			twa.resource,
+			(SELECT to_char((SELECT to_timestamp(twa.transaction_date)), 'DD/MM/YYYY')) as transactionDate,
+			twa.transaction_year,
+			twa.transaction_month,
+			twa.gross_amount,
+			twa.net_amount,
+			twa.transaction_status,
+			twa.bank_amount,
+			twa.cash_amount,
+			twa.academic_year,
+			twad.transactional_working_area_details_code,
+			twad.transaction_head_name,
+			twad.transaction_head_amount,
+			twa.department,
+			twa.income_expense,
+			twa.paid_against,
+			t.ticket_code
+		FROM
+			transactional_working_area twa		
+		LEFT JOIN transactional_working_area_details twad ON(twa.rec_id=twad.transactional_working_area AND twad.is_active=true)
+		LEFT JOIN ticket t ON(twa.ticket = t.rec_id AND t.is_active = true)
+		WHERE
+			twa.transactional_working_area_code=#{twaCode}
+			AND
+			twa.is_active=true;
+	</select>
+	
+	<select id="getSalaryBreakUpWithAmount" parameterType="java.lang.String" resultType="com.qts.icam.model.finance.TransactionWorkingAreaDetails">
+		SELECT
+			transaction_head_name as transactionHeadName,
+			transaction_head_amount as transactionHeadAmount
+		FROM
+			transactional_working_area_details twad
+		JOIN transactional_working_area twa ON(twad.transactional_working_area=twa.rec_id)
+		WHERE
+			transactional_working_area_code=#{twaCode};
+	</select>
+	
+	<select id="getLedgerForSalaryBreakup" parameterType="com.qts.icam.model.finance.TransactionWorkingAreaDetails" resultType="java.lang.String">
+		SELECT
+			l.ledger_code as ledgerName
+		FROM
+			salary_template_details std		
+		JOIN salary_template st ON(std.salary_template=st.rec_id AND st.is_active=true)
+		JOIN salary_break_up sbu ON(std.salary_break_up=sbu.rec_id AND sbu.is_active=true)
+		JOIN ledger l ON(std.ledger=l.rec_id AND l.is_active=true)
+		WHERE
+			st.salary_template_name=#{objectId}
+			AND
+			sbu.salarybreakup_name=#{transactionHeadName}
+			AND
+			std.is_active=true;
+	</select>
+	
+	
+	<!-- //Naimisha 24062017 -->
+	<update id="transactionWorkingAreaSanction" parameterType="com.qts.icam.model.finance.Transaction">
+		UPDATE transactional_working_area 
+		SET
+			transaction_status='SANCTIONED',
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on=(SELECT extract(epoch FROM now()))
+		WHERE
+			transactional_working_area_code=#{workingAreaCode};
+	</update>
+
+	
+	
+	
+	
+	<select id="getAllTemplateListForLedgerMapping" resultType="com.qts.icam.model.common.TemplateLedgerMapping">
+		SELECT
+			salary_template_code as salaryTemplateCode,
+			salary_template_name as salaryTemplateName,
+			salary_template_desc as salaryTemplateDesc,
+			ledger_mapping_status as ledgerMappingStatus
+		FROM
+			salary_template
+		WHERE
+			is_active = true;
+	</select>
+	
+	<select id="getTemplateDetailsListForLedgerMapping" parameterType="java.lang.String" resultType="com.qts.icam.model.common.TemplateLedgerMapping">
+		SELECT
+			salary_template_details_code as salaryTemplateDetailsCode,
+			salary_template_name as salaryTemplateName,
+			salarybreakup_name as salarybreakupName,
+			<!-- ledger_code as ledger, -->
+			sbu.salarybreakup_type as salarybreakupType
+		FROM
+			salary_template_details std		
+		JOIN salary_template st ON(st.rec_id=std.salary_template AND st.is_active=true)
+		JOIN salary_break_up sbu ON(sbu.rec_id=std.salary_break_up AND sbu.is_active=true)
+		<!-- LEFT JOIN ledger l ON(l.rec_id=std.ledger AND l.is_active=true) -->
+		WHERE
+			salary_template_code=#{templateCode}
+		AND
+			std.is_active=true;
+	</select>
+	
+	<update id="mapLedgerTemplate" parameterType="com.qts.icam.model.common.TemplateLedgerMapping">
+		UPDATE salary_template_details SET
+			ledger=(SELECT rec_id FROM ledger WHERE ledger_code=#{ledger} AND is_active = true),
+			updated_by=(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active= true),
+			updated_on=(SELECT extract(epoch FROM now()))
+		WHERE
+			salary_template_details_code=#{salaryTemplateDetailsCode}
+		AND
+			is_active=true;
+	</update>
+	
+	<update id="updateLedgerTemplateMappingStatus" parameterType="java.lang.String">
+		UPDATE salary_template SET ledger_mapping_status='MAPPED' WHERE salary_template_code=#{templateCode} AND is_active=true;
+	</update>
+	
+	<!-- author naimisha -->
+	
+	
+	<!-- sourav.bhadra 17062017 -->
+	
+	<select id="getBudgetForAcademicYear" parameterType="com.qts.icam.model.common.Budget" resultType="com.qts.icam.model.common.Budget">
+		SELECT
+			b.percentage as expectedIncome,
+			b.actual_income as actualIncome,
+			b.total_expence as totalExpence,
+			b.balance as expectedExpense,
+			b.reserve_balance as reserveFund
+		FROM
+			budget b
+		JOIN
+			department d ON(b.department = d.rec_id AND d.is_active=true)
+		JOIN
+			financial_year fy ON(b.financial_year = fy.rec_id AND fy.is_active=true)
+		WHERE
+			b.is_active = true
+		AND
+			fy.financial_year_name=#{academicYear}
+		AND
+			d.department_name=#{department};
+	</select>
+	
+	<!-- sourav.bhadra 17062017 -->
+	
+	<insert id="saveBudget" parameterType="com.qts.icam.model.common.Budget">
+		INSERT INTO budget(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+				budget_code, budget_name, budget_desc, financial_year, 
+				department, percentage, actual_income, balance, total_expence, reserve_balance)
+		VALUES ((uuid_generate_v4()), #{objectId},
+		   (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+		   (SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+		   (select #{department} || ' ' || #{academicYear} || ' ' || COALESCE((SELECT MAX(budget_id) FROM budget), 0)+1),
+		   (select #{department} || ' ' || #{academicYear} || ' ' || COALESCE((SELECT MAX(budget_id) FROM budget), 0)+1),
+		   (select #{department} || ' ' || #{academicYear} || ' ' || COALESCE((SELECT MAX(budget_id) FROM budget), 0)+1),
+		   (SELECT fy.rec_id FROM financial_year fy JOIN status_flag sf ON (fy.year_status = sf.rec_id AND sf.is_active = true) AND fy.is_active = true AND sf.status_sym = 'C'), 
+			(select rec_id from department where department_code=#{department} and is_active=true),
+		   #{expectedIncome}, #{actualIncome},#{expectedExpense},#{totalExpence}, #{reserveFund});
+	</insert>
+	
+	<insert id="saveDelarDetails" parameterType="com.qts.icam.model.common.DelarDetails">
+		INSERT INTO delar_details(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation,
+			vendor, vat_tin, cst_no, excise_no, range_category, division_no, 
+			commission_rate, ref_no, delar_type, nature_of_purchase, company_name, 
+			dt_of_registration)
+		VALUES ((select uuid_generate_v4()), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM vendor WHERE vendor_code =#{vendor} AND is_active = true),
+			#{vatTin}, #{cstNo}, #{exciseNo}, #{range}, #{divisionNo}, #{commissionRate}, #{refNo}, #{delarType}, #{natureOfPurchase}, #{companyName},
+			(SELECT extract(epoch from (SELECT to_timestamp(#{dtOfRegistration},'DD/MM/YYYY')))));
+	</insert>
+	
+	<select id="selectLedgerFromSalaryTemplateDetails" parameterType="java.lang.String" resultType="com.qts.icam.model.common.TemplateLedgerMapping">
+		SELECT
+			salary_template_details_code as salaryTemplateDetailsCode,
+			ledger_code as ledger
+		FROM
+			salary_template_details std
+		JOIN
+			ledger l ON (std.ledger = l.rec_id AND l.is_active = true)
+		WHERE 
+			l.ledger_code = #{ledgerCode}
+		AND
+			std.is_active=true;
+	</select>
+	<update id="inactiveLedger" parameterType="java.lang.String">
+		UPDATE ledger SET is_active = false WHERE ledger_code=#{ledgerCode} AND is_active=true;
+	</update>
+	
+	<select id="selectGroupNameFromLedger" parameterType="java.lang.String" resultType="com.qts.icam.model.finance.Group">
+		SELECT 
+			ledger_code as ledgerCode
+		FROM 
+			ledger l 
+		JOIN
+			group_for_ledger gfl ON (l.parent_group = gfl.rec_id AND gfl.is_active = true)
+		WHERE
+			gfl.group_code = #{groupCode}
+		AND
+			l.is_active = true;
+	</select>
+	
+	<update id="inactiveLedgerGroup" parameterType="java.lang.String">
+		UPDATE group_for_ledger SET is_active = false WHERE group_code=#{groupCode} AND is_active=true;
+	</update>
+	
+	<!-- sourav.bhadra 01072017 -->
+	<!-- modified by sourav.bhadra on 22-03-2018 -->
+	<!-- modified by sourav.bhadra on 06-04-2018 -->
+	<!-- modified by sourav.bhadra on 17-04-2018 -->
+	<update id="updateBudget" parameterType="com.qts.icam.model.common.Budget">
+		UPDATE budget SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+			updated_on=(SELECT extract(epoch FROM now())),	
+			percentage = percentage + #{expectedIncome},
+			balance = balance + #{actualIncome},
+			actual_income = actual_income + #{actualIncome},
+			reserve_balance = reserve_balance + #{reserveFund}
+		WHERE
+			is_active = true
+		AND
+			financial_year=(SELECT rec_id FROM financial_year WHERE financial_year_name=#{academicYear} AND is_active=true)
+		AND
+			department=(SELECT rec_id FROM department WHERE department_code=#{department} AND is_active=true);
+	</update>	
+	
+	<!-- done by anup.roy -->
+	
+	<select id="getProfitAndLossDebit" resultType="com.qts.icam.model.common.ProfitAndLoss" parameterType="java.util.Map">
+		SELECT
+			l.ledger_code as ledger,
+			sum(td.amount) as amount,
+			gt.group_type_name as incomeExpense
+		FROM
+			transaction_details td
+		JOIN 
+			ledger l on (td.ledger = l.rec_id)
+		JOIN 
+			group_for_ledger g on (l.parent_group = g.rec_id)
+		JOIN 
+			group_type gt on (g.group_type = gt.rec_id)
+		where
+			gt.group_type_name in ('INCOME','EXPENSE')
+		AND			
+			td.date_of_creation &gt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+		AND
+			td.date_of_creation &lt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:MI:SS'))))
+		AND
+			td.is_debit=true
+		group by 
+			l.ledger_code,td.is_debit,gt.group_type_name;
+	</select>
+	<select id="getProfitAndLossCredit" resultType="com.qts.icam.model.common.ProfitAndLoss" parameterType="java.util.Map">
+		SELECT distinct
+			l.ledger_code as ledger,
+			sum(td.amount) as amount,			
+			gt.group_type_name as incomeExpense
+		FROM
+			transaction_details td
+		JOIN 
+			ledger l on (td.ledger=l.rec_id)
+		JOIN 
+			group_for_ledger g on (l.parent_group=g.rec_id)
+		JOIN 
+			group_type gt on (g.group_type=gt.rec_id)
+		where
+			gt.group_type_name in ('INCOME','EXPENSE')
+		AND	
+			td.date_of_creation &gt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+		AND
+			td.date_of_creation &lt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY'))))
+		AND
+			td.is_debit=false
+		group by 
+			l.ledger_code,td.is_debit,gt.group_type_name;
+	</select>
+	
+	<!-- modified by sourav.bhadra on 24-04-2018 -->
+	<select id="getDayBook" resultType="com.qts.icam.model.common.Daybook" parameterType="java.util.Map">
+		SELECT
+			l.ledger_name as ledgerCode,
+			td.amount as amount,
+			td.is_debit as debit,
+			vt.voucher_type_code as voucherType,
+			t.voucher_number as voucherNumber,
+			t.narration as narration,
+			t.transaction_id as transactionSerialId,
+			<!-- modified by sourav.bhadra // 29082017 -->
+			(SELECT to_char((SELECT to_timestamp(t.date)), 'DD/MM/YYYY')) as date,
+			tc.ticket_code as updatedBy
+		FROM transaction_Details td
+		JOIN transaction t ON (td.transaction=t.rec_id)
+		JOIN ledger l ON (td.ledger=l.rec_id)
+		JOIN voucher_type vt ON (t.voucher_type = vt.rec_id)
+		LEFT JOIN ticket tc ON (t.ticket = tc.rec_id and tc.is_active = true)
+		WHERE		
+			t.date &gt;= (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+			<if test="to!=null">
+				AND t.date &lt;= (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:MI:SS'))))
+			</if>
+		ORDER BY t.voucher_number;
+	</select>
+	
+	<select id="getAllStudentList" resultType="com.qts.icam.model.common.Resource" >
+		SELECT
+			scm.roll_number as userId,
+			first_name || ' ' || COALESCE(middle_name,' ') || ' ' || last_name  as name,
+			security_deposit as securityDeposit
+		FROM
+			resource r
+		JOIN
+			student_course_mapping scm ON (r.user_id = scm.user_id AND scm.is_active = true)
+		WHERE
+			resource_type=(SELECT rec_id from resource_type WHERE resource_type_code='STUDENT')
+		AND
+			r.is_active=true;
+	</select>
+	
+	<update id="updateSecurityDeposit" parameterType="com.qts.icam.model.common.Resource">
+		UPDATE resource SET
+			security_deposit=#{securityDeposit}
+		WHERE
+			roll_number = #{studentRoll}
+		AND
+			resource_type=(SELECT rec_id from resource_type WHERE resource_type_code='STUDENT')
+		AND
+			is_active=true;
+	</update>
+	
+	<select id="getLedgerWiseView" resultType="com.qts.icam.model.common.LedgerWiseView" parameterType="java.util.Map">
+		SELECT
+			l.ledger_code as ledgerCode,
+			td.amount as amount,
+			td.is_debit as debit,
+			vt.voucher_type_code as voucherType,
+			t.voucher_number as voucherNumber,
+			t.narration as narration,
+			(SELECT to_char((SELECT to_timestamp(t.date)), 'DD/MM/YYYY')) as date,
+			td.cheque_number as cheque
+		FROM 
+			transaction_details td
+		JOIN 
+			transaction t ON (td.transaction = t.rec_id)
+		JOIN 
+			voucher_type vt ON (t.voucher_type = vt.rec_id)	
+		JOIN 
+			ledger l ON (td.ledger = l.rec_id)
+		WHERE
+			t.date &gt;= (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+		AND
+			t.date &lt;= (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:59:59'))))
+		AND
+			l.ledger_code = #{ledger};
+	</select>
+	
+	<select id="getAllChequeNumberFromTransaction" resultType="com.qts.icam.model.finance.Brs" parameterType="java.util.Map">
+		SELECT
+			td.cheque_number as chequeNumber,
+			td.amount as amount,
+			td.is_debit as debit,
+			(SELECT to_char((SELECT to_timestamp(t.date)), 'DD/MM/YYYY')) as date,
+			vt.voucher_type_code as voucherType,
+			t.voucher_number as voucherNumber,
+			t.narration as narration
+		FROM
+			transaction_details td
+		JOIN 
+			ledger l ON(l.rec_id=td.ledger)
+		JOIN 
+			transaction t ON(t.rec_id=td.transaction)
+		JOIN
+			voucher_type vt ON (t.voucher_type = vt.rec_id)	
+		WHERE
+			l.ledger_code = #{bank}
+		AND			
+			td.date_of_creation &gt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+		AND
+			td.date_of_creation &lt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY'))))
+		AND
+			td.cheque_number is not null;
+	</select>
+	
+	<!-- Modified by Saif.Ali on 19/09/2017 -->
+	<!-- modified by sourav.bhadra 12-04-2018 -->
+	<select id="getTransactionalWorkingAreaList" resultType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		SELECT
+			twa.reason_of_transaction as reasonOfTransaction,
+			twa.transactional_working_area_code as transactionalWorkingAreaCode,
+			twa.transactional_working_area_name as transactionalWorkingAreaName,			
+			twa.department as department,
+			twa.income_expense as incomeExpense,
+			twa.resource_type as resourceType,
+			twa.transaction_mode as transactionMode,
+			twa.bank_name as bankName,
+			twa.cheque_no as chequeNo,
+			(SELECT to_char((SELECT to_timestamp(twa.transaction_date)), 'DD/MM/YYYY')) as transactionDate,
+			twa.transaction_year as transactionYear,
+			twa.transaction_month as transactionMonth,
+			twa.gross_amount as grossAmount,
+			twa.net_amount as netAmount,
+			twa.transaction_status as transactionStatus,
+			twa.bank_amount as bankAmount,
+			twa.cash_amount as cashAmount,
+			twa.academic_year as academicYear,
+			twa.paid_against as paidAgainst,
+			l.ledger_name as objectId,
+			twa.resource as resource,
+			t.ticket_code as codeId
+		FROM
+			transactional_working_area twa
+		JOIN	
+			ledger l ON (twa.ledger = l.rec_id AND l.is_active = true)
+		LEFT JOIN
+			ticket t ON(twa.ticket = t.rec_id AND t.is_active = true)		
+		WHERE
+			twa.is_active=true
+		AND
+			twa.transaction_status= 'PENDING'
+	</select>
+	
+	<!-- /***********Added By Naimisha 29122016************/ -->
+	
+	<select id="getTransactionalWorkingAreaStatus" resultType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		SELECT
+			twa.transaction_status as transactionStatus
+		FROM
+			transactional_working_area twa
+		WHERE
+			transactional_working_area_code =  #{twaCode};
+	
+	</select>
+	
+	<update id="updateIntoTransactionWorkingArea" parameterType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		UPDATE transactional_working_area SET
+			ledger = (SELECT rec_id FROM ledger WHERE ledger_code = #{transactionalWorkingAreaDesc} AND is_active = true),
+			updated_by = (SELECT rec_id FROM resource where user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now()))
+		WHERE
+			transactional_working_area_code =  #{transactionalWorkingAreaCode}
+		AND
+			is_active=true;
+	</update>
+	
+ 	<resultMap id="getBalanceDetailsRM" type="com.qts.icam.model.finance.Group">
+	<result property="groupName" column="group_name" jdbcType="VARCHAR" />
+	<result property="groupCode" column="group_code" jdbcType="VARCHAR" />
+	
+	</resultMap>
+	
+	<select id="getBalanceDetails"  parameterType="java.lang.String" resultMap="getBalanceDetailsRM" >
+		SELECT 
+			g.group_name,
+			g.group_code
+		FROM
+			group_for_ledger g
+		JOIN
+			group_type gt ON (g.group_type = gt.rec_id AND gt.is_active = true)
+		WHERE
+			g.parent_group IS NULL 
+		AND 
+			g.is_active=true
+		AND 
+			group_type_code NOT IN ('EXPENSE','INCOME');
+	</select>
+	<select id="getBalanceDetailsForChild"  parameterType="java.lang.String" resultMap="getBalanceDetailsRM" >
+		
+		SELECT 
+		g.group_name,
+		g.group_code
+	FROM
+		group_for_ledger g
+	
+	WHERE
+	  	g.parent_group=(SELECT rec_id FROM group_for_ledger WHERE group_code=#{group_code} AND is_active=true) ;
+	  		  	
+	</select>
+	
+	
+	<select id="getAllBalanceDetails"   resultType="com.qts.icam.model.finance.Group" >
+			
+			select 
+				l.ledger_name as ledgerName,
+				lb.current_balance as currentBalance,
+				gfl.group_name as groupTypeName,
+				l.sub_group_desc as subGroupName
+			from
+				ledger l
+			join
+				ledger_balance lb on(l.rec_id = lb.ledger and lb.is_active=true)
+			
+			join
+				group_for_ledger gfl on(l.parent_group=gfl.rec_id and gfl.is_active=true)
+			join
+				group_type gt on(gfl.group_type=gt.rec_id and gt.is_active=true)
+			 
+			where
+				l.is_active=true
+			and
+				lb.year=	(SELECT EXTRACT(YEAR FROM (SELECT now())));	
+	</select>
+	
+	<!-- sourav.bhadra changes 07062017 -->
+	
+	<select id="getBalanceDetailsAgainstChildGroupName"   resultType="com.qts.icam.model.finance.Group"  parameterType="java.util.Map">
+		SELECT
+			SUM(amount) as currentBalance
+		FROM
+			transaction_details td
+		JOIN
+			transaction t ON (td.transaction = t.rec_id AND t.is_active = true)
+		JOIN
+			ledger l ON (td.ledger = l.rec_id AND l.is_active = true)
+		JOIN
+			group_for_ledger gfl ON (gfl.rec_id = l.subgroup AND gfl.is_active = true)
+		WHERE
+			gfl.group_code = #{group_code}
+		AND
+			td.is_active = true
+		AND
+			td.date_of_creation &gt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+		AND
+			td.date_of_creation &lt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:MI:SS'))));
+	</select>
+	
+	<!-- sourav.bhadra changes 07062017 -->
+	
+	<select id="getAllBalanceDetailsAgainstName"   resultType="com.qts.icam.model.finance.Group"  parameterType="java.util.Map">
+		SELECT
+			SUM(amount) as currentBalance
+		FROM
+			transaction_details td
+		JOIN
+			transaction t ON (td.transaction = t.rec_id AND t.is_active = true)
+		JOIN
+			ledger l ON (td.ledger = l.rec_id AND l.is_active = true)
+		JOIN
+			group_for_ledger gfl ON (gfl.rec_id = l.parent_group AND gfl.is_active = true)
+		WHERE
+			gfl.group_code = #{group_code}
+		AND
+			td.is_active = true
+		AND
+			td.date_of_creation &gt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+		AND
+			td.date_of_creation &lt; (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:MI:SS'))));
+	</select>
+	
+	<select id="getPrevBalance"   resultType="com.qts.icam.model.finance.Group" >
+			
+			select 
+				l.ledger_name as ledgerName,
+				lb.current_balance as prevBalance,
+				gfl.group_name as groupTypeName,
+				l.sub_group_desc as subGroupName
+			from
+				ledger l
+			join
+				ledger_balance lb on(l.rec_id = lb.ledger and lb.is_active=true)
+			
+			join
+				group_for_ledger gfl on(l.parent_group=gfl.rec_id and gfl.is_active=true)
+			join
+				group_type gt on(gfl.group_type=gt.rec_id and gt.is_active=true)
+			 
+			where
+				l.is_active=true
+			and
+				lb.year=	(SELECT EXTRACT(YEAR FROM (SELECT now())))-1;	
+	</select>
+	<select id="getBalanceDetailsForSubChild"  parameterType="java.lang.String" resultMap="getBalanceDetailsRM" >
+		
+		SELECT 
+		g.group_name,
+		g.group_code
+	FROM
+		group_for_ledger g
+	
+	WHERE
+	  	g.parent_group=(SELECT rec_id FROM group_for_ledger WHERE group_code=#{group_code} AND is_active=true) ;
+	  		  	
+	</select>
+	
+		<select id="getSubGroupTypeList"  parameterType="java.lang.String" resultType="com.qts.icam.model.finance.Group" >
+		
+		SELECT 
+		g.group_name as subGroupName,
+		g.group_code as subGroupCode
+	FROM
+		group_for_ledger g
+	
+	WHERE
+	  	g.parent_group=(SELECT rec_id FROM group_for_ledger WHERE group_code=#{parent} AND is_active=true) ;
+	  		  	
+	</select>
+	
+	<insert id="insertintoNotification" parameterType="com.qts.icam.model.ticket.Ticket">
+		INSERT INTO notification(
+						            rec_id,
+						            obj_id, 
+						            updated_by, 
+						            updated_on, 
+						            date_of_creation, 
+						            notification_code, 
+						            notification_desc, 
+						            notification_from, 
+						            notification_subject, 
+						            notification_to)
+    VALUES
+						    	 (uuid_generate_v4(), 
+							    #{ticketObjectId}, 
+							    (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+							    (SELECT extract(epoch FROM now())),
+							    (SELECT extract(epoch FROM now())),
+							    (select('NOTI' ||(select COALESCE((SELECT MAX(notification_id) FROM notification), 0 )+1))),
+						        #{comment},
+						        (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+						        #{ticketService.ticketServiceName}, 
+						        (SELECT rec_id FROM resource WHERE user_id=#{moduleName} AND is_active = true));
+	</insert>
+	
+	
+	<select id="getReserveFund" parameterType="com.qts.icam.model.common.Budget" resultType="java.lang.Double">
+		SELECT
+					b.balance 
+
+				FROM
+					budget b	
+				WHERE
+					academic_year=#{academicYear}
+				AND     
+					department='RESERVE FUND'
+				AND
+					b.is_active=true;
+	</select>
+	
+	<!-- sourav.bhadra 01072017 -->
+	
+	<update id="updateReserveFund" parameterType="com.qts.icam.model.common.Budget">
+		UPDATE 
+			budget_fund_details bfd
+		SET 
+			updated_by=(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+			updated_on=(SELECT extract(epoch FROM now())), 
+			unallocated_fund_balance=#{reserveFund}
+		WHERE 
+			financial_year=(SELECT rec_id FROM financial_year WHERE financial_year_name=#{academicYear} AND is_active=true)
+		AND	
+			serial_id=(SELECT MAX(serial_id) FROM budget_fund_details)
+		AND 
+			bfd.is_active=true;
+	</update>
+	
+	<update id="updateDepartmentFund" parameterType="com.qts.icam.model.common.Budget">
+		UPDATE 
+					budget
+				SET	
+					balance=balance+#{actualIncome},
+					actual_income=#{actualIncome}
+				WHERE
+					department=#{department}
+				AND	
+					is_active=true;	
+						
+	</update>
+	
+		<select id="getParentName" resultType="java.lang.String" parameterType="java.lang.String">
+		select
+			group_name 
+		from 
+			group_for_ledger g
+		where
+			g.rec_id=(select parent_group from group_for_ledger where group_code=#{code} and is_active =true);
+	</select>
+	
+	<select id="selectGroupTypeAgainstALedger" resultType="com.qts.icam.model.finance.Group" parameterType="java.lang.String">
+		SELECT 
+			group_type_name as groupTypeName,
+			group_type_expenditure as status
+		FROM
+			group_for_ledger gfl
+		JOIN
+			group_type gt ON (gt.rec_id = gfl.group_type AND gt.is_active = true)
+		WHERE
+			group_code = #{parentGroup}
+		AND
+			gfl.is_active = true;
+	</select>
+	
+	<select id="getLedgerListFromTransactionWorkingArea" resultType="com.qts.icam.model.common.Ledger">
+		SELECT
+			ledger_code as ledgerCode,
+			ledger_name as ledgerName
+		FROm
+			ledger l
+		JOIN
+			transactional_working_area twa ON (twa.ledger = l.rec_id AND l.is_active = true)
+		AND
+			l.is_active= true
+		AND
+			transaction_status = 'SANCTIONED'
+	</select>
+	<!-- added by ranita.sur on 18082017 -->
+	<!-- modified by sourav.bhadra on 12-03-2018 -->
+	<select id="selectGroupTypeForALedger" resultType="java.lang.String" parameterType="java.lang.String">
+		<!-- query changed by sourav.bhadra on 25-08-2017 -->
+		SELECT 
+			group_type_name as groupTypeName
+		FROM
+			group_type gt
+		JOIN
+			group_for_ledger lg ON (gt.rec_id = lg.group_type AND lg.is_active = true)
+		JOIN
+			ledger l ON (lg.rec_id = l.parent_group AND l.is_active = true)
+		WHERE
+			l.ledger_name ilike #{ledger}
+		AND
+			gt.is_active = true;
+	</select>
+	<select id="amountRequestedForTransactionFromADepartment" resultType="com.qts.icam.model.finance.TransactionalWorkingArea" parameterType="java.lang.String">
+		SELECT
+			 	twa.gross_amount as grossAmount,
+				twa.net_amount as netAmount,
+				twa.transaction_status as transactionStatus,
+				twa.bank_amount as bankAmount,
+				twa.cash_amount as cashAmount,
+				r.user_id as updatedBy
+		FROM
+				transactional_working_area twa	
+		JOIN
+			resource r ON (r.rec_id = twa.updated_by AND r.is_active = true)
+		WHERE  
+			twa.is_active = true
+		AND
+			transactional_working_area_code = #{twaCode}
+		
+	</select>
+	<select id="getBudgetForADepartmentInCurrentAcademicYear" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Budget">
+		SELECT
+			b.percentage as expectedIncome,
+			b.actual_income as actualIncome,
+			b.total_expence as totalExpence,
+			b.balance as expectedExpense
+		FROM
+			budget b
+		JOIN
+			financial_year fy ON(b.financial_year = fy.rec_id AND fy.is_active=true)
+		WHERE
+			b.is_active = true
+		AND
+			fy.year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C')
+		AND
+			department = (SELECT rec_id FROM department WHERE department_code = #{department} AND is_active=true)
+
+
+	</select>
+	
+	<!-- modified by sourav.bhadra on 23-04-2018 -->
+	<select id="getLedgerForTransaction" resultType="com.qts.icam.model.common.Ledger">
+		SELECT
+			l.ledger_code as ledgerCode,
+			l.ledger_name as ledgerName
+		FROM
+			ledger l
+		WHERE
+			l.rec_id NOT IN (SELECT parent_ledger FROM ledger WHERE is_active = true AND parent_ledger IS NOT NULL)
+		AND
+			l.is_active = true
+		ORDER BY 
+			ledger_name;
+	</select>
+	
+	<update id="transactionWorkingAreaPaymentDone" parameterType="java.lang.String">
+		UPDATE transactional_working_area 
+		SET
+			transaction_status='PAYMENT DONE'
+		WHERE
+			transactional_working_area_code=#{twaCode};
+	</update>
+	
+	<!-- modified by sourav.bhadra on 22-08-2017
+		to fetch ledger's parent group's parent group -->
+	<select id="selectLedgerWithDetails" parameterType="java.lang.String" resultType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		SELECT
+			l.ledger_code as transactionalWorkingAreaDesc,
+			lg1.group_name as resource,
+			td.amount as netAmount,
+			td.is_debit as debit,
+			vt.voucher_type_code as transactionalWorkingAreaCode,
+			t.voucher_number as objectId,
+			t.narration as transactionalWorkingAreaName ,
+			<!-- sourav.bhadra 29.08.2017 -->
+			(SELECT to_char((SELECT to_timestamp(t.date)), 'DD/MM/YYYY')) as transactionDate ,
+			td.cheque_number as chequeNo
+		FROM 
+			transaction_details td
+		JOIN 
+			transaction t ON (td.transaction = t.rec_id)
+		JOIN 
+			voucher_type vt ON (t.voucher_type = vt.rec_id)	
+		JOIN 
+			ledger l ON (td.ledger = l.rec_id and l.is_active=true)
+		JOIN	
+			group_for_ledger lg ON (l.parent_group = lg.rec_id AND lg.is_active = true)
+		LEFT JOIN	
+			group_for_ledger lg1 ON (lg.parent_group = lg1.rec_id AND lg1.is_active = true)
+		WHERE
+			l.ledger_code =	#{ledgerCode};
+	</select>
+
+
+	<update id="updateLedgerDetails" parameterType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		UPDATE transaction_details 
+		SET
+		
+			amount = #{netAmount}
+			
+		 WHERE
+			transaction=(SELECT rec_id FROM transaction WHERE voucher_number =#{objectId} AND is_active=true )
+		AND
+			is_active=true; 
+			
+			
+	</update>
+	
+	<!-- modified by sourav.bhadra on 13-03-2018 -->
+	<select id="getCurrentFinancialYear" resultType="com.qts.icam.model.finance.FinancialYear">
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(session_start_date)), 'DD/MM/YYYY')) as sessionStartDate,
+			(SELECT to_char((SELECT to_timestamp(session_end_date)), 'DD/MM/YYYY')) as sessionEndDate,
+			financial_year_name as financialYearName
+		FROM 
+			financial_year fy
+		JOIN
+			status_flag sf ON (fy.year_status = sf.rec_id AND sf.is_active = true)
+		AND
+			fy.is_active = true
+		AND
+			sf.status_sym = 'C';
+	</select>
+	
+	<select id="getIndividualCommodityDetails" resultType="com.qts.icam.model.inventory.IndividualCommodity">
+		
+		SELECT
+			individual_commodity_code as individualCommodityCode,
+			commodity_name as commodityCode,
+			depreciation_rate as depreciation,
+			purchase_rate as warranty,
+			(SELECT to_char((SELECT to_timestamp(ic.date_of_creation)),'DD/MM/YYYY')) as updatedOn
+		FROM
+			individual_commodity ic
+		JOIN
+			commodity c ON (ic.commodity = c.rec_id AND c.is_active = TRUE)
+		JOIN
+			financial_year fy ON (fy.rec_id = ic.financial_year AND fy.is_active = true)
+		JOIN
+			status_flag sf ON (fy.year_status = sf.rec_id AND sf.is_active = true)
+		WHERE
+			c.commodity_type = 'ASSET'
+		AND
+			depreciation_rate != 0
+		AND
+			sf.status_sym = 'C';
+	</select>
+	
+	<insert id="insertDepreciationInTransactionWorkingArea" parameterType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		INSERT INTO transactional_working_area(
+			rec_id,
+			obj_id,
+			updated_by,
+			updated_on, 
+			date_of_creation,
+			transactional_working_area_code,
+			transactional_working_area_name, 
+			transactional_working_area_desc,
+			transaction_date,	
+			transaction_year,
+			transaction_month,
+			gross_amount,
+			net_amount,
+			transaction_mode
+			<choose>
+				<when test="transactionMode == 'BANK'">
+					,bank_amount,
+					cheque_no,
+					bank_name,
+					bank_code,
+					bank_location
+				</when>
+				<otherwise>
+					,cash_amount
+				</otherwise>
+			</choose>
+			,reason_of_transaction,
+			desc_of_transaction,
+			paid_against,
+			transaction_status,
+			academic_year,
+			department,
+			resource_type,
+			income_expense,
+			ledger)
+		VALUES(
+			uuid_generate_v4(),
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			extract(epoch FROM now()), 
+			extract(epoch FROM now()),
+			(SELECT('TWA' ||(SELECT COALESCE((SELECT MAX(transactional_working_area_id) FROM transactional_working_area), 0)+1))),
+			#{transactionalWorkingAreaName}, 
+			#{transactionalWorkingAreaDesc},
+			
+			extract(epoch FROM now()),			
+			to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'YYYY'),
+			to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'MM'),
+			#{netAmount},
+			#{netAmount}, 
+			#{transactionMode}
+			<choose>
+				<when test="transactionMode == 'BANK'">
+					,#{netAmount},
+					#{chequeNo},
+					#{bankName},
+					#{bankCode},
+					#{bankLocation}
+				</when>
+				<otherwise>
+					,#{netAmount}
+				</otherwise>
+			</choose>
+			,'COMMODITY PO',
+			#{descOfTransaction},
+			#{paidAgainst},
+			'PENDING',
+			(SELECT academic_year_name FROM academic_year WHERE year_status=(SELECT rec_id FROM status_flag WHERE status_sym='C')),
+			 (SELECT department_name FROM department WHERE department_code = #{department}), 
+			<!-- 'INVENTORY AND MESS', -->
+			'INVENTORY AND MESS',
+			#{incomeExpense},
+			(SELECT rec_id FROM ledger WHERE ledger_code = #{academicYear} AND is_active = true)
+		);
+	</insert>
+	
+	<!-- sourav.bhadra 01072017 -->
+	
+	<select id="getPreviousYearUnallocatedFund" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Budget">
+		SELECT 
+			bfd.total_fund_balance as expectedIncome,
+			bfd.unallocated_fund_balance as reserveFund
+		FROM 
+			budget_fund_details bfd
+		JOIN financial_year fy ON(bfd.financial_year = fy.rec_id AND fy.is_active=true)
+		WHERE
+			financial_year=(SELECT rec_id FROM financial_year WHERE financial_year_name=#{academicYear} AND is_active=true)
+		AND	
+			bfd.serial_id=(SELECT MAX(serial_id) FROM budget_fund_details)
+		AND 
+			bfd.is_active=true;
+	</select>
+	
+	<!-- sourav.bhadra 17062017 -->
+	
+	<insert id="saveBudgetDetailsAndUnallocatedFund" parameterType="com.qts.icam.model.common.Budget">
+		INSERT INTO budget_fund_details(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+				fund_id, total_fund_balance, financial_year, unallocated_fund_balance)
+		VALUES (
+			(SELECT uuid_generate_v4()),#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			(SELECT ('BudgetFund-' ||(select COALESCE((SELECT MAX(serial_id) FROM budget_fund_details), 0 )+1))),
+			#{expectedIncome},
+			(SELECT rec_id FROM financial_year WHERE financial_year_name=#{academicYear} AND is_active=true),
+			#{reserveFund}
+		);
+	</insert>
+	
+	<!-- added by sourav.bhadra 23062017 -->
+	
+	<select id="selectTaxPercentageAgainstTaxCode" parameterType="java.lang.String" resultType="java.lang.Double">
+		SELECT 
+			percentage as percentage
+		FROM 
+			tax_percentage_details
+		WHERE
+			tax_code = #{taxCode}
+		AND
+			status = 'ACTIVE'
+		AND
+			is_active = TRUE;
+	</select>
+	
+	<!-- added by sourav.bhadra on 21062017 -->
+	<insert id="insertTaxPercentages" parameterType="com.qts.icam.model.finance.Tax">
+		INSERT INTO tax_percentage_details(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+				tax_code, tax_name, percentage, status, tax_desc)
+		VALUES (
+			(uuid_generate_v4()), 
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			(SELECT('TAX-' ||(SELECT COALESCE((SELECT MAX(serial_id) FROM tax_percentage_details), 0)+1))),
+			upper(#{taxName}),
+			#{percentage},
+			upper(#{taxStatus}),
+			upper(#{taxName})
+		);
+	</insert>	
+	
+	<!-- added by sourav.bhadra on 21062017 -->
+	<select id="getTaxDetails" resultType="com.qts.icam.model.finance.Tax">
+		SELECT 
+			tax_code as taxCode, 
+			tax_name as taxName, 
+			percentage as percentage, 
+			status as taxStatus
+		FROM 
+			tax_percentage_details
+		WHERE 
+			is_active=true;
+	</select>
+	
+	<select id="getResourceLedgerDetails" parameterType="com.qts.icam.model.common.Resource" resultType="com.qts.icam.model.common.Resource">
+		<!-- SELECT
+				user_id as userId,
+				first_name || ' ' || COALESCE(middle_name,' ') || ' ' || last_name  as name,
+				ledger_code as ledger
+			FROM
+				salary_template_ledger_resource_mapping stlrm
+			JOIN
+				resource r ON (stlrm.resource = r.rec_id AND r.is_active = true)
+			LEFT JOIN
+				ledger l ON (stlrm.ledger = l.rec_id AND l.is_active = true)
+			LEFT JOIN
+				salary_template st ON (st.rec_id = stlrm.salary_template AND st.is_active = true)
+			AND
+				stlrm.is_active = true
+			AND
+				salary_template_code = #{resourceName}; -->
+				SELECT
+				user_id as userId,
+				first_name || ' ' || COALESCE(middle_name,' ') || ' ' || last_name  as name,
+				ledger_code as ledger,
+				salary_template_code
+			FROM
+				salary_template_ledger_resource_mapping stlrm
+			LEFT JOIN
+				ledger l ON (stlrm.ledger = l.rec_id AND l.is_active = true)
+			LEFT JOIN
+				salary_template st ON (st.rec_id = stlrm.salary_template AND st.is_active = true)
+			JOIN
+				resource r ON (stlrm.resource = r.rec_id AND r.is_active = true)
+			JOIN
+				resource_type rt ON (rt.rec_id = r.resource_type AND rt.is_active = true)
+			
+			AND
+				stlrm.is_active = true
+			<!-- AND
+				salary_template_code =#{resourceName} -->
+			AND
+				resource_type_code = #{resourceTypeName};
+	</select>
+	<insert id="mapLedgerTemplateResource" parameterType="com.qts.icam.model.common.TemplateLedgerMapping">
+		INSERT INTO salary_template_ledger_resource_mapping(
+            rec_id, obj_id, updated_by, 
+            updated_on, date_of_creation, salary_template, resource, 
+            ledger)
+    VALUES ((uuid_generate_v4()), #{objectId},
+    (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+    (SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())), 
+    (SELECT rec_id FROM salary_template WHERE salary_template_code = #{salaryTemplateDetailsCode} AND is_active = true),
+    (SELECT rec_id FROM resource WHERE user_id = #{salaryTemplateCode} AND is_active = true),
+     (SELECT rec_id FROM ledger WHERE ledger_code = #{ledger} AND is_active = true));
+
+	</insert>
+	
+	
+	<update id="updateReseveFundLedger" parameterType="com.qts.icam.model.common.Budget">
+		UPDATE ledger_balance SET current_balance=(current_balance+#{reserveFund})
+		 		WHERE ledger=(SELECT rec_id FROM ledger WHERE ledger_code ='RESERVE FUND'
+		 		AND is_active =true);	
+	</update>
+	
+	
+	 <update id="updateLedgerInNarration" parameterType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		UPDATE 
+			transaction 
+		SET
+			narration = #{transactionalWorkingAreaName}
+		WHERE
+			voucher_number =#{objectId}	
+		AND
+			is_active=true;
+	</update> 
+	
+	<!-- Edit Tax Details
+	 By Ranita.Sur 26072017 -->
+	<update id="saveTaxPercentageAndStatus" parameterType="com.qts.icam.model.finance.Tax">
+		UPDATE 
+			tax_percentage_details 
+		SET 
+			percentage =#{percentage},
+			status = #{taxStatus}
+		WHERE
+			tax_code =#{taxCode}	
+		AND
+			is_active=true;	
+	</update>
+	
+	<!--  Delete Tax Details
+	 By Ranita.Sur 26072017 -->
+	<update id="inactiveTaxDetails" parameterType="com.qts.icam.model.finance.Tax">
+		UPDATE 
+			tax_percentage_details 
+		SET 
+			is_active=false
+		WHERE
+			tax_code =#{taxCode}	
+		AND
+			is_active=true;	
+	</update>
+	<!-- UpdateLedgerName By Ranita.Sur27072017  -->
+	<update id="updateLedgerName" parameterType="com.qts.icam.model.common.Ledger">
+		UPDATE 
+			ledger 
+		SET 
+			ledger_name = #{ledgerName}
+		WHERE 
+			ledger_code= #{ledgerCode}
+		AND 
+			is_active =true;
+		<!-- 	modified by ranita.sur on 28/08/2017 for updating opening balance in ledger -->
+			UPDATE 
+			ledger_balance 
+		SET 
+			opening_balance = #{openingBal},
+			current_balance = #{currentBal}
+		WHERE 
+			  ledger = (SELECT rec_id FROM ledger WHERE ledger_code = #{ledgerCode} AND is_active=true )
+		AND 
+			is_active =true;
+	</update>
+	<!-- 	/**Addeb by ranita.sur on 08/08/2017 for edit daybook details**/ -->
+	<update id="editDaybookDetails" parameterType="com.qts.icam.model.common.Daybook">
+		UPDATE 
+		     transaction
+		 SET
+		    voucher_number=#{voucherNumber},
+			narration=#{narration}
+		WHERE
+			transaction_id = #{transactionSerialId}	
+		AND
+			is_active=true;
+			
+			
+		
+		UPDATE 
+		     transaction_details 
+		 SET
+		 		date_of_creation=(SELECT EXTRACT(EPOCH FROM to_timestamp(#{date}, 'DD/MM/YYYY'))),
+		  		amount=#{amount}
+		WHERE
+			transaction=(SELECT rec_id FROM transaction WHERE transaction_id = #{transactionSerialId} AND is_active=true)	
+		AND
+			is_active=true;
+</update>
+
+	<!-- added by sourav.bhadra on 08-08-2017
+	to select total amount of 'INCOME' group
+	for 'RESERVE AND SURPLUS'
+	
+	modified by sourav.bhadra on 21-08-2017 to select all ledgers under INCOME groups -->
+	<select id="getIncomeLedgerListForReserveAndSurplus" resultType="java.lang.String">
+		SELECT 
+			DISTINCT l.ledger_name
+		FROM 
+			ledger l
+		JOIN
+			group_for_ledger gfl ON (l.parent_group = gfl.rec_id AND gfl.is_active=true)
+		WHERE 
+			l.is_active=true
+		AND 
+			gfl.group_name IN ('DIRECT INCOME', 'OTHER INCOME');
+	</select>
+	
+	<!-- added by sourav.bhadra on 09-08-2017
+	to select total amount of 'EXPENCE' group
+	for 'RESERVE AND SURPLUS'
+	
+	modified by sourav.bhadra on 21-08-2017 to select all ledgers under EXPENCE groups -->
+	<select id="getExpenceLedgerListForReserveAndSurplus" resultType="java.lang.String">
+		SELECT 
+			DISTINCT l.ledger_name
+		FROM 
+			ledger l
+		JOIN
+			group_for_ledger gfl ON (l.parent_group = gfl.rec_id AND gfl.is_active=true)
+		WHERE 
+			l.is_active=true
+		AND 
+			gfl.group_name IN ('DIRECT EXPENSE', 'OTHER EXPENSE');
+	</select>
+	
+	<!--/*added By ranita.sur for entry in ledgerBalance on 10082017*/  -->
+	 <select id="selectMaxLedgerId" parameterType="com.qts.icam.model.common.Ledger" resultType="java.lang.Integer">
+			SELECT
+				MAX(lb.ledger_balance_id) as ledgerSerialId
+			FROM
+				ledger_balance  lb
+			JOIN 
+				ledger l ON (lb.ledger=l.rec_id AND l.is_active=true)
+			WHERE
+				l.ledger_code=#{ledger}
+			AND
+				lb.date_of_creation &lt; (SELECT extract(epoch FROM now()))
+			AND
+				lb.is_active=true;
+
+	</select> 
+	
+	<!-- modified by sourav.bhadra on 28-08-2017 -->
+	<!-- modified by sourav.bhadra on 12-03-2018 -->
+	<select id="selectBalanceForParentLedger" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Ledger">
+		SELECT
+			current_balance as currentBal, 
+			opening_balance as openingBal
+		FROM
+			ledger_balance
+		WHERE
+			ledger = (SELECT rec_id FROM ledger WHERE ledger_name ilike #{ledger} AND is_active = true)
+		AND
+			ledger_balance_id = (SELECT MAX(ledger_balance_id) FROM ledger_balance WHERE ledger = (SELECT rec_id FROM ledger WHERE ledger_name ilike #{ledger} AND is_active = true))
+		AND
+			is_active = true;
+	</select> 
+	<insert id="insertIntoLedgerBalanceForCreditAndDebit" parameterType="com.qts.icam.model.finance.TransactionDetails">
+	    INSERT INTO ledger_balance(
+				rec_id, 
+				obj_id, 
+				updated_by, 
+				updated_on,
+			    date_of_creation, 
+				is_active,
+			    ledger, 
+			    month, 
+			    year, 
+			    opening_balance, 
+			    current_balance, 
+			    is_current)
+	VALUES (
+				(select uuid_generate_v4()), 
+			       #{objectId},
+				(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+				(SELECT extract(epoch FROM now())), 
+				(SELECT extract(epoch FROM now())), 
+				true,
+				(SELECT rec_id FROM ledger WHERE ledger_code ilike #{ledger} AND is_active =true),
+				(SELECT EXTRACT(MONTH FROM (SELECT now()))), 
+				(SELECT EXTRACT(YEAR FROM (SELECT now()))),
+				#{grossAmount}, 
+				#{onbasic}, 
+				true
+			);
+	</insert>
+	
+	<!-- added by sourav.bhadra on 11-08-2017 -->
+	<!-- modified by sourav.bhadra on 12-09-2017 -->
+	<select id="getCurrentAndOpeningBalanceForALedger" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Ledger">
+		SELECT
+			opening_balance as openingBal,
+			current_balance as currentBal
+		FROM
+			ledger_balance
+		WHERE
+			date_of_creation=(SELECT MAX(date_of_creation) FROM ledger_balance WHERE ledger = (SELECT rec_id FROM ledger WHERE ledger_code = #{ledgerCode} AND is_active=true))
+		AND
+			ledger = (SELECT rec_id FROM ledger WHERE ledger_code = #{ledgerCode} AND is_active=true)
+		AND
+			ledger_balance_id = (SELECT MAX(ledger_balance_id) FROM ledger_balance WHERE ledger = (SELECT rec_id FROM ledger WHERE ledger_code = #{ledgerCode} AND is_active=true))
+		AND
+			is_active=true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 14-08-2017 -->
+	<select id="getPaymentParty" parameterType="java.util.Map" resultType="java.lang.String">
+		SELECT 
+			l.ledger_code 
+		FROM 
+			transaction_details td
+		JOIN 
+			transaction t ON (td.transaction = t.rec_id)
+		JOIN 
+			voucher_type vt ON (t.voucher_type = vt.rec_id)	
+		JOIN 
+			ledger l ON (td.ledger = l.rec_id)
+		WHERE 
+			t.voucher_number = #{voucherNo}
+		AND 
+			l.ledger_code != #{ledgerCode};
+	</select>
+	
+	<!-- added by sourav.bhadra on 16-08-2017
+		to select all INCOME groups ledgers -->
+	<select id="incomeLedgerListForTB" resultType="java.lang.String">
+		SELECT 
+			l.ledger_name as ledgerList
+		FROM 
+			ledger l
+		JOIN 
+			group_for_ledger gfl ON (l.parent_group = gfl.rec_id AND gfl.is_active=true)
+		WHERE 
+			l.rec_id NOT IN (SELECT parent_ledger FROM ledger WHERE is_active = true AND parent_ledger IS NOT NULL)
+		AND 
+			l.is_active = true
+		AND 
+			gfl.group_name IN ('INCOME','DIRECT INCOME','OTHER INCOME');
+		
+	</select>
+	
+	<!-- added by sourav.bhadra on 16-08-2017
+		to select all EXPENCE groups ledgers -->
+	<select id="expenceLedgerListForTB" resultType="java.lang.String">
+		SELECT 
+			l.ledger_name as ledgerList
+		FROM 
+			ledger l
+		JOIN 
+			group_for_ledger gfl ON (l.parent_group = gfl.rec_id AND gfl.is_active=true)
+		WHERE 
+			l.rec_id NOT IN (SELECT parent_ledger FROM ledger WHERE is_active = true AND parent_ledger IS NOT NULL)
+		AND 
+			l.is_active = true
+		AND 
+			gfl.group_name IN ('EXPENSE','DIRECT EXPENSE','OTHER EXPENSE');
+	</select>
+	
+	<!-- added by sourav.bhadra on 17-08-2017
+	  to fetch ledgers current balance -->
+	<select id="ledgerCurrentBalanceForTB" parameterType="java.util.Map" resultType="java.lang.Double">
+		SELECT 
+			current_balance
+		FROM 
+			ledger_balance
+		WHERE 
+			date_of_creation=(SELECT MAX(date_of_creation) FROM ledger_balance WHERE ledger = (SELECT rec_id FROM ledger WHERE ledger_name = #{ledger} AND is_active=true)
+					AND date_of_creation &lt;= (SELECT extract(epoch from (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:MI:SS')))))
+		AND 
+			ledger = (SELECT rec_id FROM ledger WHERE ledger_name = #{ledger} AND is_active=true)
+		<!-- modified by sourav.bhadra on 23-08-2017 -->
+		AND
+			ledger_balance_id = (SELECT MAX(ledger_balance_id) FROM ledger_balance WHERE ledger = (SELECT rec_id FROM ledger WHERE ledger_name = #{ledger} AND is_active=true)
+					AND date_of_creation &lt;= (SELECT extract(epoch from (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:MI:SS')))))
+		AND 
+			is_active=true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 17-08-2017
+	  to fetch all ledgers of all ASSET groups -->
+	<select id="assetLedgerListForTB" resultType="java.lang.String">
+		SELECT 
+			l.ledger_name as ledgerList
+		FROM ledger l
+		JOIN 
+			group_for_ledger gfl ON (l.parent_group = gfl.rec_id AND gfl.is_active=true)
+		WHERE
+			l.rec_id NOT IN (SELECT parent_ledger FROM ledger WHERE is_active = true AND parent_ledger IS NOT NULL)
+		AND
+			l.is_active = true
+		AND
+			gfl.group_name IN ('CURRENT ASSETS','NON-CURRENT ASSETS');
+	</select>
+
+	<!-- /*added by rannita.sur on 18/08/2017 for current balance and opening balance in cashbook*/ -->
+	 <select id="getOpeningBalance" parameterType="java.lang.String" resultType="java.lang.Double">
+		SELECT  
+		     lb.current_balance  ,
+		     lb.ledger_balance_id
+       FROM
+	        ledger_balance lb 
+	
+		JOIN 
+			ledger l ON(lb.ledger=l.rec_id AND l.is_active = true)
+		
+		WHERE 
+			l.ledger_name = 'CASH'
+		AND
+			lb.ledger_balance_id=(select max(lb1.ledger_balance_id)from ledger_balance lb1
+	         WHERE
+			 	lb1.date_of_creation &lt;= (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+			 AND
+			 	lb1.ledger = (select rec_id from ledger where ledger_name='CASH' AND is_active=true));	
+		
+	</select> 
+	<!-- /*added by rannita.sur on 18/08/2017 for current balance and opening balance in cashbook*/ -->
+	 <select id="getCurrentBalance" parameterType="java.lang.String" resultType="java.lang.Double">
+				SELECT  
+				     lb.current_balance ,
+				     lb.ledger_balance_id
+		       FROM
+			        ledger_balance lb 
+			
+				JOIN 
+					ledger l ON(lb.ledger=l.rec_id AND l.is_active = true)
+				
+				WHERE 
+					l.ledger_name = 'CASH'
+				AND
+					lb.ledger_balance_id=(select max(lb1.ledger_balance_id)from ledger_balance lb1
+				   	WHERE
+						lb1.date_of_creation &lt;= (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:MI:SS'))))
+				   	AND
+				  		lb1.ledger = (select rec_id from ledger where ledger_name='CASH' AND is_active=true));	
+				
+	</select> 
+	<!-- 	/*added by ranita.sur on 18082017 for enry in daybook*/ -->
+	<select id="getChildGroupForLiability" resultType="java.lang.String" >
+		SELECT 
+			g.group_name
+		FROM
+			group_for_ledger g
+		WHERE
+	  		g.parent_group=(SELECT rec_id FROM group_for_ledger WHERE group_code='EQUITY AND LIABILITIES' AND is_active=true) ;
+	</select>
+	
+	<!-- added by sourav.bhadra on 19-08-2017
+	  to fetch ledgers under a sub child group -->
+	<select id="selectLedgersOfSubChildGroups" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT 
+			DISTINCT l.ledger_name
+		FROM 
+			ledger l
+		JOIN
+			group_for_ledger gfl ON (l.subgroup = gfl.rec_id AND gfl.is_active=true)
+		WHERE 
+			l.is_active=true
+		AND 
+			gfl.group_name = #{subChildGroupName};
+	</select>
+	
+	<!-- added by sourav.bhadra on 19-08-2017
+	  to fetch ledgers current balance for balance sheet -->
+	<select id="ledgerCurrentBalanceForBS" parameterType="java.util.Map" resultType="java.lang.Double">
+		SELECT 
+			current_balance
+		FROM 
+			ledger_balance
+		WHERE 
+			date_of_creation=(SELECT MAX(date_of_creation) FROM ledger_balance WHERE ledger = (SELECT rec_id FROM ledger WHERE ledger_name = #{ledger} AND is_active=true)
+					AND date_of_creation &lt;= (SELECT extract(epoch from (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:MI:SS')))))
+		AND 
+			ledger = (SELECT rec_id FROM ledger WHERE ledger_name = #{ledger} AND is_active=true)
+		<!-- modified by sourav.bhadra on 23-08-2017 -->
+		AND
+			ledger_balance_id = (SELECT MAX(ledger_balance_id) FROM ledger_balance WHERE ledger = (SELECT rec_id FROM ledger WHERE ledger_name = #{ledger} AND is_active=true)
+					AND date_of_creation &lt;= (SELECT extract(epoch from (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:MI:SS')))))
+		AND 
+			is_active=true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 20-08-2017
+	  to fetch ledgers under a child group -->
+	<select id="selectLedgersOfChildGroups" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT 
+			DISTINCT l.ledger_name
+		FROM 
+			ledger l
+		JOIN
+			group_for_ledger gfl ON (l.parent_group = gfl.rec_id AND gfl.is_active=true)
+		WHERE 
+			l.is_active=true
+		AND 
+			gfl.group_name = #{childGroup};
+	</select>
+
+<!-- /*Addeb by ranita.sur on 22/08/2017 for edit daybook details*/ -->
+	<select id="getLedgerListForDaybook"  resultType="com.qts.icam.model.common.Ledger">
+			SELECT
+				l.ledger_name as ledgerName
+			FROM
+				ledger l
+		    WHERE
+				l.is_active=true;
+
+	</select>
+	<!-- /*Addeb by ranita.sur on 22/08/2017 for edit daybook details*/ -->
+	<select id="getVoucherTypeListForDaybook"  resultType="com.qts.icam.model.finance.VoucherType">
+			SELECT
+				v.voucher_type_name as voucherTypeName
+			FROM
+				voucher_type v
+		    WHERE
+				v.is_active=true;
+	</select>
+	
+	<!-- Added By Saif.Ali
+		Date-19/09/2017 -->
+	<!-- modified by sourav.bhadra 12-04-2018 -->
+	<select id="getTransactionalWorkingAreaListOfApprovedTransactions" resultType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		SELECT
+			twa.reason_of_transaction as reasonOfTransaction,
+			twa.transactional_working_area_code as transactionalWorkingAreaCode,
+			twa.transactional_working_area_name as transactionalWorkingAreaName,			
+			twa.department as department,
+			twa.income_expense as incomeExpense,
+			twa.resource_type as resourceType,
+			twa.transaction_mode as transactionMode,
+			twa.bank_name as bankName,
+			twa.cheque_no as chequeNo,
+			(SELECT to_char((SELECT to_timestamp(twa.transaction_date)), 'DD/MM/YYYY')) as transactionDate,
+			twa.transaction_year as transactionYear,
+			twa.transaction_month as transactionMonth,
+			twa.gross_amount as grossAmount,
+			twa.net_amount as netAmount,
+			twa.transaction_status as transactionStatus,
+			twa.bank_amount as bankAmount,
+			twa.cash_amount as cashAmount,
+			twa.academic_year as academicYear,
+			twa.paid_against as paidAgainst,
+			l.ledger_name as objectId,
+			twa.resource as resource,
+			t.ticket_code as codeId
+		FROM
+			transactional_working_area twa
+		JOIN	
+			ledger l ON (twa.ledger = l.rec_id AND l.is_active = true)
+		LEFT JOIN
+			ticket t ON(twa.ticket = t.rec_id AND t.is_active = true)		
+		WHERE
+			twa.is_active=true
+		AND
+			twa.transaction_status= 'SANCTIONED'
+	</select>
+	
+	<!-- Added By Saif.Ali
+		Date-19/09/2017 -->
+	<!-- modified by sourav.bhadra 12-04-2018 -->
+	<select id="getTransactionalWorkingAreaListOfDonePayments" resultType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		SELECT
+			twa.reason_of_transaction as reasonOfTransaction,
+			twa.transactional_working_area_code as transactionalWorkingAreaCode,
+			twa.transactional_working_area_name as transactionalWorkingAreaName,			
+			twa.department as department,
+			twa.income_expense as incomeExpense,
+			twa.resource_type as resourceType,
+			twa.transaction_mode as transactionMode,
+			twa.bank_name as bankName,
+			twa.cheque_no as chequeNo,
+			(SELECT to_char((SELECT to_timestamp(twa.transaction_date)), 'DD/MM/YYYY')) as transactionDate,
+			twa.transaction_year as transactionYear,
+			twa.transaction_month as transactionMonth,
+			twa.gross_amount as grossAmount,
+			twa.net_amount as netAmount,
+			twa.transaction_status as transactionStatus,
+			twa.bank_amount as bankAmount,
+			twa.cash_amount as cashAmount,
+			twa.academic_year as academicYear,
+			twa.paid_against as paidAgainst,
+			l.ledger_name as objectId,
+			twa.resource as resource,
+			t.ticket_code as codeId
+		FROM
+			transactional_working_area twa
+		JOIN	
+			ledger l ON (twa.ledger = l.rec_id AND l.is_active = true)
+		LEFT JOIN
+			ticket t ON(twa.ticket = t.rec_id AND t.is_active = true)	
+		WHERE
+			twa.is_active=true
+		AND
+			twa.transaction_status= 'PAYMENT DONE'
+	</select>
+	
+	<!-- added by sourav.bhadra on 22-09-2017 -->
+	<select id="getLedgerDetailsWithinDateRange" parameterType="java.util.Map" resultType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		SELECT
+			l.ledger_code as transactionalWorkingAreaDesc,
+			lg1.group_name as resource,
+			td.amount as netAmount,
+			td.is_debit as debit,
+			vt.voucher_type_code as transactionalWorkingAreaCode,
+			t.voucher_number as objectId,
+			t.narration as transactionalWorkingAreaName ,
+			(SELECT to_char((SELECT to_timestamp(t.date)), 'DD/MM/YYYY')) as transactionDate ,
+			td.cheque_number as chequeNo
+		FROM 
+			transaction_details td
+		JOIN 
+			transaction t ON (td.transaction = t.rec_id)
+		JOIN 
+			voucher_type vt ON (t.voucher_type = vt.rec_id)	
+		JOIN 
+			ledger l ON (td.ledger = l.rec_id and l.is_active=true)
+		JOIN	
+			group_for_ledger lg ON (l.parent_group = lg.rec_id AND lg.is_active = true)
+		LEFT JOIN	
+			group_for_ledger lg1 ON (lg.parent_group = lg1.rec_id AND lg1.is_active = true)
+		WHERE
+			l.ledger_code =	#{ledger}
+		AND
+			t.date &gt;= (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+		AND 
+			t.date &lt;= (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:MI:SS'))))
+		AND
+			td.is_active = true;
+		
+	</select>
+
+	<!-- added by sourav.bhadra on 22-09-2017 -->
+	<select id="selectOpeningBalanceOfAParticularLedger" parameterType="java.util.Map" resultType="java.lang.Double">
+		SELECT  
+			 lb.current_balance
+	   FROM
+			ledger_balance lb 
+
+		JOIN 
+			ledger l ON(lb.ledger=l.rec_id AND l.is_active = true)
+		
+		WHERE 
+			l.ledger_name = #{ledger}
+		AND
+			lb.ledger_balance_id=(select max(lb1.ledger_balance_id)from ledger_balance lb1
+			 WHERE
+				lb1.date_of_creation &lt;= (SELECT extract(epoch FROM (SELECT to_timestamp(#{from}, 'DD/MM/YYYY'))))
+			 AND
+				lb1.ledger = (select rec_id from ledger where ledger_name = #{ledger} AND is_active=true));
+	</select>
+
+	<!-- added by sourav.bhadra on 22-09-2017 -->
+	<select id="selectClosingBalanceOfAParticularLedger" parameterType="java.util.Map" resultType="java.lang.Double">
+		SELECT  
+			 lb.current_balance
+		FROM
+			ledger_balance lb 
+
+		JOIN 
+			ledger l ON(lb.ledger=l.rec_id AND l.is_active = true)
+		WHERE 
+			l.ledger_name = #{ledger}
+		AND
+			lb.ledger_balance_id=(select max(lb1.ledger_balance_id)from ledger_balance lb1
+			WHERE
+				lb1.date_of_creation &lt;= (SELECT extract(epoch FROM (SELECT to_timestamp(#{to}, 'DD/MM/YYYY HH24:MI:SS'))))
+			AND
+				lb1.ledger = (select rec_id from ledger where ledger_name = #{ledger} AND is_active=true));	
+		
+	</select>
+	
+	<!-- added by sourav.bhadra on 22-03-2018 -->
+	<select id="checkDepartmentBudgetAvailability" parameterType="com.qts.icam.model.common.Budget" resultType="java.lang.String">
+		SELECT
+			rec_id
+		FROM 
+			budget
+		WHERE
+			is_active = true
+		AND
+			financial_year=(SELECT rec_id FROM financial_year WHERE financial_year_name=#{academicYear} AND is_active=true)
+		AND
+			department=(SELECT rec_id FROM department WHERE department_code=#{department} AND is_active=true);
+	</select>
+	
+	<!-- added by sourav.bhadra on 06-04-2018 -->
+	<select id="selectDeptsForDudgetAllocation" resultType="com.qts.icam.model.common.Department">
+		SELECT 
+			department_code as departmentCode, 
+			department_name as departmentName, 
+			obj_id as objectId
+		FROM 
+			department
+		WHERE 
+			parent_department IS NULL
+		AND 
+			is_active = true;
+	</select>
+	
+<!-- 	Added By Naimisha 17/04/2018 -->
+	<select id="selecteSalaryBreakUpListForABreakUpType" resultType="com.qts.icam.model.finance.SalaryBreakUp">
+		SELECT
+			salarybreakup_code as salaryBreakUpCode,
+			salarybreakup_name as salaryBreakUpName,
+			salarybreakup_type as salaryBreakUpType
+		FROM
+			salary_break_up
+		WHERE
+			salarybreakup_type IN ('MANUAL','DEDUCTION')
+		AND
+			is_active = true
+	</select>
+	
+	<insert id="insertSalaryBreakUpLedgerMapping" parameterType="com.qts.icam.model.finance.SalaryBreakUp">
+		INSERT INTO salary_breakup_ledger_mapping(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation,  
+            ledger, salary_break_up)
+    	VALUES (
+    		(select uuid_generate_v4()), #{salaryBreakUpObjectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())), 
+            (SELECT rec_id FROM ledger WHERE ledger_code = #{salaryBreakUpType} AND is_active = true),
+            (SELECT rec_id FROM salary_break_up WHERE salarybreakup_code = #{salaryBreakUpCode}AND is_active = true) );
+	
+	
+	</insert>
+	
+	<select id="getSalaryBreakUpLedgerMappingList" resultType="com.qts.icam.model.finance.SalaryBreakUp">
+		SELECT
+			salarybreakup_code as salaryBreakUpCode,
+			salarybreakup_name as salaryBreakUpName,
+			ledger_code as salaryBreakUpType,
+			ledger_name as salaryBreakUpDesc
+		FROM
+			salary_breakup_ledger_mapping sblm
+		JOIN
+			salary_break_up sbu ON (sblm.salary_break_up = sbu.rec_id AND sbu.is_active = true)
+		JOIN
+			ledger l ON (sblm.ledger = l.rec_id AND l.is_active = true)
+		AND
+			sblm.is_active = true
+	</select>
+	
+	<select id="selectLedgerForASalaryBreakUp" resultType="com.qts.icam.model.common.Ledger" parameterType="java.lang.String">
+		SELECT
+			ledger_code as ledgerCode,
+			ledger_name as ledgerName
+		FROM
+			salary_breakup_ledger_mapping sblm
+		JOIN
+			salary_break_up sbu ON (sblm.salary_break_up = sbu.rec_id AND sbu.is_active = true)
+		JOIN
+			ledger l ON (sblm.ledger = l.rec_id AND l.is_active = true)
+		WHERE
+			salarybreakup_code = #{salaryBreakUpCode}
+		AND
+			sblm.is_active = true
+	</select>
+	
+	<!-- added by sourav.bhadra on 20-04-2018 -->
+	<insert id="insertVoucherType" parameterType="com.qts.icam.model.finance.VoucherType">
+		INSERT INTO voucher_type(
+			rec_id, 
+			obj_id, 
+			updated_by, 
+			updated_on, 
+			date_of_creation, 
+			voucher_type_code, 
+			voucher_type_name,
+			department, 
+			income_expense, 
+			ticket_no, 
+			multi_debit)
+		VALUES (
+			(select uuid_generate_v4()), 
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			#{voucherTypeName},
+			#{voucherTypeName},
+			#{department},
+			#{incExp},
+			#{ticketNo},
+			#{multipleDebitLedger}
+			);
+	</insert>
+	
+	<!-- added by sourav.bhadra on 20-04-2018 -->
+	<select id="selectAVoucherTypeDetails" parameterType="java.lang.String" resultType="com.qts.icam.model.finance.VoucherType">
+		SELECT
+			department as department,
+			income_expense as incExp,
+			ticket_no as ticketNo,
+			multi_debit as multipleDebitLedger
+		FROM
+			voucher_type		
+		WHERE
+			voucher_type_code ilike #{voucherTypeCode}
+		AND
+			is_active=true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 23-04-2018 -->
+	<select id="selectLedgersForJournalVouchers" resultType="com.qts.icam.model.common.Ledger">
+		SELECT
+			l.ledger_code as ledgerCode,
+			l.ledger_name as ledgerName
+		FROM
+			ledger l
+		WHERE
+			l.rec_id NOT IN (SELECT parent_ledger FROM ledger WHERE is_active = true AND parent_ledger IS NOT NULL)
+		EXCEPT
+		SELECT
+			ledger_code as ledgerCode,
+			ledger_name as ledgerName
+		FROM
+			ledger
+		WHERE
+			rec_id NOT IN (SELECT parent_ledger FROM ledger WHERE is_active = true AND parent_ledger IS NOT NULL)
+		AND
+			ledger_type IN ('BANK', 'CASH')
+		AND
+			is_active = true
+		ORDER BY 
+			ledgerName
+	</select>
+	
+	<!-- added by sourav.bhadra on 24-04-2018 -->
+	<select id="selectTicketListForDayBook" resultType="com.qts.icam.model.ticket.Ticket">
+		SELECT 
+			ticket_code as ticketCode
+		FROM 
+			ticket t
+		JOIN 
+			ticket_status ts ON (t.ticket_status = ts.rec_id AND ts.is_active = true)
+		WHERE 
+			ts.ticket_status_name NOT IN ('REJECTED','CLOSED')
+		AND 
+			t.is_active = true;	
+	</select>
+</mapper>

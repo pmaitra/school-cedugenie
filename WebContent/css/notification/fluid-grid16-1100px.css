@@ -1,0 +1,400 @@
+.grids{
+	max-width:986px;
+	clear:both;
+	padding:0px 0px 0px 0px;
+	margin:0 auto;
+	list-style:none;
+}
+
+[class^="grid-"]{
+	float:left;
+	margin:0px 0px 0px 0px;
+}
+.grids [class^="grid-"]{
+	margin:0% 0% 0% 0%;
+}
+
+/*
+Nested grids won't work with fluid layouts :(
+*/
+
+.wrapper{
+	background: rgb(0, 0, 0);
+background: -moz-linear-gradient(314deg, rgb(0, 0, 0) 48%, rgb(80, 140, 170) 100%);
+background: -webkit-linear-gradient(314deg, rgb(0, 0, 0) 48%, rgb(80, 140, 170) 100%);
+background: -o-linear-gradient(314deg, rgb(0, 0, 0) 48%, rgb(80, 140, 170) 100%);
+background: -ms-linear-gradient(314deg, rgb(0, 0, 0) 48%, rgb(80, 140, 170) 100%);
+background: linear-gradient(44deg, rgb(0, 0, 0) 48%, rgb(80, 140, 170) 100%);
+
+	min-height:550px;
+	overflow:hidden;
+	padding:0px 0% 0px 0%;
+}
+
+.conarea{
+	width:1312px;
+	overflow:hidden;
+/* 	padding:30px 0px 0px 0px; */
+	margin:0 auto;
+}
+
+header{
+	background:url(/icam/images/a.jpg) 0 0 repeat;
+	min-height:60px;
+	overflow:hidden;
+	padding:10px 10px 0px 15px;
+	width: 100%;
+	background-size: contain;
+	background-size: cover;
+}
+
+.navareacon{
+	float:left;	
+}
+
+.headrconimage{
+	width:250px;
+	overflow:hidden;
+	float:right;	
+}
+
+.wlcmimg{
+	width:50px;
+	height:50px;
+	float:left;	
+}
+
+.wlcmtext{
+	width:200px;
+	float:right;
+	font:bold 12px/14px bahamas,"Trajan Pro", Arial, Helvetica, sans-serif ;
+  	//color:#8abb3b !important;
+  	color:#ff6600;
+  	text-align: center;	
+}
+
+#lastVisitedOn{
+	font:bold 12px/14px bahamas,"Trajan Pro", Arial, Helvetica, sans-serif ;
+	color:cyan;
+}
+
+h1{
+	font:normal 16px/24px bahamas, Helvetica, sans-serif;
+	color:	#FF6600;
+	margin:0px;
+	padding:0px;
+}
+
+.bodyarea{
+	width:100%;
+	height:100%;
+	overflow:hidden;
+	padding:9px 0px 20px 0px;
+}
+
+.leftrightcon{
+	overflow:hidden;	
+}
+
+.leftcon{
+	width:55%;
+	height:100%;
+	overflow:hidden;
+	float:left;
+	margin-top: 2%;
+	//background-image: url(/icam/images/c.png);
+	background-size: contain; 
+	background-repeat: no-repeat;
+//    background-attachment:fixed;
+}
+.rightcon{	
+	height:100%;	
+	float:left;
+	margin-top: 2%;
+	width: 40%;
+}
+.divconarea{
+	overflow:hidden;	
+}
+
+h2{
+	font:normal 30px/35px bahamas,"Arial", Helvetica, sans-serif;
+	color:#fff;
+	margin:0px 0px 10px 0px;
+	padding:0px;
+}
+
+.alignright{
+	float:right;	
+}
+
+h3{
+	font:normal 30px/30px bahamas,"Arial", Helvetica, sans-serif;
+	color:#35343a;
+	margin:0px 0px 10px 0px;
+	padding:0px;
+}
+
+.textimg{
+	overflow:hidden;	
+}
+
+
+
+
+.textcon01{
+	width:270px;
+	float:left;
+}
+
+h4{
+	font:normal 30px/20px bahamas,"Arial", Helvetica, sans-serif;
+	color:#fff;
+	margin:0px 0px 10px 0px;
+	padding:0px;
+}
+
+footer{
+	width:100%;
+	height:100%;
+	overflow:hidden;
+	font:normal 15px/18px bahamas,Arial, Helvetica, sans-serif;
+	color:#fff;
+	text-align:center;
+}
+
+h5{
+	font:bold 40px/40px bahamas,"Arial", Helvetica, sans-serif;
+	color:#fff;
+	text-transform:uppercase;
+	text-align:center;
+	text-shadow:1px 2px 1px #1c3829;
+	margin:0px 0px 10px 0px;
+	padding:0px;
+}
+
+/*grid start*/
+
+.grid-1{
+	font:bold 12px/14px bahamas,"Arial", Helvetica, sans-serif !important;
+	color:#585858 !important;
+	text-align:center !important;
+	padding:0px 0px 0% 0px !important;
+	margin:0px 0% 0% 0px !important;
+	float:none !important;
+}
+
+
+
+
+.divcon01{
+	background:#00aedd;	
+	font:normal 12px/15px bahamas,"Arial", Helvetica, sans-serif;
+	color:#fff;
+/* 	padding:15px 20px 15px 11px; */
+/* 	margin:0px 11px 10px 0px; */
+/* 	float:left; */
+}
+
+.divcon02{
+	background:#E9967A;	
+	font:normal 12px/15px bahamas,"Arial", Helvetica, sans-serif;
+	color:#fff;
+/* 	padding:15px 20px 15px 11px; */
+/* 	margin:0px 11px 10px 0px; */
+/* 	float:left; */
+}
+
+.divcon03{
+	background:#c82343;	
+	font:normal 12px/15px bahamas,"Arial", Helvetica, sans-serif;
+	color:#fff;
+/* 	padding:15px 20px 15px 11px; */
+/* 	margin:0px 11px 10px 0px; */
+/* 	float:left; */
+}
+
+.divcon04{
+	background:#01965f;	
+	font:normal 12px/15px bahamas,"Arial", Helvetica, sans-serif;
+	color:#fff;
+/* 	padding:15px 20px 15px 11px; */
+/* 	margin:0px 11px 10px 0px; */
+/* 	float:left; */
+}
+
+.divcon05{
+	background:#6c4fb9;
+	font:normal 12px/15px bahamas,"Arial", Helvetica, sans-serif;
+	color:#fff;
+/* 	padding:15px 20px 15px 11px; */
+/* 	margin:0px 11px 10px 0px; */
+/* 	float:left; */
+}
+
+.divcon06{
+	background:#094cb5;
+	font:normal 12px/13px bahamas,"Arial", Helvetica, sans-serif;
+	color:#fff;	
+/* 	float:left; */
+/* 	padding:15px 20px 15px 11px; */
+/* 	margin:0px 11px 10px 0px; */
+}
+
+.divcon07{
+	background:	#F4BF3E;
+	font:normal 12px/15px bahamas,"Arial", Helvetica, sans-serif;
+	color:#fff;
+/* 	padding:15px 20px 15px 11px; */
+/* 	margin:0px 11px 10px 0px; */
+/* 	float:left; */
+}
+
+.divcon08{
+	background:#686473;
+	font:normal 12px/15px bahamas,"Arial", Helvetica, sans-serif;
+	color:#fff;
+/* 	padding:15px 20px 15px 11px; */
+/* 	margin:0px 11px 10px 0px; */
+/* 	float:left; */
+}
+
+.divcon15{
+	background:#800000;
+	font:normal 12px/15px bahamas,"Arial", Helvetica, sans-serif;
+	color:#fff;
+/* 	padding:15px 20px 15px 11px; */
+/* 	margin:0px 11px 10px 0px; */
+/* 	float:left; */
+}
+
+
+.divcon09{
+	background: #80A0B9;
+	font:normal 12px/15px bahamas,"Arial", Helvetica, sans-serif;
+	color:#fff;
+/* 	padding:15px 20px 15px 11px; */
+/* 	margin:0px 11px 10px 0px; */
+/* 	float:left; */
+	}
+
+
+.divcon10{
+	background: #222;
+	font:normal 12px/15px bahamas,"Arial", Helvetica, sans-serif;
+	color:#000;
+	padding:15px 20px 15px 11px;
+	margin:0px 11px 10px 0px;
+	float:left;
+	width: 80%;
+	height:200px;
+	overflow-y:scroll; 
+}
+
+
+.divcon11{
+	background:	#89E894;
+	font:normal 12px/15px bahamas,"Arial", Helvetica, sans-serif;
+	color:#fff;
+/* 	padding:15px 20px 15px 11px; */
+/* 	margin:0px 11px 10px 0px; */
+/* 	float:left; */
+}
+
+.divcon19{
+	background: #89E894;
+	font:normal 12px/15px bahamas,"Arial", Helvetica, sans-serif;
+	color:#000;
+	padding:15px 20px 15px 11px;
+	margin:0px 11px 10px 0px;
+	float:left;
+	width: 80%;
+	height:200px;
+	overflow-y:scroll; 
+}
+
+/*grid end*/
+
+
+@media (min-width: 1000px) and (max-width: 1190px){
+
+.conarea{
+	width:98%;
+	overflow:hidden;
+	padding:30px 0px 0px 0px;
+	margin:0 auto;
+}
+
+.leftcon{
+	width:60%;
+	margin-top: 2%;
+}
+.rightcon{
+	width:80%;
+	height: 100%;
+	margin-top: 3%;
+}
+
+
+/* .textcon01{ */
+/* 	width:65%; */
+/* 	padding:0px 3% 3.5% 0px; */
+/* } */
+
+.divcon01{
+/* 	margin:0px 4px 10px 0px; */
+}
+
+.divcon02{
+/* 	width:19.6%; */
+/* 	margin:0px 4px 10px 0px; */
+}
+
+.divcon03{
+/* 	width:19.6%; */
+/* 	margin:0px 4px 10px 0px; */
+}
+
+.divcon04{
+/* 	width:19.6%; */
+/* 	margin:0px 4px 10px 0px; */
+}
+
+.divcon05{
+/* 	width:19.6%; */
+/* 	margin:0px 4px 10px 0px; */
+}
+
+.divcon06{
+/* 	width:19.6%; */
+/* 	margin:0px 4px 10px 0px; */
+}
+
+.divcon07{
+/* 	width:19.6%; */
+/* 	margin:0px 4px 10px 0px; */
+}
+
+.divcon08{
+/* 	width:19.6%; */
+/* 	margin:0px 4px 10px 0px; */
+}
+
+.divcon09{
+/* 	width:19.6%; */
+/* 	margin:0px 4px 10px 0px; */
+}
+*/
+
+.divcon15{
+/* 	width:19.6%; */
+/* 	margin:0px 4px 10px 0px; */
+}
+
+.divcon10{
+ 	width:100%; 
+ 	margin:0px 4px 10px 0px; 
+}
+
+
+}

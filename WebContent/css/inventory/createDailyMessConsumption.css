@@ -1,0 +1,121 @@
+@charset "utf-8";
+body, input, select, div, span, table{
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.textfield{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:100px;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+}
+.textfieldName{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:100px;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+}
+.textfieldDate{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:150px;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+}
+.textfield1{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:250px;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+}
+.textfieldRate{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:50px;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+	font-family: bahamas;
+	font-size: large;
+}
+select.defaultselect {
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+    height: 27px;
+    line-height: 22px;
+    padding: 3px 5px;
+    width:150px;
+}
+.defaultselect option {
+    color: orange;
+}
+
+select.defaultselect1 {
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+    height: 27px;
+    line-height: 22px;
+    padding: 3px 5px;
+    width:250px;
+}
+.defaultselect1 option {
+    color: orange;
+}
+
+.midsec1 {
+	margin:0 auto 15px;
+	border:1px solid #c4c4c4;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	min-height:20px;
+	margin-top: 20px;
+	align: center;
+	white-space: nowrap;
+}
+.midsec1 tr{
+	padding:0 2%;
+	color: #000080;
+	text-align:left;
+	border-bottom: 1px solid #C4C4C4;
+	text-transform:capitalize;
+}
+.midsec1 tr td{
+	padding:0 10px;
+	border-bottom: 1px solid #C4C4C4;
+}
+.midsec1 tr th{
+	color:black;
+	font-weight: bold;
+	font-style: oblique;
+	text-align: center;
+	padding:0 10px;
+	border-bottom: thick;
+	border-bottom-style: double;
+	border-bottom-color: black;
+}
+.midsec1 tr:nth-child(odd){
+	background-color: #99FF66;
+}
+
+.midsec1 tr:nth-child(even){
+	background-color: #66CC33;
+}

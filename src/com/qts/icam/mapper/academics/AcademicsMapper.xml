@@ -1,0 +1,3538 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.mapper.academics.AcademicsMapper">
+	
+	
+	<resultMap id="selectStandardsWithSectionRM" type="com.qts.icam.model.common.Standard">
+		<id property="standardId" column="standard_id" jdbcType="INTEGER" />
+		<result property="standardCode" column="standard_code" jdbcType="VARCHAR" />
+		<result property="standardName" column="standard_name" jdbcType="VARCHAR" />
+		<result property="status" column="post" jdbcType="BOOLEAN" />	<!-- new line added on 13.042017 -->	
+		<collection property="sectionList" ofType="com.qts.icam.model.common.Section">
+			<id property="sectionCode" column="section_code" jdbcType="VARCHAR" />
+			<result property="sectionName" column="section_name" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+
+	<select id="selectStandardsWithSection" resultMap="selectStandardsWithSectionRM">
+		SELECT
+			s.standard_id,
+			s.standard_name,
+			s.standard_code,
+			s.post,				<!-- new line added on 13.042017 -->
+			sec.section_code,
+			sec.section_name
+		FROM
+			standard s
+		LEFT JOIN section sec ON(sec.standard=s.rec_id AND sec.is_active=true)
+		WHERE
+			s.is_active = true
+		ORDER BY 
+		s.standard_id, sec.section_code;
+	</select>
+	<insert id="insertStandard" parameterType="com.qts.icam.model.common.Standard">
+		INSERT INTO standard(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation,
+			standard_code, standard_name, standard_desc)
+		VALUES ((select uuid_generate_v4()), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			#{standardCode}, #{standardName}, #{desc});
+		<foreach item="section" collection="sectionList"  open="" close="" separator=";">
+			INSERT INTO section(
+	            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+	            section_code, section_name, section_desc, standard)
+    		VALUES ((select uuid_generate_v4()), #{objectId},
+				(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+				#{section.sectionCode}, #{section.sectionName}, #{section.desc},
+				(SELECT rec_id FROM standard WHERE standard_code =#{standardCode} AND is_active = true));
+		</foreach>
+	</insert>
+	<!-- query modified by saurav.bhadra
+	changes taken on 12042017 -->
+	
+	<update id="updateStandard" parameterType="com.qts.icam.model.common.Standard">
+		UPDATE 
+			standard 
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			standard_code=#{standardName},
+			standard_name=#{standardName},
+			standard_desc=#{desc}
+		WHERE
+			standard_id=#{standardId}
+		AND
+			is_active=true;
+		<foreach item="section" collection="sectionList"  open="" close="" separator=";">
+			INSERT INTO section(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+				section_code, section_name, section_desc, standard)
+			VALUES ((select uuid_generate_v4()), 'HardCoadedObjectId',
+				(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+				#{section.sectionCode}, #{section.sectionName}, #{section.desc},
+				(SELECT rec_id FROM standard WHERE standard_code =#{standardCode} AND is_active = true));
+		</foreach>
+		
+		UPDATE 
+			course 
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			course_name=#{standardName}
+		WHERE
+			standard=(SELECT rec_id FROM standard where standard_id = #{standardId} AND is_active = true)
+		AND
+			is_active=true;
+	</update>
+	
+	<!-- new added by sourav.bhadra on 12.04.2017 -->
+	
+	<select id="selectListForStandard" resultType="com.qts.icam.model.common.Section" parameterType="com.qts.icam.model.common.Standard">
+		select 
+			distinct section_code as sectionCode
+		from 
+			section
+		where
+			standard = (select rec_id from standard where standard_id = #{standardId} AND is_active=true)
+		and
+			is_active = true;
+	</select>
+	
+	<!-- anup.roy 04.08.2017 -->
+	
+	<select id="selectSubjectGroupList" resultType="com.qts.icam.model.academics.SubjectGroup">
+		SELECT
+			sg.subject_group_id as subjectGroupId,
+			subject_group_code as subjectGroupCode,
+			subject_group_name as subjectGroupName,
+			subject_group_desc as desc,
+			subject_group_order as subjectGroupOrderId,
+			sg.total_hrs_for_course as totalHRSForCourse,
+			st.scholastic_type_name as scholasticTypeName
+		FROM 
+			subject_group sg
+		JOIN 
+			subject s ON (s.subject_group = sg.rec_id AND sg.is_active = true)
+		JOIN
+			scholastic_type st ON (s.scholastic_type = st.rec_id AND st.is_active = true)	
+		WHERE 
+			sg.is_active=true;
+	</select>
+	
+	<!-- anup.roy 04.08.2017 -->
+	
+	<insert id="insertSubjectGroup" parameterType="com.qts.icam.model.academics.SubjectGroup">
+		INSERT INTO subject_group(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			subject_group_code, subject_group_name, subject_group_desc, 
+			subject_group_order,total_hrs_for_course)
+		VALUES ((select uuid_generate_v4()), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			#{subjectGroupCode}, #{subjectGroupName}, #{desc}, #{subjectGroupOrderId},#{totalHRSForCourse});
+			
+		INSERT INTO subject(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			subject_code, subject_name, subject_desc, subject_group,credit,
+			total_hrs_for_course,
+			scholastic_type)
+		VALUES ((select uuid_generate_v4()), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			#{subjectGroupCode}, #{subjectGroupName}, #{desc},
+			(SELECT rec_id FROM subject_group WHERE serial_id = (SELECT MAX(serial_id)FROM subject_group) AND is_active = true),
+			#{subjectGroupOrderId},	#{totalHRSForCourse}, 
+			(SELECT rec_id FROM scholastic_type WHERE scholastic_type_code = #{scholasticTypeName} AND is_active = true)
+			);
+	</insert>
+	
+	<update id="updateSubjectGroup" parameterType="com.qts.icam.model.academics.SubjectGroup">
+			UPDATE subject_group SET
+				updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+				updated_on=extract(epoch FROM now()),
+				subject_group_code=#{subjectGroupCode},
+				subject_group_name=#{subjectGroupName},
+				subject_group_desc=#{desc},
+				subject_group_order=#{subjectGroupOrderId},
+				total_hrs_for_course=#{totalHRSForCourse}
+			WHERE
+				serial_id=#{subjectGroupId}
+			AND
+				is_active=true;
+				
+		UPDATE subject SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			subject_code=#{subjectGroupCode},
+			subject_name=#{subjectGroupName},
+			subject_desc=#{desc},
+			credit=#{subjectGroupOrderId},
+			total_hrs_for_course=#{totalHRSForCourse}
+			<!-- subject_group=(SELECT rec_id FROM subject_group WHERE subject_group_code =#{subjectGroup} AND is_active = true) -->
+		WHERE
+			subject_group = (SELECT rec_id FROM subject_group WHERE serial_id=#{subjectGroupId} AND is_active = true)
+		AND
+			is_active=true;
+	</update>
+	
+	
+	
+	
+	<insert id="insertSubject" parameterType="com.qts.icam.model.academics.Subject">
+		INSERT INTO subject(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			subject_code, subject_name, subject_desc, subject_group)
+		VALUES ((select uuid_generate_v4()), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			#{subjectCode}, #{subjectName}, #{desc},
+			(SELECT rec_id FROM subject_group WHERE subject_group_code =#{subjectGroup} AND is_active = true));
+	</insert>
+	<update id="updateSubject" parameterType="com.qts.icam.model.academics.Subject">
+		UPDATE subject SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			subject_code=#{subjectCode},
+			subject_name=#{subjectName},
+			subject_desc=#{desc},
+			subject_group=(SELECT rec_id FROM subject_group WHERE subject_group_code =#{subjectGroup} AND is_active = true)
+		WHERE
+			serial_id=#{subjectId}
+			AND
+			is_active=true;
+	</update>
+	
+	<select id="selectSubjectsForCourse" resultType="com.qts.icam.model.academics.Subject" parameterType="java.lang.String">
+		SELECT
+			sub.subject_code as subjectCode,
+			sub.subject_name as subjectName
+		FROM 
+			course_subject_mapping csm
+		JOIN 
+			course c ON(csm.course = c.rec_id AND c.is_active = true)
+		JOIN 
+			subject sub ON(csm.subject = sub.rec_id AND sub.is_active = true)
+		WHERE
+			c.course_code = #{course}
+		AND
+			csm.is_active = true;
+	</select>
+	
+	<update id="inactiveCourseSubjectMapping" parameterType="com.qts.icam.model.academics.CourseSubjectMapping">
+	 	<foreach item="oldSubject" collection="oldSubjectList" index="index" open="" close="" separator=";">
+			UPDATE course_subject_mapping SET
+				updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+				updated_on=extract(epoch FROM now()),
+				is_active=false
+			WHERE
+				course=(SELECT rec_id FROM course WHERE course_code =#{courseCode} AND is_active = true)
+				AND
+				subject=(SELECT rec_id FROM subject WHERE subject_code =#{oldSubject} AND is_active = true)
+				AND
+				is_active=true;
+		</foreach>
+		 <foreach item="oldSubject" collection="oldSubjectList" index="index" open="" close="" separator=";">
+			UPDATE term_course_subject_mapping SET
+				updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+				updated_on=extract(epoch FROM now()),
+				is_active=false
+			WHERE
+				course=(SELECT rec_id FROM course WHERE course_code =#{courseCode} AND is_active = true)
+				AND
+				subject=(SELECT rec_id FROM subject WHERE subject_code =#{oldSubject} AND is_active = true)
+				AND
+				is_active=true;
+		</foreach> 
+	</update>
+	<select id="selectInactiveSubjectForCourse" resultType="com.qts.icam.model.academics.CourseSubjectMapping" parameterType="com.qts.icam.model.academics.CourseSubjectMapping">
+		SELECT
+			sub.subject_code as subject,
+			std.course_code as courseCode
+		FROM course_subject_mapping ssm
+		JOIN course std ON(ssm.course=std.rec_id AND std.is_active=true)
+		JOIN subject sub ON(ssm.subject=sub.rec_id AND sub.is_active=true)
+		WHERE
+			std.course_code=#{courseCode}
+			AND
+			sub.subject_code=#{subject}
+			AND
+			ssm.is_active=false;
+	</select>
+	<update id="updateCourseSubjectMapping" parameterType="com.qts.icam.model.academics.CourseSubjectMapping">
+		UPDATE course_subject_mapping SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			is_active=true
+		WHERE
+			course=(SELECT rec_id FROM course WHERE course_code =#{courseCode} AND is_active = true)
+			AND
+			subject=(SELECT rec_id FROM subject WHERE subject_code =#{subject} AND is_active = true)
+			AND
+			is_active=false;
+	</update>
+	<insert id="insertCourseSubjectMapping" parameterType="com.qts.icam.model.academics.CourseSubjectMapping">
+		INSERT INTO course_subject_mapping(
+			rec_id, obj_id, updated_by, updated_on, 
+			date_of_creation, course, subject)
+		VALUES ((select uuid_generate_v4()), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM course WHERE course_code =#{courseCode} AND is_active = true),
+			(SELECT rec_id FROM subject WHERE subject_code =#{subject} AND is_active = true));
+	</insert>
+	
+	<select id="selectUploadedStudentsSubjectsAndMarks" resultType="com.qts.icam.model.academics.StudentResult" parameterType="com.qts.icam.model.academics.StudentResult">
+		SELECT
+			subject as subject,
+			theory as theory,
+			practical as practical,
+			theory_pass as theoryPass,
+			practical_pass as practicalPass,
+			total as total,
+			pass as pass,
+			theory_obtained as theoryObtained,
+			practical_obtained as practicalObtained,
+			total_obtained as totalObtained,
+			pass_fail as passFail
+		FROM
+			student_marks
+		WHERE
+			student_roll= #{rollNumber}
+			AND
+			standard = #{standard}
+			AND
+			section = #{section}
+			AND
+			exam = #{exam};
+	</select>
+					
+	<update id="updateStudentResult" parameterType="java.util.List">
+	 	<foreach item="studentMarks" collection="list" index="index" open="" close="" separator=";">
+			UPDATE student_marks SET
+	            updated_by =(SELECT rec_id FROM resource WHERE user_id  ilike #{studentMarks.updatedBy} AND is_active = true),
+	            updated_on=(SELECT extract(epoch FROM now())), theory=#{studentMarks.theory}, practical=#{studentMarks.practical},
+	            total=#{studentMarks.total}, pass=#{studentMarks.pass}, theory_obtained=#{studentMarks.theoryObtained},
+	            practical_obtained=#{studentMarks.practicalObtained}, total_obtained=#{studentMarks.totalObtained},
+	            pass_fail=#{studentMarks.passFail}, theory_pass=#{studentMarks.theoryPass}, practical_pass=#{studentMarks.practicalPass},
+	            weightage=(SELECT weightage FROM exam WHERE exam_code =#{studentMarks.exam} AND is_active = true AND standard = (SELECT rec_id FROM course WHERE course_code = #{studentMarks.standard} AND is_active = true)),
+	            weightage_obtained=(#{studentMarks.weightageObtained}*(SELECT weightage FROM exam WHERE exam_code =#{studentMarks.exam} AND is_active = true AND standard = (SELECT rec_id FROM course WHERE course_code = #{studentMarks.standard} AND is_active = true)))
+	        WHERE
+	        	student_roll=#{studentMarks.rollNumber} AND standard=#{studentMarks.standard} AND
+	        	section=#{studentMarks.section} AND exam=#{studentMarks.exam} AND subject=#{studentMarks.subject}
+	        	AND term = (SELECT rec_id FROM term WHERE term_code = #{studentMarks.desc});
+		</foreach>
+	</update>
+	
+	<insert id="insertStudentResult" parameterType="java.util.List">
+	 	<foreach item="studentMarks" collection="list" index="index" open="" close="" separator=";">
+			INSERT INTO student_marks(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				student_roll, student_name, year, standard, section,
+				exam, subject, theory, theory_pass, practical, practical_pass, total, pass, theory_obtained,
+				practical_obtained, total_obtained, pass_fail, weightage, weightage_obtained, inserted_by,term)
+			VALUES ((select uuid_generate_v4()), 'OBJ-ID',
+				(SELECT rec_id FROM resource WHERE user_id  ilike #{studentMarks.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+				#{studentMarks.rollNumber},
+				(SELECT first_name || ' ' || COALESCE(middle_name,'') || ' ' || COALESCE(last_name,'') FROM resource r JOIN student_course_mapping scm ON (scm.user_id = r.user_id AND scm.is_active = true)WHERE scm.roll_number=#{studentMarks.rollNumber} AND r.is_active=true),
+				(SELECT academic_year_name FROM academic_year WHERE is_active = true AND year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C')),
+				#{studentMarks.standard}, #{studentMarks.section}, #{studentMarks.exam}, #{studentMarks.subject},
+				#{studentMarks.theory}, #{studentMarks.theoryPass}, #{studentMarks.practical}, #{studentMarks.practicalPass}, #{studentMarks.total},
+				#{studentMarks.pass}, #{studentMarks.theoryObtained}, #{studentMarks.practicalObtained}, #{studentMarks.totalObtained}, #{studentMarks.passFail},
+				(SELECT weightage FROM exam WHERE exam_code = #{studentMarks.exam} AND standard=(SELECT rec_id FROM course WHERE course_code = #{studentMarks.standard} AND is_active = true)),
+				(#{studentMarks.weightageObtained}*(SELECT weightage FROM exam WHERE exam_code = #{studentMarks.exam} AND standard = (SELECT rec_id FROM course WHERE course_code = #{studentMarks.standard} AND is_active = true))), #{studentMarks.updatedBy},
+				(SELECT rec_id FROM term WHERE term_code = #{studentMarks.desc}));
+		</foreach>
+	</insert>
+	
+	<select id="selectUploadedStudentsAndMarks" resultType="com.qts.icam.model.academics.StudentResult" parameterType="com.qts.icam.model.academics.StudentResult">
+		SELECT
+			(student_roll :: text) as rollNumber,
+			student_name as name,
+			theory as theory,
+			practical as practical,
+			total as total,
+			pass as pass,
+			theory_pass as theoryPass,
+			practical_pass as practicalPass,
+			theory_obtained as theoryObtained,
+			practical_obtained as practicalObtained,
+			total_obtained as totalObtained,
+			pass_fail as passFail,
+			inserted_by as updatedBy
+		FROM
+			student_marks
+		WHERE
+			subject= #{subject}
+		AND
+			standard = #{standard}
+		AND
+			section = #{section}
+		AND
+			exam = #{exam}
+		ORDER BY student_roll;
+	</select>
+	
+	<select id="getAllResourceForRole" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			res.user_id
+		FROM
+			role_resource_mapping rrm
+		JOIN 
+			role r ON(rrm.role=r.rec_id AND r.is_active=true)
+		JOIN 
+			resource res ON(rrm.resource=res.rec_id AND res.is_active=true)
+		WHERE
+			r.role_name=#{roleName}
+		AND
+			rrm.is_active=true;
+	</select>
+	
+	<select id="getAllResourceForAccessType" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			res.user_id
+		FROM
+			access_type_resource_mapping atrm
+		JOIN 
+			access_type at ON(atrm.access_type=at.rec_id AND at.is_active=true)
+		JOIN 
+			resource res ON(atrm.resource=res.rec_id AND res.is_active=true)
+		WHERE
+			at.access_type_name=#{accessTypeName} 
+		AND
+			atrm.is_active=true;
+	</select>	
+
+	<update id="insertAssignSection" parameterType="java.util.List">
+	 	<foreach item="student" collection="list" index="index" open="" close="" separator=";">
+			UPDATE 
+				student_course_mapping 
+			SET
+				updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike #{student.updatedBy} AND is_active = true),
+				updated_on = extract(epoch FROM now()),
+				section = (SELECT rec_id FROM section WHERE section_code=#{student.section} AND standard=(SELECT rec_id FROM standard WHERE standard_code=#{student.standard}))
+ 			WHERE
+ 				user_id = #{student.userId}
+ 			AND
+ 				course = (SELECT c.rec_id FROM course c JOIN standard st ON (c.standard = st.rec_id AND st.is_active = true)WHERE standard_code = #{student.standard} AND c.is_active = true)
+ 			AND	
+ 				is_active = true;
+		</foreach>
+	</update>
+
+	<select id="selectPendingSectionAssignment" resultType="com.qts.icam.model.common.Student">
+		SELECT
+			roll_number as rollNumber,
+			standard_code as standard,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as studentName,
+			sub.subject_code as secondLanguage
+		FROM
+			resource r
+		JOIN section sec ON(sec.rec_id=r.section and sec.is_active=true)
+		JOIN standard std ON(sec.standard=std.rec_id and std.is_active=true)
+		JOIN subject sub ON(r.second_language=sub.rec_id and sub.is_active=true)
+		WHERE
+		section_code='NA'
+		AND
+		r.is_active=true;
+	</select>
+	
+	<select id="selectStudentsToAssignSection" resultType="com.qts.icam.model.common.Student" parameterType="com.qts.icam.model.common.Student">
+		<!-- SELECT
+			r.roll_number as rollNumber,
+			r.first_name || ' ' || COALESCE(r.middle_name ,'') || ' ' || COALESCE(r.last_name,'  ')  as studentName,
+			sub.subject_code as secondLanguage
+		FROM
+			resource r
+			LEFT JOIN section sec ON(r.section=sec.rec_id AND sec.is_active=true)
+			LEFT JOIN standard std ON(sec.standard=std.rec_id AND std.is_active=true)
+			JOIN course c ON (c.standard = std.rec_id AND c.is_active = true)
+			LEFT JOIN subject sub ON(r.second_language=sub.rec_id AND sub.is_active=true)
+			JOIN resource_type rt ON(r.resource_type=rt.rec_id AND rt.is_active=true)
+		WHERE
+			r.is_active=true
+			AND
+			sec.section_code=#{section}
+			AND
+			c.course_code=#{standard}
+			AND
+			rt.resource_type_name='STUDENT'; -->
+		SELECT
+			scm.roll_number as rollNumber, 
+			r.user_id as userId,
+			r.first_name || ' ' || COALESCE(r.middle_name ,'') || ' ' || COALESCE(r.last_name,'  ')  as studentName,
+			sub.subject_code as secondLanguage
+		FROM
+			resource r
+			JOIN student_course_mapping scm ON (scm.user_id = r.user_id AND scm.is_active = true)
+			LEFT JOIN section sec ON(scm.section=sec.rec_id AND sec.is_active=true)
+			LEFT JOIN standard std ON(sec.standard=std.rec_id AND std.is_active=true)
+			JOIN course c ON (c.standard = std.rec_id AND c.is_active = true)
+			LEFT JOIN subject sub ON(r.second_language=sub.rec_id AND sub.is_active=true)
+			JOIN resource_type rt ON(r.resource_type=rt.rec_id AND rt.is_active=true)
+		WHERE
+			r.is_active=true
+		AND
+			sec.section_code= #{section}
+		AND
+			std.standard_code=#{standard}
+		AND
+			rt.resource_type_name='STUDENT'
+		ORDER BY 
+			rollNumber;
+	</select>
+	
+	
+	<resultMap id="selectDescriptiveIndicatorSkillListRM" type="com.qts.icam.model.academics.DescriptiveIndicatorSkill">
+		<id property="serialId" column="skill_id" jdbcType="INTEGER" />
+		<result property="skillCode" column="skill_code" jdbcType="VARCHAR" />
+		<result property="skillName" column="skill_name" jdbcType="VARCHAR" />
+		<result property="skillDesc" column="skill_desc" jdbcType="VARCHAR" />
+		<result property="maxHeads" column="max_heads" jdbcType="INTEGER" />
+		<collection property="headList" ofType="com.qts.icam.model.academics.DescriptiveIndicatorHead">
+			<id property="serialId" column="head_id" jdbcType="INTEGER" />
+			<result property="headCode" column="head_code" jdbcType="VARCHAR" />
+			<result property="headName" column="head_name" jdbcType="VARCHAR" />
+			<result property="headDesc" column="head_desc" jdbcType="VARCHAR" />
+			<collection property="indicatorList" ofType="com.qts.icam.model.academics.DescriptiveIndicator">
+				<id property="serialId" column="indicator_id" jdbcType="INTEGER" />
+				<result property="indicatorCode" column="indicator_name" jdbcType="VARCHAR" />
+				<result property="indicatorName" column="indicator_name" jdbcType="VARCHAR" />
+				<result property="indicatorDesc" column="indicator_desc" jdbcType="VARCHAR" />
+			</collection>
+		</collection>
+	</resultMap>
+	<select id="selectDescriptiveIndicatorSkillList" resultMap="selectDescriptiveIndicatorSkillListRM">
+		SELECT
+			dih.serial_id as head_id,
+			head_name,
+			head_code,
+			head_desc,
+			di.serial_id as indicator_id,
+			indicator_name,
+			indicator_desc,
+			indicator_code,
+			dis.serial_id as skill_id,
+			skill_name,
+			skill_desc,
+			skill_code,
+			max_heads
+			FROM descriptive_indicator_heads dih
+			LEFT JOIN descriptive_indicator_skill dis on(dis.rec_id=dih.descriptive_indicator_skill) AND dis.is_active=true
+			LEFT JOIN descriptive_indicator di ON(di.descriptive_indicator_heads=dih.rec_id AND di.is_active=true) AND di.is_active=true
+		WHERE
+			dih.is_active=true
+		ORDER BY dis.display_order, dih.display_order;
+	</select>
+	
+	
+	<select id="selectCoScholasticResultList" resultType="com.qts.icam.model.academics.CoScholasticResult">
+		SELECT
+			count(DISTINCT r.roll_number) as total,
+			count(DISTINCT smc.student_roll) as completed,			
+			sec.section_code as section,
+			std.standard_code as standard
+		FROM resource r
+		LEFT JOIN student_marks_co smc on(smc.student_roll::integer= r.roll_number)
+		JOIN section sec on(r.section=sec.rec_id)
+		JOIN standard std on(std.rec_id =sec.standard)
+		GROUP BY section_code, standard_code;
+	</select>
+	
+	
+	<select id="selectStudentsForCoScholastic"  parameterType="com.qts.icam.model.academics.CoScholasticResult" resultType="com.qts.icam.model.academics.CoScholasticResult">
+		SELECT
+			r.roll_number::text as rollNumber,
+			r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || COALESCE(r.last_name,'') as name,
+			sec.section_code as section,
+			std.standard_code as standard
+		FROM resource r
+		JOIN section sec on(r.section=sec.rec_id)
+		JOIN standard std on(std.rec_id =sec.standard)
+		WHERE r.roll_number NOT IN(SELECT student_roll::INTEGER FROM student_marks_co)
+		AND sec.section_code=#{section} AND std.standard_code=#{standard};
+	</select>
+	
+	
+	<insert id="insertCoScholasticResult" parameterType="java.util.List">
+		<foreach item="result" collection="list" index="index" open="" close="" separator=";">
+			INSERT INTO student_marks_co(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				student_roll, student_name, year, standard, section,
+				exam, skill, head, indicator, grade, inserted_by, grade_point)
+			VALUES ((select uuid_generate_v4()), 'OBJ-ID',
+				(SELECT rec_id FROM resource WHERE user_id  ilike #{result.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+				#{result.rollNumber},#{result.name},
+				(SELECT academic_year_name FROM academic_year WHERE is_active = true AND year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C')),
+				#{result.standard}, #{result.section}, 'SA2', #{result.skill}, #{result.head}, #{result.indicator}, #{result.grade}, #{result.updatedBy},
+				#{result.gradePoint});
+		</foreach>
+	</insert>
+	
+	
+	<select id="selectInsertedCoScholasticStudents" parameterType="com.qts.icam.model.academics.CoScholasticResult" resultType="com.qts.icam.model.academics.CoScholasticResult">
+		SELECT DISTINCT
+			smc.student_roll as rollNumber,			
+			smc.student_name as name,
+			smc.standard as standard,
+			smc.section as section
+		FROM student_marks_co smc
+		WHERE standard=#{standard} AND section=#{section}
+		ORDER BY student_roll;
+	</select>
+	
+	
+	<select id="selectStudentsCoScholasticResult" parameterType="java.lang.String" resultType="com.qts.icam.model.academics.CoScholasticResult">
+		SELECT
+			skill,
+			head,
+			indicator,
+			grade,
+			grade_point as gradePoint,
+			inserted_by as updatedBy
+		FROM student_marks_co smc
+		WHERE student_roll = #{roll};
+	</select>
+	
+	
+	<update id="updateCoScholasticResult" parameterType="java.util.List">
+		<foreach item="result" collection="list" index="index" open="" close="" separator=";">
+			<if test="result.skill == 'HEIGHT &amp; WEIGHT'">
+				UPDATE student_marks_co SET
+					updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike #{result.updatedBy} AND is_active = true),
+					updated_on = (SELECT extract(epoch FROM now())),
+					grade = #{result.grade},
+					grade_point = #{result.gradePoint}
+				WHERE
+					student_roll = #{result.rollNumber} AND head = #{result.head};
+			</if>
+			<if test="result.skill == 'ATTENDANCE'">
+				UPDATE student_marks_co SET
+					updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike #{result.updatedBy} AND is_active = true),
+					updated_on = (SELECT extract(epoch FROM now())),
+					grade = #{result.grade},
+					indicator = #{result.indicator},
+					grade_point = #{result.gradePoint}
+				WHERE
+					student_roll = #{result.rollNumber} AND head = #{result.head};
+			</if>
+			<if test="result.skill != 'HEIGHT &amp; WEIGHT' and result.skill != 'ATTENDANCE' ">
+				UPDATE student_marks_co SET
+					updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike #{result.updatedBy} AND is_active = true),
+					updated_on = (SELECT extract(epoch FROM now())),
+					indicator = #{result.indicator},
+					grade = #{result.grade},
+					grade_point = #{result.gradePoint}
+				WHERE
+					student_roll = #{result.rollNumber} AND skill = #{result.skill} AND head = #{result.head};
+			</if>
+		</foreach>
+	</update>
+	
+		
+	<select id="selectSubjectGroupForStandard" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT DISTINCT
+			subject_group_code
+		FROM standard_subject_mapping ssm
+		JOIN standard st on(ssm.standard=st.rec_id)
+		JOIN subject s on(ssm.subject=s.rec_id)
+		JOIN subject_group sg on(s.subject_group=sg.rec_id)
+		WHERE
+			standard_code=#{standard}
+			AND
+			ssm.is_active=true;
+	</select>
+	
+	<select id="selectMarksForExamStandardAndSubjectGroup" parameterType="com.qts.icam.model.academics.ExamMarks" resultType="com.qts.icam.model.academics.ExamMarks">
+		SELECT
+			theory as theory,
+			theory_pass as theoryPass,
+			practical as practical,
+			practical_pass as practicalPass,
+			total as total,
+			pass as pass,
+			subject_group_code as "subject.subjectCode",
+			subject_group_name as "subject.subjectName",
+			exam_code as "exam.examCode",
+			exam_name as "exam.examName"
+		FROM exam_marks em
+		JOIN standard s ON (em.standard = s.rec_id)
+		JOIN subject_group sg ON (em.subject_group = sg.rec_id)
+		JOIN exam e ON (em.exam = e.rec_id)
+		WHERE
+			em.is_active = true
+		AND
+			subject_group_code = #{status}
+		AND
+			exam_code = #{desc}
+		AND
+			standard_code = #{standard};
+	</select>
+	
+	<!-- anup.roy // 10.08.2017 // for insert marks setup for standard and exam  -->
+	
+	<update id="updateExamMarks" parameterType="java.util.List">
+		DELETE 
+			FROM exam_marks 
+		WHERE 
+			standard = (SELECT rec_id FROM course WHERE course_code = #{list[0].standard})
+		AND 
+			exam = (SELECT rec_id FROM exam WHERE exam_code = #{list[0].exam.examCode});
+		<!-- AND
+			term = (SELECT rec_id FROM term WHERE term_code = #{list[0].status});  -->
+	 	 <foreach item="marks" collection="list" index="index" open="" close="" separator=";">
+			INSERT INTO exam_marks(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+				subject_group, exam, standard, theory, theory_pass, 
+				practical, practical_pass, total, pass
+				<!-- ,term -->
+				)
+			VALUES ((select uuid_generate_v4()), 'OBJ-ID',
+				(SELECT rec_id FROM resource WHERE user_id  ilike #{marks.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+				(SELECT rec_id FROM subject WHERE subject_code =#{marks.subject.subjectCode} AND is_active = true),
+				(SELECT rec_id FROM exam WHERE exam_code = #{marks.exam.examCode} AND standard = (SELECT rec_id FROM course WHERE course_code = #{marks.standard} AND is_active = true) AND is_active = true),
+				(SELECT rec_id FROM course WHERE course_code = #{marks.standard} AND is_active = true),
+				#{marks.theory}, #{marks.theoryPass}, #{marks.practical}, #{marks.practicalPass},
+				#{marks.total}, #{marks.pass}
+				<!-- ,(SELECT rec_id FROM term WHERE term_code = #{marks.status} AND is_active = true) -->
+				);
+		</foreach> 
+	</update>
+	
+	<!-- 	resultType changed to String from Integer, name concatenated with roll_number on 4th November, 2015 -->
+
+	<select id="selectAllRollForResult" parameterType="com.qts.icam.model.academics.StudentResult" resultType="java.lang.String">
+		SELECT DISTINCT
+			scm.roll_number||'~'||r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ') as name
+		FROM 
+			student_course_subject_mapping scsm
+		JOIN 
+			subject s ON (s.rec_id=scsm.subject AND s.is_active = true)
+		JOIN 
+			course c ON (c.rec_id=scsm.student_course AND c.is_active = true)
+		JOIN
+			standard st ON (c.standard = st.rec_id AND st.is_active = true)	
+		JOIN 
+			resource r ON (r.rec_id=scsm.student AND r.is_active = true)
+		JOIN 
+			student_course_mapping scm ON (scm.user_id = r.user_id AND scm.is_active = true) 
+		JOIN 
+			section sec ON (sec.rec_id=scm.section AND sec.is_active = true)
+		WHERE
+			s.subject_code = #{subject}
+		AND
+			st.standard_code = #{standard} 
+		AND
+			sec.section_code = #{section}
+		AND
+			scsm.is_active = true
+		ORDER BY name;
+	</select>
+	
+	<select id="selectMarksForSubject" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.StudentResult">
+		SELECT
+			theory as theory,
+			theory_pass as theoryPass,
+			practical as practical,
+			practical_pass as practicalPass,
+			total as total,
+			pass as pass
+		FROM exam_marks em
+		JOIN subject s ON(s.rec_id=em.subject_group)
+		JOIN course c ON(c.rec_id=em.standard)
+		JOIN exam e ON(e.rec_id=em.exam)
+		JOIN term t ON (t.rec_id = em.term)
+		WHERE
+			course_code=#{standard}
+		AND
+			exam_code=#{exam}
+		AND
+			subject_code=#{subject}
+		AND
+			term_code = #{objectId};
+	</select>
+		
+	<insert id="insertUserDefinedExams" parameterType="com.qts.icam.model.academics.UserDefinedExams">
+		INSERT INTO user_defined_exams(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, exam_code, exam_name, exam_desc, exam_start_date, exam_end_date,exam_type)
+    	VALUES ((select uuid_generate_v4()), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			#{examCode}, #{examName}, #{desc}, (SELECT extract(epoch from (SELECT to_timestamp(#{startDate}, 'DD/MM/YYYY')))),
+			(SELECT extract(epoch from (SELECT to_timestamp(#{endDate}, 'DD/MM/YYYY')))),
+			(SELECT rec_id FROM exam_type WHERE exam_type_code  ilike #{examType} AND is_active = true));
+		<if test="courseList != null">
+			<foreach item="course" collection="courseList"  open="" close="" separator=";">
+				INSERT INTO user_exam_course_mapping(
+					rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+					user_defined_exams, course)
+				VALUES ((select uuid_generate_v4()), #{objectId},
+					(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+					(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+					(SELECT rec_id FROM user_defined_exams WHERE exam_code =#{examCode} AND is_active = true),
+					(SELECT rec_id FROM course WHERE course_code =#{course.courseCode} AND is_active = true));
+			</foreach>
+		</if>
+	</insert>
+	
+	<!-- changes taken on 05042017 from saurav.bhadra -->
+	
+	<update id="updateUserDefinedExams" parameterType="com.qts.icam.model.academics.UserDefinedExams">
+		UPDATE user_defined_exams SET
+				updated_by=(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+				updated_on=extract(epoch FROM now()),
+				exam_start_date=(SELECT extract(epoch from (SELECT to_timestamp(#{startDate}, 'DD/MM/YYYY')))),
+				exam_end_date=(SELECT extract(epoch from (SELECT to_timestamp(#{endDate}, 'DD/MM/YYYY'))))
+			 WHERE
+				exam_code=#{examCode}
+			AND
+				is_active=true;
+	</update>
+	
+	
+	<resultMap id="selectAllUserDefinedExamsRM" type="com.qts.icam.model.academics.UserDefinedExams">
+		<id property="examCode" column="exam_code" jdbcType="VARCHAR" />
+		<result property="examName" column="exam_name" jdbcType="VARCHAR" />
+		<result property="desc" column="exam_desc" jdbcType="VARCHAR" />
+		<result property="startDate" column="exam_start_date" jdbcType="VARCHAR" />
+		<result property="endDate" column="exam_end_date" jdbcType="VARCHAR" />
+		<collection property="courseList" ofType="com.qts.icam.model.common.Course">
+			<id property="courseCode" column="course_code" jdbcType="VARCHAR" />
+			<result property="standard" column="standard_code" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="selectAllUserDefinedExams" resultMap="selectAllUserDefinedExamsRM">
+		<!-- SELECT
+			ude.exam_code,
+			ude.exam_name,
+			ude.exam_desc,
+			c.course_code,
+			s.standard_code
+		FROM user_defined_exams ude
+		LEFT JOIN user_exam_course_mapping uecm ON(ude.rec_id=uecm.user_defined_exams AND uecm.is_active=true)
+		LEFT JOIN course c ON(c.rec_id=uecm.course AND c.is_active=true)
+		JOIN standard s ON(s.rec_id=c.standard AND s.is_active=true)
+		WHERE
+			ude.is_active=true
+		ORDER BY exam_code; -->
+		SELECT
+			ude.exam_code,
+			ude.exam_name,
+			ude.exam_desc,
+			c.course_code,
+			s.standard_code,
+			(SELECT to_char((SELECT to_timestamp(exam_start_date)), 'DD/MM/YYYY')) as exam_start_date,
+			(SELECT to_char((SELECT to_timestamp(exam_end_date)), 'DD/MM/YYYY')) as exam_end_date
+		FROM user_defined_exams ude
+		LEFT JOIN user_exam_course_mapping uecm ON(ude.rec_id=uecm.user_defined_exams AND uecm.is_active=true)
+		LEFT JOIN course c ON(c.rec_id=uecm.course AND c.is_active=true)
+		JOIN standard s ON(s.rec_id=c.standard AND s.is_active=true)
+		WHERE
+			ude.is_active=true
+		ORDER BY exam_code;
+	</select>
+	
+	<select id="selectUserDefinedExamsForStandard" parameterType="java.lang.String" resultMap="selectAllUserDefinedExamsRM">
+		<!-- SELECT
+			ude.exam_code,
+			ude.exam_name,
+			ude.exam_desc,
+			s.standard_code 
+		FROM user_exam_class_mapping uecm
+		LEFT JOIN user_defined_exams ude ON(ude.rec_id=uecm.user_defined_exams AND uecm.is_active=true)
+		LEFT JOIN standard s ON(s.rec_id=uecm.standard AND s.is_active=true)
+		WHERE
+			ude.is_active=true
+			AND
+			s.standard_code=#{standard}
+		ORDER BY ude.exam_code;   Naimisha you have to change this-->
+		SELECT
+			ude.exam_code,
+			ude.exam_name,
+			ude.exam_desc
+		FROM 
+		user_defined_exams ude;
+	</select>
+	
+	<select id="selectMarksForUserExamAndCourse" parameterType="com.qts.icam.model.academics.UserExamMarks" resultType="com.qts.icam.model.academics.UserExamMarks">
+		SELECT
+			theory as theory,
+			theory_pass as theoryPass,
+			practical as practical,
+			practical_pass as practicalPass,
+			total as total,
+			pass as pass,
+			subject_code as subject
+		FROM user_exam_marks uem
+		JOIN user_exam_course_mapping uecm ON(uem.user_exam_course_mapping=uecm.rec_id)
+		JOIN course c ON(uecm.course=c.rec_id)
+		JOIN subject s ON(uem.subject=s.rec_id)
+		JOIN user_defined_exams ude ON(uecm.user_defined_exams=ude.rec_id)
+		WHERE
+			uem.is_active=true
+			AND
+			exam_code=#{exam}
+			AND
+			course_code=#{course};
+	</select>
+	
+	<select id="selectMarksForUserExamSubjectAndCourse" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.UserExamMarks">
+		SELECT
+			theory as theory,
+			theory_pass as theoryPass,
+			practical as practical,
+			practical_pass as practicalPass,
+			total as total,
+			pass as pass
+		FROM user_exam_marks uem
+		JOIN user_exam_course_mapping uecm ON(uem.user_exam_course_mapping=uecm.rec_id)
+		JOIN course c ON(uecm.course=c.rec_id)
+		JOIN subject s ON(uem.subject=s.rec_id)
+		JOIN user_defined_exams ude ON(uecm.user_defined_exams=ude.rec_id)
+		WHERE
+			uem.is_active=true
+			AND
+			exam_code=#{exam}
+			AND
+			course_code=#{standard}
+			AND
+			subject_code=#{subject};
+	</select>
+	
+	<update id="updateUserExamMarks" parameterType="java.util.List">
+		DELETE FROM user_exam_marks WHERE user_exam_course_mapping=(
+		SELECT rec_id FROM user_exam_course_mapping WHERE
+			course=(SELECT rec_id FROM course WHERE course_code=#{list[0].course}) AND
+			user_defined_exams=(SELECT rec_id FROM user_defined_exams WHERE exam_code=#{list[0].exam}));
+	 	<foreach item="marks" collection="list" index="index" open="" close="" separator=";">
+			INSERT INTO user_exam_marks(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+				subject, user_exam_course_mapping, theory, theory_pass, 
+				practical, practical_pass, total, pass,term)
+			VALUES ((select uuid_generate_v4()), 'OBJ-ID',
+				(SELECT rec_id FROM resource WHERE user_id  ilike #{marks.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+				(SELECT rec_id FROM subject WHERE subject_code =#{marks.subject} AND is_active = true),
+				(SELECT rec_id FROM user_exam_course_mapping WHERE
+				course=(SELECT rec_id FROM course WHERE course_code=#{marks.course}) AND
+				user_defined_exams=(SELECT rec_id FROM user_defined_exams WHERE exam_code=#{marks.exam})),
+				#{marks.theory}, #{marks.theoryPass}, #{marks.practical}, #{marks.practicalPass},
+				#{marks.total}, #{marks.pass},(SELECT rec_id FROM term WHERE term_code = #{marks.desc}));
+		</foreach>
+	</update>
+	
+	<select id="selectUploadedStudentsAndMarksForUserDefinedExams" resultType="com.qts.icam.model.academics.StudentResult" parameterType="com.qts.icam.model.academics.StudentResult">
+		SELECT
+			(student_roll :: text) as rollNumber,
+			student_name as name,
+			theory as theory,
+			practical as practical,
+			total as total,
+			pass as pass,
+			theory_pass as theoryPass,
+			practical_pass as practicalPass,
+			theory_obtained as theoryObtained,
+			practical_obtained as practicalObtained,
+			total_obtained as totalObtained,
+			pass_fail as passFail
+		FROM
+			student_marks_user_exam
+		WHERE
+			subject = #{subject}
+		<!-- AND
+			standard = #{standard} -->
+		AND
+			section = #{section}
+		AND
+			course = #{standard}
+		AND
+			exam = #{exam};
+	</select>
+	
+	<insert id="insertStudentResultUserExam" parameterType="java.util.List">
+	 	<foreach item="studentMarks" collection="list" index="index" open="" close="" separator=";">
+			INSERT INTO student_marks_user_exam(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				student_roll, student_name, year, standard, section, course,
+				exam, subject, theory, theory_pass, practical, practical_pass, total, pass, theory_obtained,
+				practical_obtained, total_obtained, pass_fail,term)
+			VALUES ((select uuid_generate_v4()), 'OBJ-ID',
+				(SELECT rec_id FROM resource WHERE user_id  ilike #{studentMarks.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+				#{studentMarks.rollNumber},
+				(SELECT r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || COALESCE(r.last_name,'') FROM resource r JOIN student_course_mapping scm ON (r.user_id = scm.user_id AND scm.is_active = true) WHERE scm.roll_number=#{studentMarks.rollNumber} AND r.is_active=true),
+				(SELECT academic_year_name FROM academic_year WHERE is_active = true AND year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C')),
+				#{studentMarks.course},#{studentMarks.section}, #{studentMarks.course}, #{studentMarks.exam}, #{studentMarks.subject},
+				#{studentMarks.theory}, #{studentMarks.theoryPass}, #{studentMarks.practical}, #{studentMarks.practicalPass}, #{studentMarks.total},
+				#{studentMarks.pass}, #{studentMarks.theoryObtained}, #{studentMarks.practicalObtained}, #{studentMarks.totalObtained}, #{studentMarks.passFail},
+				(SELECT rec_id FROM term WHERE term_code = #{studentMarks.term}));
+		</foreach>
+	</insert>
+	
+	<update id="updateStudentResultUserExam" parameterType="java.util.List">
+	 	<foreach item="studentMarks" collection="list" index="index" open="" close="" separator=";">
+			UPDATE student_marks_user_exam SET
+	            updated_by =(SELECT rec_id FROM resource WHERE user_id  ilike #{studentMarks.updatedBy} AND is_active = true),
+	            updated_on=(SELECT extract(epoch FROM now())), theory=#{studentMarks.theory}, practical=#{studentMarks.practical},
+	            total=#{studentMarks.total}, pass=#{studentMarks.pass}, theory_obtained=#{studentMarks.theoryObtained},
+	            practical_obtained=#{studentMarks.practicalObtained}, total_obtained=#{studentMarks.totalObtained},
+	            pass_fail=#{studentMarks.passFail}, theory_pass=#{studentMarks.theoryPass}, practical_pass=#{studentMarks.practicalPass}
+	        WHERE
+	        	student_roll=#{studentMarks.rollNumber} AND standard=#{studentMarks.standard} AND
+	        	section=#{studentMarks.section}AND course=#{studentMarks.course} AND exam=#{studentMarks.exam}
+	        	AND subject=#{studentMarks.subject};
+		</foreach>
+	</update>
+	
+	<update id="resetStudentResult" parameterType="com.qts.icam.model.academics.StudentResult">
+		DELETE FROM student_marks_user_exam WHERE
+		<!-- standard = #{standard} -->
+		 section = #{section}
+		AND exam = #{exam}
+		AND course = #{course}
+		AND subject = #{subject};
+	</update>
+	
+	<select id="selectExamForStandard" parameterType="java.lang.String" resultType="com.qts.icam.model.backoffice.Exam">
+		SELECT
+			exam_code as examCode,
+			exam_name as examName
+		FROM
+			exam
+		WHERE
+			standard = (SELECT rec_id FROM standard WHERE standard_code = #{standard} AND is_active = true) AND is_active = true;
+	</select>
+	
+	<insert id="insertAssetConsumption" parameterType="com.qts.icam.model.academics.AssetConsumption">
+		INSERT INTO asset_consumption(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            asset, from_date, to_date, consumed_quantity, asset_unit)
+    	VALUES (
+    		uuid_generate_v4(), 
+    		#{objectId}, 
+    		(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+    		(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())), 
+            (SELECT rec_id FROM asset WHERE asset_id = #{asset.assetId} AND is_active = true), 
+            (SELECT extract(epoch from (SELECT to_timestamp(#{startDate}, 'DD/MM/YYYY')))), 
+            (SELECT extract(epoch from (SELECT to_timestamp(#{endDate}, 'DD/MM/YYYY')))), 
+            #{consumedQuantity}, 
+            #{unit});
+	</insert>
+	
+	<update id="updateAssetAfterConsumption" parameterType="com.qts.icam.model.academics.AssetConsumption">	 	
+		UPDATE asset SET
+            updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+            updated_on = (SELECT extract(epoch FROM now())),
+            ledger_balance = ledger_balance - #{consumedQuantity}
+        WHERE
+        	asset_id = #{asset.assetId}
+        AND
+        	is_active = true;		
+	</update>
+		
+	<select id="selectAssetConsumptionList" parameterType="com.qts.icam.model.academics.AssetConsumption" resultType="com.qts.icam.model.academics.AssetConsumption">		
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(ac.from_date)), 'DD/MM/YYYY')) as startDate,
+			(SELECT to_char((SELECT to_timestamp(ac.to_date)), 'DD/MM/YYYY')) as endDate,
+			ac.consumed_quantity||' '||ac.asset_unit as unit
+		FROM
+			asset_consumption ac
+		JOIN
+			asset a ON (a.rec_id = ac.asset) AND (a.is_active = true)
+		WHERE
+			a.asset_id = #{asset.assetId}
+		AND
+			ac.from_date between (SELECT extract(epoch FROM (SELECT to_timestamp(#{startDate}, 'DD/MM/YYYY')))) and (SELECT extract(epoch FROM (SELECT to_timestamp(#{endDate}, 'DD/MM/YYYY'))))
+		OR
+			ac.to_date between (SELECT extract(epoch FROM (SELECT to_timestamp(#{startDate}, 'DD/MM/YYYY')))) and (SELECT extract(epoch FROM (SELECT to_timestamp(#{endDate}, 'DD/MM/YYYY'))))
+		AND
+			ac.is_active = true
+		ORDER BY
+			ac.from_date;
+	</select>
+	
+	<select id="selectAssetTotalQuantity" parameterType="java.lang.Integer" resultType="com.qts.icam.model.academics.AssetConsumption">		
+		SELECT
+			a.ledger_balance as consumedQuantity,
+			a.asset_unit as unit
+		FROM
+			asset a
+		WHERE
+			a.asset_id = #{assetId}
+		AND
+			a.is_active = true;		
+	</select>
+	
+	
+	
+	
+	
+	<select id="getCourseTypeList" resultType="com.qts.icam.model.academics.CourseType">
+		SELECT
+			course_type_code as courseTypeCode,
+			course_type_name as courseTypeName,
+			course_type_desc as courseTypeDesc
+		FROM course_type
+		WHERE is_active=true;
+	</select>
+	
+	<insert id="createCourseType" parameterType="com.qts.icam.model.academics.CourseType">
+		INSERT INTO course_type(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			course_type_code, course_type_name, course_type_desc)
+		VALUES (uuid_generate_v4(), #{objectId}, (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			#{courseTypeCode}, #{courseTypeName}, #{courseTypeDesc});
+	</insert>
+	
+	<update id="editCourseType" parameterType="com.qts.icam.model.academics.CourseType">	
+        UPDATE course_type SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			course_type_code=#{courseTypeCode},
+			course_type_name=#{courseTypeName}, 
+			course_type_desc=#{courseTypeDesc}
+		WHERE
+			course_type_code=#{courseTypeCode};
+	</update>
+	
+	
+	<select id="getCourseList" resultType="com.qts.icam.model.common.Course">
+		SELECT
+			course_code as courseCode,
+			course_name as courseName,
+			course_desc as courseDesc,
+			standard_code as "standard.standardCode",
+			course_type_code as "courseType.courseTypeCode"
+		FROM course c
+		JOIN standard s on(s.rec_id=c.standard and s.is_active=true)
+		JOIN course_type ct on(ct.rec_id=c.course_type and ct.is_active=true)
+		WHERE
+			c.is_active=true;
+	</select>
+	
+	<!-- <insert id="createCourse" parameterType="com.qts.icam.model.common.Course">
+		INSERT INTO course(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			course_code, course_name, course_desc, standard, course_type)
+		VALUES (uuid_generate_v4(), #{objectId}, (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			#{courseCode}, #{courseName}, #{courseDesc},
+			(SELECT rec_id FROM standard WHERE standard_code = #{standard.standardCode} AND is_active = true),
+			(SELECT rec_id FROM course_type WHERE course_type_code = #{courseType.courseTypeCode} AND is_active = true));
+	</insert> -->
+	
+	<!-- changes taken from saurav.bhadra on 05042017 -->
+	
+	<update id="editCourse" parameterType="com.qts.icam.model.admission.AdmissionForm">	
+		UPDATE course SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			<!-- admission_available_to_date =(SELECT extract(epoch from (SELECT to_timestamp(#{admissionDriveExpectedEndDate},'DD/MM/YYYY')))),
+			course_start_date = (SELECT extract(epoch from (SELECT to_timestamp(#{courseStartDate},'DD/MM/YYYY')))),-->
+			course_duration = #{courseDuration}, 
+			<!-- number_of_openings = #{noOfOpenings} -->
+		WHERE
+			course_code = #{courseCode};
+	</update>
+	
+	<!-- modified by namisha.ghosh 04072017 -->
+	
+	<select id="getStudentsNameAndRollForCourse" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Student">
+		SELECT
+			scm.roll_number as roll,
+			r.user_id as userId,
+			r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || COALESCE(r.last_name,'') as studentName
+		FROM 
+			resource r 
+		JOIN
+			student_course_mapping scm ON (scm.user_id = r.user_id AND scm.is_active   = true)
+		JOIN 
+			course co ON (scm.course = co.rec_id AND co.is_active = true)
+		WHERE
+			co.course_code=#{course}
+		AND
+			r.rec_id NOT IN(select student from student_course_subject_mapping)			
+		AND
+			r.is_active = true;
+		<!-- AND 
+			r.rec_id NOT IN(select student from student_course_subject_mapping); -->
+	</select>
+	
+	
+	<!-- modified by sourav.bhadra 25042017 -->
+	
+	
+	<insert id="createStudentCourseSubjectMapping" parameterType="java.util.List">
+		<foreach item="scsm" collection="list" index="index" open="" close="" separator=";">
+			DELETE FROM student_course_subject_mapping
+			WHERE
+				student_course=(SELECT rec_id FROM course WHERE course_code=#{scsm.courseCode})
+			AND
+				student=(SELECT rec_id FROM resource WHERE user_id=#{scsm.roll});
+			
+			<if test="scsm.subjectList != null">
+				<foreach item="subject" collection="scsm.subjectList"  open="" close="" separator=";">
+					INSERT INTO student_course_subject_mapping(
+						rec_id,
+						 obj_id, 
+						 updated_by,
+						  updated_on, 
+						date_of_creation,
+						 student_course, 
+						 subject,
+						 student)
+					VALUES (uuid_generate_v4(), 
+					'OBJ-ID', 
+					(SELECT rec_id FROM resource WHERE user_id = #{scsm.updatedBy} AND is_active = true),
+					(SELECT extract(epoch FROM now())),
+					(SELECT extract(epoch FROM now())),
+					(SELECT rec_id FROM course WHERE course_code=#{scsm.courseCode}),
+					(select rec_id from subject where subject_code=#{subject}),
+					(select rec_id from resource where user_id = #{scsm.roll}));
+				</foreach>
+			</if>
+		</foreach>		
+	</insert>
+	
+	
+	<select id="getSubjectsMappedStudents" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Student">
+		SELECT
+			DISTINCT scm.roll_number as roll,
+			 r.user_id as userId,
+			 r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || COALESCE(r.last_name,'') as studentName	
+		FROM resource r
+		JOIN student_course_mapping scm ON (scm.user_id = r.user_id AND scm.is_active = true)
+		JOIN course c on(c.rec_id=scm.course AND c.is_active = true)
+		JOIN student_course_subject_mapping scsm on(c.rec_id = scsm.student_course  AND scsm.is_active = true)
+		JOIN subject sub on(sub.rec_id=scsm.subject AND sub.is_active = true)
+		WHERE
+			c. course_code=#{course}
+		AND
+			r.is_active = true;	
+	</select>
+	
+	<select id="getSubjectsStudiedByStudentInCourse" resultType="com.qts.icam.model.academics.Subject" parameterType="com.qts.icam.model.academics.StudentCourseSubjectMapping">
+		SELECT
+			sub.subject_code as subjectCode,
+			sub.subject_name as subjectName,
+			subject_group_code as subjectGroup
+		FROM student_course_subject_mapping scsm
+		JOIN subject sub on(sub.rec_id=scsm.subject AND sub.is_active = true)
+		JOIN course c on(c.rec_id=scsm.student_course AND c.is_active = true)
+		JOIN resource r on(r.rec_id=scsm.student AND r.is_active = true)
+		JOIN subject_group sg on(sub.subject_group=sg.rec_id AND sg.is_active = true)
+		WHERE
+			user_id=#{roll}
+		AND
+			course_code=#{courseCode}
+		AND
+			scsm.is_active = true;
+	</select>
+
+	<select id="getExamsForCourse" resultType="java.lang.String" parameterType="java.lang.String">
+		select
+			exam_code, exam_name
+		from user_exam_course_mapping uecm
+		join user_defined_exams ude on(ude.rec_id=uecm.user_defined_exams)
+		join course c on(c.rec_id = uecm.course)
+		WHERE
+			c.course_code=#{course}
+			AND
+			c.is_active=true;
+	</select>
+	
+	<!-- modified by naimisha.ghosh
+	changes taken on 13042017 -->
+	
+	<insert id="insertIntoCourse" parameterType="com.qts.icam.model.admission.AdmissionForm">
+		INSERT INTO course(
+			rec_id,
+			obj_id,
+			updated_by,
+			updated_on,
+			date_of_creation,
+			course_code,
+			course_name,
+			course_desc,
+			standard,
+			course_type,
+			number_of_openings,
+			publish_status,
+			course_duration,
+		
+			course_acronym,
+			admission_mode)
+		VALUES (
+			uuid_generate_v4(),
+			#{admissionFormObjectId},
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true)	,			
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			(SELECT (#{admissionFormCode} ||(select COALESCE((SELECT MAX(course_id) FROM course), 0 )+1))),
+			#{courseName},
+			#{admissionFormDesc},
+			(SELECT st.rec_id  FROM standard st WHERE st.standard_code=#{courseName} AND st.is_active = true ),		
+			(SELECT 
+				ct.rec_id 
+			FROM 
+				course_type ct
+			WHERE 
+				ct.course_type_name= #{courseType} 
+			AND 
+				ct.is_active = true),		
+				
+			#{noOfOpenings},
+			
+			<if test="status == 'ACTIVE'">
+				(SELECT rec_id FROM status_flag WHERE status_sym='PUB'),
+			</if>
+			<if test="status == 'INACTIVE'">
+				(SELECT rec_id FROM status_flag WHERE status_sym='PS'),
+			</if>
+			
+			#{courseDuration},	
+			
+			#{courseAcronym},
+			#{searchStatus});
+			
+	</insert>
+
+	<update id="updateSectionForCapacity" parameterType="com.qts.icam.model.admission.AdmissionForm">
+		<foreach collection="sectionList" item="section" open="" close="" separator=";">
+				UPDATE section
+				SET capacity = #{section.totalSeat}
+				WHERE
+					section_code = #{section.sectionCode}
+				AND
+					standard = (SELECT st.rec_id  FROM standard st WHERE st.standard_code=#{courseName} AND st.is_active = true )
+				AND
+					is_active = true
+			</foreach>
+	</update>
+	<select id="selectCourseList" resultType="com.qts.icam.model.admission.AdmissionForm" parameterType="java.util.Map">
+		SELECT
+			st.standard_name as courseClass,
+			co.course_name as courseName,
+			co.course_code as courseCode,
+			ct.course_type_name as courseType,
+			co.course_duration as courseDuration,
+			co.number_of_openings as noOfOpenings,
+			sf2.status_desc as searchStatus,
+			to_char((SELECT to_timestamp((co.admission_available_from_date))), 'DD/MM/YYYY') as admissionDriveStartDate,
+			to_char((SELECT to_timestamp((co.admission_available_to_date))), 'DD/MM/YYYY') as admissionDriveExpectedEndDate,
+			to_char((SELECT to_timestamp((co.course_start_date))), 'DD/MM/YYYY') as courseStartDate,
+			start_time as courseStartTime,
+			end_time as courseEndTime,
+			co.credit as admissionFormId
+		FROM course co
+		JOIN standard st ON (st.is_active = true) AND (st.rec_id = co.standard)
+		JOIN course_type ct ON (ct.is_active = true) AND (ct.rec_id = co.course_type)
+		LEFT JOIN status_flag sf2 ON (sf2.rec_id = co.publish_status)
+		WHERE
+			co.course_code IS NOT NULL
+		AND
+			co.is_active = true;
+
+	</select>
+	
+	<select id="checkingExistingCourseStatus" parameterType="com.qts.icam.model.admission.AdmissionForm" resultType="java.lang.String">
+		
+		SELECT
+			st.standard_name as existingCourseStatus
+		FROM 
+			course co
+		JOIN 
+			standard st ON (st.is_active = true) AND (st.rec_id = co.standard) 
+		JOIN 
+			course_type ct ON (ct.is_active = true) AND (ct.rec_id = co.course_type)
+		WHERE
+			co.standard = (SELECT rec_id FROM standard WHERE standard_name=#{courseClass} AND is_active = true)
+		AND
+			co.course_name=#{courseName}
+		AND
+			co.course_type= (SELECT ct.rec_id FROM course_type ct WHERE 	ct.is_active = true AND course_type_name=#{courseType})
+		AND
+			co.is_active = true;
+	</select>
+	
+	<select id="selectAllStudentsList" resultType="com.qts.icam.model.common.Student">
+		SELECT
+			r.registration_id as "resource.registrationId",
+			scm.roll_number as roll,
+			r.first_name || ' ' || COALESCE(r.middle_name ,'') || ' ' || COALESCE(r.last_name ,' ') as studentName,
+			r.gender as "resource.gender",
+			std.standard_name as standard,
+			sec.section_name as section,
+			r.mobile_no as mobile,
+			r.email_address as emailId,
+			host.hostel_name as house,
+			r.user_id as userId,
+			t.term_name as studentPassFail
+			
+		FROM
+			resource r
+		LEFT JOIN 
+			student_course_mapping scm ON (r.user_id = scm.user_id)
+		JOIN 
+			course c on (scm.course = c.rec_id)
+		JOIN 
+			section sec on (scm.section = sec.rec_id)
+		LEFT JOIN
+			standard std ON(sec.standard = std.rec_id AND std.is_active = true)
+		LEFT JOIN
+			hostel host ON(r.hostel = host.rec_id AND host.is_active = true)
+		JOIN
+			resource_type rt ON(rt.rec_id = r.resource_type AND rt.is_active = true)
+		LEFT JOIN
+			subject sub ON (r.second_language = sub.rec_id AND sub.is_active = true)
+		JOIN
+			term t ON (t.rec_id = scm.term AND scm.is_active = true)
+		WHERE
+			r.is_active=true
+		AND
+			rt.resource_type_name='STUDENT'
+	</select>
+	
+		<!-- //*******Added By Naimisha 22112016********// -->
+	<select id="selectSubjectsListFromStandardTeacherSubjectMapping" resultType="com.qts.icam.model.academics.Subject"  parameterType="com.qts.icam.model.common.TeacherSubjectMapping">
+		SELECT
+			s.serial_id as subjectId,
+			s.subject_code as subjectCode,
+			s.subject_name as subjectName,
+			s.subject_desc as desc
+		FROM standard_subject_teacher_mapping sstm
+		JOIN subject s ON (s.rec_id = sstm.subject and s.is_active = true)
+		JOIN resource r ON (r.rec_id = sstm.teacher and r.is_active = true)
+		JOIN section sc ON (sc.rec_id = sstm.section and sc.is_active = true)
+		JOIN standard st ON (sc.standard = st.rec_id AND st.is_active = true)
+		JOIN Course c ON(c.standard =st.rec_id AND c.is_active=true)
+		WHERE
+		sc.section_code = #{sectionName}
+		AND	r.user_id = #{updatedBy}
+		AND	c.course_code = #{teacherName}
+		AND	sstm.is_active=true;
+	</select>
+	
+	<resultMap id="getExamTypeNameResultMap" type="com.qts.icam.model.common.ExamType">
+		<id property="examTypeCode" column="exam_type_code" jdbcType="VARCHAR" />
+		<id property="examTypeName" column="exam_type_name" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<select id="getExamType" resultMap="getExamTypeNameResultMap">
+
+		SELECT
+			et.exam_type_code,
+			et.exam_type_name
+		FROM
+			exam_type et
+		WHERE
+			et.exam_type_code IS NOT NULL
+		and
+			et.exam_type_name IS NOT NULL
+		AND
+			et.is_active = true;
+
+	</select>
+
+
+	<!-- <update id="updateExamTypeName" parameterType="com.qts.icam.model.common.ExamType">
+		UPDATE
+			exam_type
+		SET
+			obj_id = #{examTypeObjectId},
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true ),
+			updated_on = (SELECT extract(epoch FROM now())),
+			exam_type_name = #{examTypeName}
+		WHERE
+			exam_type_code = #{examTypeCode}
+
+	</update> -->
+	
+	 <insert id="insertIntoExam" parameterType="com.qts.icam.model.backoffice.Exam">
+	INSERT INTO exam(
+		rec_id,
+		obj_id,
+		updated_by, 
+		updated_on, 
+		date_of_creation, 
+		exam_code, 
+		exam_name, 
+		exam_desc,
+		standard, 
+		course, 
+		exam_type, 
+		academic_session,
+		term)
+    VALUES(uuid_generate_v4(), 
+		#{objectId}, 
+		(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+		(SELECT extract(epoch FROM now())),
+		(SELECT extract(epoch FROM now())),
+		(SELECT (#{examCode} ||(select COALESCE((SELECT MAX(serial_id) FROM exam), 0 )+1))), 
+		#{examName}, 
+		#{desc},
+		(SELECT rec_id FROM course WHERE course_code = #{course.courseName} AND is_active = true),
+		(SELECT rec_id FROM subject WHERE subject_code = #{course.courseCode} AND is_active = true), 
+		(SELECT rec_id FROM exam_type WHERE exam_type_code = #{examTypeName} AND is_active = true),
+		(SELECT rec_id FROM academic_year  WHERE year_status =( SELECT rec_id FROM status_flag WHERE status_sym='C')AND is_active = true),
+		(SELECT rec_id FROM term WHERE term_code = #{termCode} AND is_active = true));
+	</insert>
+	
+	<!-- anup.roy 09.08.2017 for remove term and exam type -->
+	
+	<resultMap id="getExamResultMap" type="com.qts.icam.model.backoffice.Exam">
+		<id property="examCode" column="exam_code" jdbcType="VARCHAR" />
+		<result property="examName" column="exam_name" jdbcType="VARCHAR" />
+		<result property="standard.standardCode" column="course_code" jdbcType="VARCHAR" />
+		<result property="standard.standardName" column="course_name" jdbcType="VARCHAR" />
+		<!-- <result property="examTypeName" column="exam_type_name" jdbcType="VARCHAR" /> -->
+		<!-- <result property="desc" column="exam_type_code" jdbcType="VARCHAR" /> -->
+		<!-- <result property="termCode" column="term_code" jdbcType="VARCHAR" />
+		<result property="term" column="term_name" jdbcType="VARCHAR" /> -->
+		<result property="course.courseCode" column="subject_code" jdbcType="VARCHAR" />
+		<result property="course.courseName" column="subject_name" jdbcType="VARCHAR" />
+		<!-- <collection property="courseList" ofType="com.qts.icam.model.common.Course">
+			<id property="courseCode" column="subject_code" jdbcType="VARCHAR" />
+			<result property="courseName" column="subject_name" jdbcType="VARCHAR" />
+		</collection> -->	
+	</resultMap>
+	
+	<select id="getExam" resultMap="getExamResultMap" parameterType="java.util.Map">
+		SELECT
+			exam_code,
+			exam_name,
+			<!-- et.exam_type_name,
+			et.exam_type_code, -->
+			co.course_code,
+			co.course_name,
+			su.subject_code,
+			su.subject_name
+			<!-- t.term_code,
+			t.term_name  -->
+		FROM
+			exam e
+		JOIN 
+			course co ON (co.rec_id = e.standard) and (co.is_active = true)
+		<!-- JOIN 
+			exam_type et ON (et.rec_id = e.exam_type) and (et.is_active = true) -->
+		JOIN 
+			subject su ON (su.rec_id = e.course) and (su.is_active = true)
+		<!-- LEFT JOIN
+			term t ON (t.rec_id = e.term AND t.is_active = true) -->
+		WHERE
+			e.is_active = true;
+	</select>
+	
+	<select id="checkForPromotionalExam" parameterType="com.qts.icam.model.backoffice.Exam"
+	resultType="String">
+	SELECT
+		ude.exam_name as examDB
+	FROM
+		user_defined_exams ude
+	JOIN
+		user_exam_course_mapping uecm ON(ude.rec_id = uecm.user_defined_exams) AND (uecm.is_active = true)
+	JOIN
+		course co ON(co.rec_id = uecm.course) AND (co.is_active = true)
+	JOIN	
+		standard st ON(st.rec_id = co.standard) AND st.is_active = true
+	WHERE
+		st.standard_name = #{standard.standardName}
+	AND
+		co.course_code = #{course.courseCode}
+	AND	
+		ude.promotional = true
+	AND
+		ude.is_active = true
+
+	</select>
+
+	<update id="updateForPromotionalExam" parameterType="com.qts.icam.model.backoffice.Exam">
+
+		UPDATE
+			user_exam_course_mapping
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+			updated_on=(SELECT extract(epoch FROM now()))
+		WHERE
+			user_defined_exams = (SELECT rec_id FROM user_defined_exams WHERE exam_code = #{examCode});
+		
+		UPDATE
+			user_defined_exams
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			promotional = true
+		WHERE
+			exam_code = #{examCode};
+	</update>
+	
+	<resultMap id="listPromotionalExamResultMap" type="com.qts.icam.model.backoffice.Exam">
+		<id property="courseCode" column="course_code" jdbcType="VARCHAR" />
+		<result property="termCode" column="course_name" jdbcType="VARCHAR" />
+		<result property="standardCode" column="standard_name" jdbcType="VARCHAR" />
+		<result property="examCode" column="exam_code" jdbcType="VARCHAR" />
+		<result property="examName" column="exam_name" jdbcType="VARCHAR" />
+		<result property="serialId" column="serial_id" jdbcType="INTEGER" />
+	</resultMap>
+
+	<select id="listPromotionalExam" resultMap="listPromotionalExamResultMap" parameterType="java.util.Map">
+
+		SELECT
+			ude.exam_code,
+			ude.exam_name,
+			ude.serial_id,
+			st.standard_name,
+			co.course_name,
+			co.course_code,
+			ude.serial_id
+		FROM
+			user_defined_exams ude
+		JOIN 	user_exam_course_mapping uecm ON (uecm.user_defined_exams = ude.rec_id)
+		JOIN 	course co on(co.rec_id = uecm.course) and (co.is_active = true)
+		JOIN 	standard st ON(st.rec_id = co.standard) AND st.is_active = true
+		WHERE
+			ude.promotional = true
+	</select>
+		<update id="updateExamTypeName" parameterType="com.qts.icam.model.common.ExamType">
+		UPDATE
+			exam_type
+		SET
+			obj_id = #{examTypeObjectId},
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true ),
+			updated_on = (SELECT extract(epoch FROM now())),
+			exam_type_name = #{examTypeName}
+		WHERE
+			exam_type_code = #{examTypeCode}
+
+	</update>
+	
+	<update id="updatePromotionalExam" parameterType="com.qts.icam.model.backoffice.Exam">
+		UPDATE
+			user_defined_exams
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true ),
+			updated_on = (SELECT extract(epoch FROM now())),
+			promotional = false
+		WHERE
+			serial_id = #{serialId};
+			
+		UPDATE
+			user_defined_exams
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			promotional = true
+		WHERE
+			exam_code = #{examCode};
+
+	</update>
+	<select id="listTermsAgainstACourse" resultType="com.qts.icam.model.backoffice.Term" parameterType="java.lang.String">
+		SELECT
+			term_code as termCode,
+			term_name as termName
+		FROM
+			term t
+		JOIN
+			course c ON (t.course = c.rec_id AND c.is_active = true)
+		JOIN
+			academic_year ay ON (ay.rec_id = t.academic_year AND ay.is_active = true)
+		JOIN
+			status_flag sf ON (ay.year_status = sf.rec_id AND sf.is_active = true)
+		WHERE
+			sf.status_sym = 'C' 
+		AND 
+			c.course_code = #{course};
+	</select>
+	<select id="listTerm" resultType="com.qts.icam.model.backoffice.Term">
+		SELECT  
+			t.term_id as termObjectId,
+			t.term_code as termCode, 
+			t.term_name as termName, 
+			t.term_desc as termDesc, 
+			c.course_code as "course.courseCode",
+			c.course_name as "course.courseName",  
+			ay.academic_year_name academicYear
+		FROM 	
+			term t
+		JOIN	
+			course c ON(c.rec_id=t.course)
+		JOIN	
+			academic_year ay ON(ay.rec_id=t.academic_year)
+		WHERE 
+			t.is_active=true  ;
+	</select>
+	<update id="editExam" parameterType="com.qts.icam.model.backoffice.Exam">
+		UPDATE
+			exam
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true ),
+			updated_on = (SELECT extract(epoch FROM now())),
+			exam_name = #{examName},
+			exam_desc = #{examName}
+			<!-- exam_type = (SELECT rec_id FROM exam_type WHERE exam_type_code = #{examTypeName} AND is_active = true) -->
+			<!-- term = (SELECT rec_id FROM term WHERE term_code = #{term} AND is_active = true) -->
+		WHERE
+			exam_code = #{examCode};
+	</update>
+	
+	<!-- anup.roy for getting exam w.r.t course // remove term // 10.08.2017 -->
+	
+	<select id="lisExamsAgainstACourseAndTerm" resultType="com.qts.icam.model.backoffice.Exam">
+		SELECT
+			exam_code as examCode,
+			exam_name as examName
+		FROM
+			exam e
+		JOIN
+			course c ON (c.rec_id = e.standard AND e.is_active = true)
+		<!-- JOIN
+			term t ON (t.rec_id = e.term AND t.is_active = true) -->
+		JOIN
+			academic_year ay ON (ay.rec_id = e.academic_session AND ay.is_active = true)
+		JOIN
+			Status_flag sf ON (sf.rec_id = ay.year_status AND sf.is_active = true)
+		WHERE
+			sf.status_sym = 'C'
+		AND
+			course_code = #{courseCode}
+		AND
+			e.is_active = true	
+		<!-- AND
+			term_code = #{termCode}; -->
+	</select>
+	
+	<select id="selectSubjectForCourseAndTermAndTeacher" parameterType="com.qts.icam.model.common.Course" resultType="com.qts.icam.model.academics.Subject">
+
+	<!-- 	SELECT 
+			s.subject_code as subjectCode,
+			s.subject_name as subjectName
+		FROM
+			standard_subject_teacher_mapping  sstm
+		JOIN
+			subject s ON (sstm.subject = s.rec_id AND s.is_active = true)
+		JOIN
+			term_course_subject_mapping tcsm ON (s.rec_id = tcsm.subject)
+		JOIN
+			term t ON (t.rec_id = tcsm.term AND t.is_active = true)
+		JOIN 
+			resource r ON (r.rec_id = sstm.teacher AND r.is_active = true )
+		JOIN 
+			section sc ON (sc.rec_id = sstm.section and sc.is_active = true)
+		JOIN 
+			standard st ON (sc.standard = st.rec_id AND st.is_active = true)
+		JOIN 
+			Course c ON(c.standard =st.rec_id AND c.is_active=true)
+		WHERE
+			sc.section_code = #{courseDesc}
+		AND	r.user_id = #{updatedBy} 
+		AND	c.course_code = #{courseCode} 
+		AND	t.term_code = #{courseName}
+		AND	sstm.is_active = true; -->
+		
+		SELECT distinct
+			s.subject_code as subjectCode,
+			s.subject_name as subjectName
+		FROM
+			standard_subject_teacher_mapping  sstm
+		JOIN
+			subject s ON (sstm.subject = s.rec_id AND s.is_active = true)
+		JOIN 
+			section sc ON (sc.rec_id = sstm.section and sc.is_active = true)
+		JOIN
+			term_course_subject_mapping tcsm ON (s.rec_id = tcsm.subject)
+		JOIN
+			term t ON (t.rec_id = tcsm.term AND t.is_active = true)
+		JOIN 
+			Course c ON(c.rec_id =tcsm.course AND c.is_active=true)
+		JOIN 
+			resource r ON (r.rec_id = sstm.teacher AND r.is_active = true )
+		JOIN 
+			standard st ON (sc.standard = st.rec_id AND st.is_active = true)
+		
+		WHERE
+			sc.section_code =#{courseDesc}
+		AND	r.user_id = #{updatedBy} 
+		AND	c.course_code = #{courseCode} 
+		AND	t.term_code = #{courseName}
+		AND	sstm.is_active = true;
+	</select>
+	<select id="selectSubjectForCourseAndTerm" parameterType="com.qts.icam.model.common.Course" resultType="com.qts.icam.model.academics.Subject">
+	 	SELECT
+			s.subject_code as subjectCode,
+			s.subject_name as subjectName
+		FROM
+			term_course_subject_mapping tcsm
+		JOIN
+			course c ON (tcsm.course = c.rec_id AND c.is_active = true)
+		JOIN
+			subject s ON (tcsm.subject = s.rec_id AND s.is_active = true)
+		JOIN 
+			term t ON (tcsm.term = t.rec_id AND t.is_active = true)
+		WHERE
+			c.course_code = #{courseCode}
+		AND 
+			t.term_code = #{courseName}
+		AND
+			tcsm.is_active = true; 
+	</select>
+	<select id="selectMarksForExamCourseAndTermSubject" parameterType="com.qts.icam.model.academics.ExamMarks" resultType="com.qts.icam.model.academics.ExamMarks">
+		SELECT
+			theory as theory,
+			theory_pass as theoryPass,
+			practical as practical,
+			practical_pass as practicalPass,
+			total as total,
+			pass as pass,
+			subject_code as "subject.subjectCode",
+			subject_name as "subject.subjectName",
+			exam_code as "exam.examCode",
+			exam_name as "exam.examName"
+		FROM exam_marks em
+		JOIN course c ON (em.standard = c.rec_id AND c.is_active = true)
+		JOIN subject s ON (em.subject_group = s.rec_id AND s.is_active = true)
+		JOIN exam e ON (em.exam = e.rec_id ANd e.is_active = true)
+		JOIN term t ON (em.term = t.rec_id AND t.is_active = true)
+		WHERE
+			em.is_active = true
+		AND
+			subject_code = #{status}
+		AND
+			exam_code = #{desc}
+		AND
+			course_code = #{standard}
+		AND
+			term_code = #{objectId}
+		AND
+			em.is_active = true;
+	</select>
+	
+<!-- 	/******************Changes By Sourav 01032017*********************/ -->
+
+	
+
+<select id="selectCurrentSession" resultType="com.qts.icam.model.common.AcademicYear">
+		SELECT
+			academic_year_code as academicYearCode,
+			academic_year_name as academicYearName
+		FROM
+			academic_year
+		WHERE
+			is_active = true
+		AND
+			year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C');
+	</select>
+	
+	<insert id="createTerm" parameterType="com.qts.icam.model.backoffice.Term">
+		INSERT INTO term(
+	            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+	            term_code, term_name, term_desc, 
+	            course, academic_year)
+    	VALUES ((select uuid_generate_v4()), #{termObjectId},
+			    (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			    (SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+		        (SELECT('TERM-' ||(SELECT COALESCE((SELECT MAX(term_id) FROM term), 0)+1))),
+		        #{termName}, #{termDesc},
+		        (select rec_id from course where course_code=#{course.courseCode}),
+		        (select rec_id from academic_year where academic_year_code=#{academicYear})
+		        );
+	</insert>
+	
+	
+	
+	
+	
+	<insert id="insertTermCourseSubjectMapping" parameterType="com.qts.icam.model.academics.CourseSubjectMapping">
+		INSERT INTO term_course_subject_mapping(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            course, subject, term)
+		VALUES ((select uuid_generate_v4()), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM course WHERE course_code =#{courseCode} AND is_active = true),
+			(SELECT rec_id FROM subject WHERE subject_code =#{subject} AND is_active = true),
+			(select rec_id from term where term_code=#{term}));
+	</insert>
+	
+	<update id="inactiveTermCourseSubjectMapping" parameterType="com.qts.icam.model.academics.CourseSubjectMapping">
+	 	<foreach item="oldSubject" collection="oldSubjectList" index="index" open="" close="" separator=";">
+			UPDATE 
+				term_course_subject_mapping
+			SET
+				updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+				updated_on=extract(epoch FROM now()),
+				is_active=false
+			WHERE
+				course=(SELECT rec_id FROM course WHERE course_code =#{courseCode} AND is_active = true)
+			AND
+				subject=(SELECT rec_id FROM subject WHERE subject_code =#{oldSubject} AND is_active = true)
+			AND
+				term = (SELECT rec_id FROM term WHERE term_code = #{term})
+			AND
+				is_active=true;
+		</foreach>
+	</update>
+	
+	<select id="selectInactiveSubjectForCourseAndTerm" resultType="com.qts.icam.model.academics.CourseSubjectMapping" parameterType="com.qts.icam.model.academics.CourseSubjectMapping">
+		SELECT
+			s.subject_code as subject,
+			c.course_code as courseCode
+		FROM 
+			term_course_subject_mapping tcsm
+		JOIN 
+			course c ON(tcsm.course=c.rec_id AND c.is_active=true)
+		JOIN 
+			subject s ON(tcsm.subject=s.rec_id AND s.is_active=true)
+		WHERE
+			c.course_code=#{courseCode}
+			AND
+			s.subject_code=#{subject}
+			AND
+			tcsm.is_active=false;
+	</select>
+	
+	<update id="updateTermCourseSubjectMapping" parameterType="com.qts.icam.model.academics.CourseSubjectMapping">
+		UPDATE 
+			term_course_subject_mapping
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			is_active=true
+		WHERE
+			course=(SELECT rec_id FROM course WHERE course_code =#{courseCode} AND is_active = true)
+		AND
+			subject=(SELECT rec_id FROM subject WHERE subject_code =#{subject} AND is_active = true)
+		AND
+			term = (SELECT rec_id FROM term WHERE term_code = #{term})
+		AND
+			is_active=false;
+	</update>
+	
+	<select id="getSubjectForCourseAndTerm" resultType="com.qts.icam.model.academics.Subject" parameterType="com.qts.icam.model.backoffice.Term">
+		<!-- SELECT distinct
+			s.subject_code as subjectCode, 
+			s.subject_name as subjectName
+		FROM 
+			subject s
+		JOIN
+			term_course_subject_mapping tcrs ON(s.rec_id=tcrs.subject)
+		WHERE
+			tcrs.course=(SELECT rec_id FROM course WHERE course_code=#{course.courseCode} AND is_active=true)
+		AND
+			tcrs.term=(SELECT rec_id FROM term WHERE term_code=#{termCode} AND is_active=true)
+		AND
+			tcrs.is_active=true; -->
+		SELECT
+			s.subject_code as subjectCode,
+			s.subject_name as subjectName
+		FROM
+			course_subject_mapping csm 
+		JOIN
+			course c ON (csm.course = c.rec_id AND c.is_active = true)
+		JOIN
+			subject s ON (csm.subject = s.rec_id AND s.is_active = true)
+		WHERE
+			c.course_code = #{course.courseCode}
+		AND
+			csm.is_active = true;
+	</select>
+
+	<select id="selectSubjectCreditsForCourse" resultType="com.qts.icam.model.academics.Subject" parameterType="java.lang.String">
+		SELECT
+			s.credit as credit
+		FROM 
+			subject s
+		WHERE
+			s.subject_name = #{newSubject1}
+		AND
+			s.is_active=true;
+	</select>
+	
+	<update id="updateTotalCredit" parameterType="com.qts.icam.model.academics.CourseSubjectMapping">
+		UPDATE
+			course
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true ),
+			updated_on = (SELECT extract(epoch FROM now())),
+			credit = #{courseCredit}
+		WHERE
+			course_code = #{courseCode}
+		AND
+			is_active=true;
+
+	</update>
+	<select id="getTeacherAgainstCourse" parameterType="com.qts.icam.model.common.Course" resultType="com.qts.icam.model.erp.Employee">
+		SELECT distinct
+			user_id as employeeCode,
+			 r.first_name || ' ' || COALESCE(r.middle_name ,'') || ' ' || COALESCE(r.last_name,'  ')  as employeeName
+		FROM 
+			resource r		
+		JOIN 
+			standard_subject_teacher_mapping sstm ON(sstm.teacher= r.rec_id AND sstm.is_active = true)
+		JOIN 
+			subject s ON(s.rec_id = sstm.subject AND s.is_active = true)
+		JOIN
+			term_course_subject_mapping tcsm ON (tcsm.subject = s.rec_id AND tcsm.is_active  = true)
+		JOIN
+			course c ON(c.rec_id = tcsm.course AND c.is_active = true)
+		JOIN
+			term t ON (t.course = c.rec_id AND t.is_active = true)
+		WHERE
+			c.course_code= #{courseCode}
+		AND
+			t.term_code = #{courseName}
+		AND
+			subject_code = #{courseDesc};
+	</select>
+	<!-- /***************End By Koustav 01032017***************/ -->
+	
+	<!-- 	/*******************************03032017GFor Aminities Usage Of Student****************/ -->
+	<select id="selectStudentsForAllProgrammes" resultType="com.qts.icam.model.common.Student">
+		SELECT
+			r.roll_number as rollNumber,
+			r.first_name || ' ' || COALESCE(r.middle_name ,'') || ' ' || COALESCE(r.last_name,'  ')  as studentName,
+			r.gender as "resource.gender"
+		FROM
+			resource r
+			LEFT JOIN section sec ON(r.section=sec.rec_id AND sec.is_active=true)
+			LEFT JOIN standard std ON(sec.standard=std.rec_id AND std.is_active=true)
+			JOIN course c ON (c.standard = std.rec_id AND c.is_active = true)
+			JOIN resource_type rt ON(r.resource_type=rt.rec_id AND rt.is_active=true)
+		WHERE
+			r.is_active=true
+		AND
+			rt.resource_type_name='STUDENT';
+	</select>
+	
+	
+	
+	<select id="selectStudentsForProgrammesAndAllBatches" resultType="com.qts.icam.model.common.Student" parameterType="com.qts.icam.model.common.Course">
+		SELECT
+			r.roll_number as rollNumber,
+			r.first_name || ' ' || COALESCE(r.middle_name ,'') || ' ' || COALESCE(r.last_name,'  ')  as studentName,
+			r.gender as "resource.gender"
+		FROM
+			resource r
+			LEFT JOIN section sec ON(r.section=sec.rec_id AND sec.is_active=true)
+			LEFT JOIN standard std ON(sec.standard=std.rec_id AND std.is_active=true)
+			JOIN course c ON (c.standard = std.rec_id AND c.is_active = true)
+			JOIN resource_type rt ON(r.resource_type=rt.rec_id AND rt.is_active=true)
+		WHERE
+			r.is_active=true
+		AND
+			rt.resource_type_name='STUDENT'
+		AND
+			c.course_code = #{courseCode};
+	</select>
+		<select id="selectStudentsForProgrammesAndBatches" resultType="com.qts.icam.model.common.Student" parameterType="com.qts.icam.model.common.Course">
+		SELECT
+			r.roll_number as rollNumber,
+			r.first_name || ' ' || COALESCE(r.middle_name ,'') || ' ' || COALESCE(r.last_name,'  ')  as studentName,
+			r.gender as "resource.gender"
+		FROM
+			resource r
+			LEFT JOIN section sec ON(r.section=sec.rec_id AND sec.is_active=true)
+			LEFT JOIN standard std ON(sec.standard=std.rec_id AND std.is_active=true)
+			JOIN course c ON (c.standard = std.rec_id AND c.is_active = true)
+			JOIN resource_type rt ON(r.resource_type=rt.rec_id AND rt.is_active=true)
+		WHERE
+			r.is_active=true
+		AND
+			rt.resource_type_name='STUDENT'
+		AND
+			c.course_code = #{courseCode}
+		AND
+			sec.section_code = #{courseName};
+	</select>
+	
+	<resultMap id="selectAminitiesUsageByStudentRM" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="roll_number" jdbcType="INTEGER" />
+		<result property="studentName" column="student_name" jdbcType="VARCHAR" />	
+		<collection property="facilityList" ofType="com.qts.icam.model.facility.Facility">
+			<id property="facilityCode" column="facility_code" jdbcType="VARCHAR" />
+			<result property="facilityName" column="facility_name" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="selectAminitiesUsageByStudent" resultMap="selectAminitiesUsageByStudentRM" parameterType="java.lang.String">
+		SELECT
+			 roll_number,
+			 r.first_name || ' ' || COALESCE(r.middle_name ,'') || ' ' || COALESCE(r.last_name,'  ')  as student_name,
+			 facility_code,
+			 facility_name
+		FROM 
+			resource r 
+		JOIN 
+			venue_resource_mapping vrm ON (vrm.resource = r.rec_id AND vrm.is_active = true)
+		JOIN
+			 venue v on (v.rec_id = vrm.venue and v.is_active = true)
+		JOIN
+			 venue_facility_mapping vfm on (vfm.venue = v.rec_id AND vfm.is_active = true)
+		JOIN 
+			facility f on (vfm.facility = f.rec_id and f.is_active = true)
+		WHERE
+			 roll_number =#{rollNumber}::integer;
+	</select>
+	
+<!-- 	/**************Work From Home**********/ -->
+	<update id="inactiveStandard" parameterType="com.qts.icam.model.common.Standard">
+	 	
+				
+		UPDATE
+	 			section
+	 		SET
+	 			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+				updated_on=extract(epoch FROM now()),
+				is_active=false
+			WHERE
+				standard = (SELECT rec_id FROM standard WHERE standard_id = #{standardId} AND is_active = true)
+			AND
+				is_active = true;
+				
+			UPDATE 
+				standard
+			SET
+				updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+				updated_on=extract(epoch FROM now()),
+				is_active=false
+			WHERE
+				standard_id = #{standardId}
+			AND
+				is_active=true;
+		
+		
+	</update>
+	<select id="selectTermAgainstTermCode" resultType="com.qts.icam.model.backoffice.Term" parameterType="com.qts.icam.model.backoffice.Term">
+		SELECT  
+			t.term_code as termCode, 
+			t.term_name as termName, 
+			t.term_desc as termDesc, 
+			c.course_name as "course.courseName",  
+			ay.academic_year_name academicYear
+		FROM 	
+			term t
+		JOIN	
+			course c ON(c.rec_id=t.course AND c.is_active = true)
+		JOIN	
+			academic_year ay ON(ay.rec_id=t.academic_year AND ay.is_active = true)
+		JOIN 
+			status_flag sf ON (sf.rec_id = ay.year_status AND sf.is_active = true)
+		WHERE 
+			t.is_active=true
+		AND
+			t.term_name = #{termName}
+		AND
+			t.course = (SELECT rec_id FROM course co WHERE co.course_code = #{course.courseCode} AND co.is_active = true) 
+		AND 
+			sf.status_sym = 'C';
+	</select>
+	
+	<!-- modified by saurav.bhadra
+	changes taken on 28032017 -->
+	
+	<update id="editTerm" parameterType="com.qts.icam.model.backoffice.Term"> 	
+		UPDATE 
+			term
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			term_name = #{termName},
+			term_desc = #{termName}		
+		WHERE
+			term_id = #{termDetailsId}
+		AND
+			is_active=true;
+	</update>
+	
+	<!-- /***************koustav 20042017*************/ -->
+	<update id="inactiveExam" parameterType="com.qts.icam.model.backoffice.Exam">
+	 	
+			UPDATE 
+				exam
+			SET
+				updated_by = (SELECT rec_id FROM resource WHERE user_id  = #{updatedBy} AND is_active = true),
+				updated_on = extract(epoch FROM now()),
+				is_active = false
+			WHERE
+				exam_code = #{examCode}
+			AND
+				is_active=true;
+			
+		
+	</update> 
+	<update id="inactiveTerm" parameterType="com.qts.icam.model.backoffice.Term">
+	 	
+			UPDATE 
+				term
+			SET
+				updated_by = (SELECT rec_id FROM resource WHERE user_id  = #{updatedBy} AND is_active = true),
+				updated_on = extract(epoch FROM now()),
+				is_active = false
+			WHERE
+				term_code = #{termCode}
+			AND
+				is_active=true;
+	</update>
+	<!-- modified by kaustav.sen change taken on 18042017 -->
+	<update id="inactiveDeleteCourse" parameterType="com.qts.icam.model.common.Course">
+		UPDATE 
+			subject_group
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id  = #{updatedBy} AND is_active = true),
+			updated_on = extract(epoch FROM now()),
+			is_active = false
+		WHERE
+			subject_group_code= #{courseCode}
+		AND
+			is_active=true;
+	</update>
+	<!-- /*******Sourav21032017**********/ -->
+	<update id="inactiveProgramType" parameterType="com.qts.icam.model.academics.CourseType">
+	 	
+		UPDATE 
+			course_type
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			is_active=false
+		WHERE
+			course_type_code = #{courseTypeCode}
+		AND
+			is_active=true;
+			
+	</update>		
+	<select id="selectStandardListForAssignBatch" resultType="com.qts.icam.model.common.Standard">
+		SELECT
+			s.standard_id as standardId,
+			s.standard_name as standardName,
+			s.standard_code as standardCode
+		FROM
+			standard s
+		WHERE
+			s.rec_id IN (SELECT standard from course c WHERE c.is_active = true)
+		AND
+			s.is_active = true
+		ORDER BY
+			 s.standard_id;
+	</select>
+	
+	<select id="selectSubjectsForACourseAndTeacher" resultType="com.qts.icam.model.academics.Subject" parameterType = "com.qts.icam.model.common.Course">
+		SELECT distinct
+			s.subject_code as subjectCode,
+			s.subject_name as subjectName
+		FROM
+			standard_subject_teacher_mapping  sstm
+		JOIN
+			subject s ON (sstm.subject = s.rec_id AND s.is_active = true)
+		JOIN 
+			section sc ON (sc.rec_id = sstm.section and sc.is_active = true)
+		JOIN 
+			standard st ON (sc.standard = st.rec_id AND st.is_active = true)
+		JOIN 
+			Course c ON(st.rec_id =c.standard AND c.is_active=true)
+		JOIN 
+			resource r ON (r.rec_id = sstm.teacher AND r.is_active = true )
+		
+		WHERE
+	
+			r.user_id = #{updatedBy} 
+		AND	c.course_code = #{courseCode} 
+		AND	sstm.is_active = true;
+	</select>
+	
+	<!-- /Modified By Naimisha 20092017/ -->
+	<insert id="createExternalExam" parameterType="com.qts.icam.model.backoffice.Exam">
+		INSERT INTO external_exam(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			external_exam_code, external_exam_name, external_exam_desc, 
+			start_date, end_date, start_time, end_time, algorithm)
+		VALUES (uuid_generate_v4(),
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true)	,			
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			(SELECT ('EXTERNALEXAM-' ||(select COALESCE((SELECT MAX(serial_id) FROM external_exam), 0 )+1))),
+			UPPER(#{examName}),
+			UPPER(#{examName}), 
+			(SELECT extract(epoch from (SELECT to_timestamp(#{examStartDate},'DD-MM-YYYY')))),
+			 (SELECT extract(epoch from (SELECT to_timestamp(#{examEndDate},'DD-MM-YYYY')))),
+			 #{startTime}, #{endTime},
+			 (SELECT rec_id FROM algorithm WHERE algorithm_code = #{algorithm}AND is_active = true));
+	</insert>
+	
+	<!-- sourav.bhadra 03072017 -->
+
+	<select id="getVenueListForExam" resultType="com.qts.icam.model.venue.Venue">
+		SELECT
+			venue_code as venueCode,
+			venue_name as venueName,
+			room_no,
+			floor as floor,
+			no_of_seats as availableSeat
+		FROM
+			venue v
+		JOIN
+			venue_type vt ON (v.venue_type = vt.rec_id AND vt.is_active = true)
+		WHERE
+			venue_type_code IN ('examCenter','examRoom')
+		AND 
+			parent_venue IS NOT NULL
+		AND
+			v.rec_id  NOT IN (SELECT parent_venue FROM venue  WHERE is_active = true AND parent_venue IS NOT NULL)
+			
+		AND	v.is_active = true
+	</select>
+	
+	<select id="getAllAlgorithmList" resultType="com.qts.icam.model.academics.Algorithm">
+		SELECT
+			algorithm_code as algorithmCode,
+			algorithm_name as algorithmName
+		FROM
+			algorithm 
+		WHERE 
+			is_active = true;
+	</select>
+	
+	<select id="getVenueDetailsAgainstVenueCode" resultType="com.qts.icam.model.venue.Venue" parameterType = "java.lang.String">
+		SELECT
+			venue_code as venueCode,
+			venue_name as venueName,
+			room_no as roomNo,
+			floor as floor,
+			no_of_seats as availableSeat
+		FROM
+			venue v
+		WHERE
+			v.venue_code = #{venueCode}
+		AND	
+			v.is_active = true;
+	</select>
+	
+	<select id="getExternalExamList" resultType="com.qts.icam.model.backoffice.Exam">
+		SELECT
+			external_exam_code as examCode,
+			external_exam_name as examName,
+			row_number as rowNumber ,
+			column_number as columnNumber,
+			algorithm_code as desc
+		FROM
+			external_exam ee
+		JOIN
+			algorithm al ON (ee.algorithm = al.rec_id AND al.is_active = true)
+		AND
+			ee.is_active = true;
+	</select>
+	
+	
+	<!-- Added By Naimisha 21092017 -->
+	<resultMap id="getVenueDetailsAgainstExamRM" type="com.qts.icam.model.backoffice.Exam">
+		<id property="examCode" column="external_exam_code" jdbcType="VARCHAR" />
+		<result property="examName" column="external_exam_name" jdbcType="VARCHAR" />
+		<result property="algorithm" column="algorithm_code" jdbcType="VARCHAR" />	
+		
+		<collection property="venueList" ofType="com.qts.icam.model.venue.Venue">
+			<id property="venueCode" column="venue_code" jdbcType="VARCHAR" />
+			<result property="venueName" column="venue_name" jdbcType="VARCHAR" />
+			<result property="rowNumber" column="row_number" jdbcType="VARCHAR" />
+			<result property="columnNumber" column="column_number" jdbcType="VARCHAR" />
+			<result property="capacity" column="no_of_seats" jdbcType="VARCHAR" />	
+		</collection>
+	</resultMap>
+	<select id="getVenueDetailsAgainstExam" resultMap="getVenueDetailsAgainstExamRM" parameterType = "java.lang.String">
+		SELECT
+			external_exam_code,
+			external_exam_name,
+			evm.row_number,
+			evm.column_number,
+			algorithm_code,
+			venue_code,
+			venue_name,
+			no_of_seats
+		FROM
+			external_exam ee
+		JOIN
+			algorithm al ON (ee.algorithm = al.rec_id AND al.is_active = true)
+		JOIN
+			exam_venue_mapping evm ON (evm.external_exam = ee.rec_id AND evm.is_active = true)
+		JOIN
+			venue v ON (v.rec_id = evm.venue  AND v.is_active = true)
+		
+		WHERE
+			ee.external_exam_code =  #{exam}
+		AND
+			ee.is_active = true;
+	</select>
+	
+	<!-- anup.roy 30062017 -->
+	
+	<insert id="setUpAdmissionDrive" parameterType="com.qts.icam.model.admission.AdmissionForm">
+		INSERT INTO course_details(
+			rec_id,
+			obj_id,
+			updated_by,
+			updated_on,
+			date_of_creation,
+			course_details_code,
+			course,
+			admission_available_from_date,
+			admission_available_to_date,
+			course_start_date,
+			start_time,
+			end_time, 
+			form_issuance_date,
+			last_form_submission_date,
+			candidate_scrutiny_date,
+			interview_date,
+			interview_start_time,
+			interview_end_time,
+			marks_submission_date,
+			academic_year,
+			admission_drive,
+			course_form_fees,
+			is_active)
+		VALUES (
+			uuid_generate_v4(),
+			#{admissionFormObjectId},
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true)	,			
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			(SELECT ('CourseDetails_' ||(select COALESCE((SELECT MAX(course_details_id) FROM course_details), 0 )+1))),
+			(SELECT rec_id FROM course where course_code = #{courseCode} AND is_active = true),
+			(SELECT extract(epoch from (SELECT to_timestamp(#{admissionDriveStartDate},'DD-MM-YYYY')))),
+			(SELECT extract(epoch from (SELECT to_timestamp(#{admissionDriveExpectedEndDate},'DD-MM-YYYY')))),
+			(SELECT extract(epoch from (SELECT to_timestamp(#{courseStartDate},'DD-MM-YYYY')))), 
+			
+			 #{courseStartTime},
+			#{courseEndTime},
+			
+			(SELECT extract(epoch from (SELECT to_timestamp(#{formIssuanceDate},'DD-MM-YYYY')))),	
+			(SELECT extract(epoch from (SELECT to_timestamp(#{lastFormSubmissionDate},'DD-MM-YYYY')))),	
+			(SELECT extract(epoch from (SELECT to_timestamp(#{scrutinyDate},'DD-MM-YYYY')))),	
+			(SELECT extract(epoch from (SELECT to_timestamp(#{interviewDate},'DD-MM-YYYY')))),
+			#{interviewStartTime},	
+			#{interviewEndTime},
+			<!-- (SELECT extract(epoch from (SELECT to_timestamp(#{interviewStartTime},'DD/MM/YYYY HH24:MI:SS')))),
+			(SELECT extract(epoch from (SELECT to_timestamp(#{interviewEndTime},'DD/MM/YYYY HH24:MI:SS')))), -->
+			(SELECT extract(epoch from (SELECT to_timestamp(#{marksSubmissionDate},'DD-MM-YYYY')))),
+			(SELECT ay.rec_id FROM academic_year ay JOIN status_flag sf ON (ay.year_status = sf.rec_id AND sf.is_active = true) WHERE sf.status_sym = 'C' AND ay.is_active = true),
+			#{admissionDriveName},
+			#{paymentMode},
+			false
+		);
+			
+	</insert>
+	
+	<select id="selectAdmissionDriveList" resultType="com.qts.icam.model.admission.AdmissionForm">
+		SELECT
+			course_details_code  courseCode,
+			course_name as courseName,
+			to_char((SELECT to_timestamp((co.admission_available_from_date))), 'DD/MM/YYYY') as admissionDriveStartDate,
+			to_char((SELECT to_timestamp((co.admission_available_to_date))), 'DD/MM/YYYY') as admissionDriveExpectedEndDate,
+			to_char((SELECT to_timestamp((co.course_start_date))), 'DD/MM/YYYY') as courseStartDate,
+			to_char((SELECT to_timestamp((co.form_issuance_date))), 'DD/MM/YYYY') as formIssuanceDate,
+			co.start_time as courseStartTime,
+			to_char((SELECT to_timestamp((co.last_form_submission_date))), 'DD/MM/YYYY') as lastFormSubmissionDate,
+			co.end_time as courseEndTime,
+			co.interview_start_time as interviewStartTime,
+			co.interview_end_time as interviewEndTime,
+			to_char((SELECT to_timestamp((co.interview_date))), 'DD/MM/YYYY') as interviewDate,
+			to_char((SELECT to_timestamp((co.marks_submission_date))), 'DD/MM/YYYY') as marksSubmissionDate,
+			to_char((SELECT to_timestamp((co.candidate_scrutiny_date))), 'DD/MM/YYYY') as scrutinyDate
+		FROM
+			course c
+		JOIN
+			course_details co ON (co.course = c.rec_id AND co.is_active = true)
+		AND
+			c.is_active = true;
+
+	</select>
+	
+	<select id="getAllCourseDetailsForEdit" resultType="com.qts.icam.model.admission.AdmissionForm" parameterType="java.lang.String">
+		SELECT
+			course_details_code  courseCode,
+			course_name as courseName,
+			to_char((SELECT to_timestamp((co.admission_available_from_date))), 'DD/MM/YYYY') as admissionDriveStartDate,
+			to_char((SELECT to_timestamp((co.admission_available_to_date))), 'DD/MM/YYYY') as admissionDriveExpectedEndDate,
+			to_char((SELECT to_timestamp((co.course_start_date))), 'DD/MM/YYYY') as courseStartDate,
+			to_char((SELECT to_timestamp((co.form_issuance_date))), 'DD/MM/YYYY') as formIssuanceDate,
+			co.start_time as courseStartTime,
+			to_char((SELECT to_timestamp((co.last_form_submission_date))), 'DD/MM/YYYY') as lastFormSubmissionDate,
+			co.end_time as courseEndTime,
+			co.interview_start_time as interviewStartTime,
+			co.interview_end_time as interviewEndTime,
+			to_char((SELECT to_timestamp((co.interview_date))), 'DD/MM/YYYY') as interviewDate,
+			to_char((SELECT to_timestamp((co.marks_submission_date))), 'DD/MM/YYYY') as marksSubmissionDate,
+			to_char((SELECT to_timestamp((co.candidate_scrutiny_date))), 'DD/MM/YYYY') as scrutinyDate,
+			co.course_form_fees as courseFormFees
+		FROM
+			course c
+		JOIN
+			course_details co ON (co.course = c.rec_id AND co.is_active = true)
+		WHERE
+			c.is_active = true
+		AND
+			course_details_code = #{courseDetailsCode};
+
+	</select>
+	
+	<update id="updateCourseDetailsForAdmissionDrive" parameterType="com.qts.icam.model.admission.AdmissionForm">
+		UPDATE course_details SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			admission_available_from_date=(SELECT extract(epoch from (SELECT to_timestamp(#{admissionDriveStartDate},'DD/MM/YYYY')))),
+			admission_available_to_date=(SELECT extract(epoch from (SELECT to_timestamp(#{admissionDriveExpectedEndDate},'DD/MM/YYYY')))),
+			course_start_date=(SELECT extract(epoch from (SELECT to_timestamp(#{courseStartDate},'DD/MM/YYYY')))),
+			form_issuance_date=(SELECT extract(epoch from (SELECT to_timestamp(#{formIssuanceDate},'DD/MM/YYYY')))),
+			last_form_submission_date=(SELECT extract(epoch from (SELECT to_timestamp(#{lastFormSubmissionDate},'DD/MM/YYYY')))),
+			interview_date=(SELECT extract(epoch from (SELECT to_timestamp(#{interviewDate},'DD/MM/YYYY')))),
+			marks_submission_date=(SELECT extract(epoch from (SELECT to_timestamp(#{marksSubmissionDate},'DD/MM/YYYY')))),
+			candidate_scrutiny_date=(SELECT extract(epoch from (SELECT to_timestamp(#{scrutinyDate},'DD/MM/YYYY')))),
+			start_time=#{courseStartTime},
+			end_time=#{courseEndTime},
+			interview_start_time=#{interviewStartTime},
+			interview_end_time=#{interviewEndTime},
+			course_form_fees=#{courseFormFees}::integer
+		WHERE
+			course_details_code = #{courseCode}
+			AND
+			is_active=true;
+	</update>
+	
+	<select id="getListOfProgramsToPublish" resultType="com.qts.icam.model.common.Course">
+		SELECT
+			<!-- -cd.course_details_code as courseCode, -->
+			c.course_code as courseCode,
+			c.course_name as courseName,
+			c.number_of_openings as serialId,
+			course_type_name  as courseDesc
+			
+		FROM
+			course c
+		<!--  JOIN
+			course_details cd ON (c.rec_id = cd.course AND cd.is_active = true AND cd.post = false) -->
+		JOIN
+			course_type ct ON (ct.rec_id = c.course_type AND ct.is_active = true)
+		WHERE 
+			c.rec_id   IN (SELECT course FROM student_fees_template_amount)
+		AND
+			c.admission_mode = 'ONLINE';
+	</select>
+	<select id="listOfPublishedProgramsList" resultType="com.qts.icam.model.common.Course">
+		SELECT
+			cd.course_details_code as courseCode,
+			c.course_name as courseName,
+			c.number_of_openings as serialId,
+			cd.post as status,
+			admission_drive_status_name as desc,
+			admission_drive as courseDesc
+		FROM
+			course c
+		 JOIN
+			course_details cd ON (c.rec_id = cd.course AND cd.is_active = true AND cd.post = true)
+		JOIN
+			admission_drive_status ads ON (cd.drive_status = ads.rec_id AND ads.is_active = true)
+	</select>
+	
+	<!-- anup.roy 30062017 -->
+	
+	<select id="programDriveDetailsForAProgram" resultType="com.qts.icam.model.common.Course">
+		SELECT
+			cd.course_details_code as courseCode,
+			c.course_name as courseName,
+			cd.post as status,
+			admission_drive_status_name as desc
+		FROM
+			course c
+		 JOIN
+			course_details cd ON (c.rec_id = cd.course AND cd.is_active = true)
+		JOIN
+			admission_drive_status ads ON (ads.rec_id = cd.drive_status)
+		WHERE
+			course_code = #{courseCode};
+	</select>
+	
+	<!-- New CBSE System start -->
+	
+	<select id="selectTermForStandard" parameterType="java.lang.String" resultType="com.qts.icam.model.backoffice.Exam">
+		SELECT
+			DISTINCT term as term
+		FROM
+			exam_v1
+		WHERE
+			standard = (SELECT rec_id FROM standard WHERE standard_code = #{standard} AND is_active = true) AND is_active = true;
+	</select>
+	<!-- anup.roy//fetching all exams -->
+	<select id="selectExamForStandardAndTerm" parameterType="com.qts.icam.model.backoffice.Exam" resultType="com.qts.icam.model.backoffice.Exam">
+		SELECT DISTINCT
+			exam_code as examCode,
+			exam_name as examName
+		FROM
+			exam_v1
+		WHERE
+			standard = (SELECT rec_id FROM standard WHERE standard_code = #{status} AND is_active = true) 
+		AND
+			term = #{term}
+		AND
+			is_active = true;
+	</select>
+	<!-- anup.roy///submit exam marks setup -->
+	<update id="updateIntoExamMarks" parameterType="java.util.List">
+		DELETE 
+			FROM exam_marks_v1 
+		WHERE 
+			standard = (SELECT rec_id FROM standard WHERE standard_code = #{list[0].standard})
+		AND 
+			exam_v1 = (SELECT rec_id FROM exam_v1 WHERE exam_code = #{list[0].exam.examCode}
+		AND
+			standard = (SELECT rec_id FROM standard WHERE standard_code = #{list[0].standard} AND is_active = true));
+	 	<foreach item="marks" collection="list" index="index" open="" close="" separator=";">
+			INSERT INTO exam_marks_v1(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+				subject, exam_v1, standard, theory, theory_pass, 
+				practical, practical_pass, total, pass)
+			VALUES ((select uuid_generate_v4()), 'OBJ-ID',
+				(SELECT rec_id FROM resource WHERE user_id  ilike #{marks.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+				(SELECT rec_id FROM subject WHERE subject_code =#{marks.subject.subjectCode} AND is_active = true),
+				(SELECT rec_id FROM exam_v1 WHERE exam_code = #{marks.exam.examCode} 
+				AND standard = (SELECT rec_id FROM standard WHERE standard_code = #{marks.standard} 
+				AND is_active = true) AND is_active = true),
+				(SELECT rec_id FROM standard WHERE standard_code = #{marks.standard} AND is_active = true),
+				#{marks.theory}, #{marks.theoryPass}, #{marks.practical}, #{marks.practicalPass},
+				#{marks.total}, #{marks.pass});
+		</foreach>
+	</update>
+	<!-- anup.roy//for fetch subject details w.r.t standard -->
+	<select id="selectSubjectGroupForAStandard" parameterType="java.lang.String" resultType="java.lang.String">
+		<!-- SELECT DISTINCT
+			subject_group_code
+		FROM 
+			standard_subject_mapping ssm
+		JOIN 
+			standard st on(ssm.standard=st.rec_id)
+		JOIN 
+			subject s on(ssm.subject=s.rec_id)
+		JOIN 
+			subject_group sg on(s.subject_group=sg.rec_id)
+		WHERE
+			standard_code=#{standard}
+		AND
+			ssm.is_active=true; -->
+			
+		SELECT
+			sub.subject_code
+		FROM 
+			course_subject_mapping csm
+		JOIN 
+			course c ON(csm.course = c.rec_id AND c.is_active = true)
+		JOIN
+			standard st ON (c.standard = st.rec_id AND st.is_active = true)	
+		JOIN 
+			subject sub ON(csm.subject = sub.rec_id AND sub.is_active = true)
+		WHERE
+			st.standard_code = #{standard}
+		AND
+			csm.is_active = true;	
+	</select>
+	
+	<select id="selectMarksForExamStandardAndSubjectGroupAndExam" parameterType="com.qts.icam.model.academics.ExamMarks" resultType="com.qts.icam.model.academics.ExamMarks">
+		SELECT
+			theory as theory,
+			theory_pass as theoryPass,
+			practical as practical,
+			practical_pass as practicalPass,
+			total as total,
+			pass as pass,
+			subject_code as "subject.subjectCode",
+			subject_name as "subject.subjectName",
+			exam_code as "exam.examCode",
+			exam_name as "exam.examName"
+		FROM exam_marks_v1 em
+		JOIN standard st ON (em.standard = st.rec_id)
+		JOIN subject s ON (em.subject = s.rec_id)
+		JOIN exam_v1 e ON (em.exam_v1 = e.rec_id)
+		WHERE
+			em.is_active = true
+		AND
+			subject_code = #{status}
+		AND
+			exam_code = #{desc}
+		AND
+			standard_code = #{standard};
+	</select>
+	
+	<select id="selectExamsForStandard" parameterType="java.lang.String" resultType="com.qts.icam.model.backoffice.Exam">
+		SELECT
+			exam_code as examCode,
+			exam_name as examName
+		FROM
+			exam_v1
+		WHERE
+			standard = (SELECT rec_id FROM standard WHERE standard_code = #{standard} AND is_active = true) AND is_active = true;
+	</select>
+	
+	<select id="selectUploadedMarksForStudents" resultType="com.qts.icam.model.academics.StudentResult" parameterType="com.qts.icam.model.academics.StudentResult">
+		
+			SELECT
+			(student_roll :: text) as rollNumber,
+			student_name as name,
+			theory as theory,
+			practical as practical,
+			total as total,
+			pass as pass,
+			theory_pass as theoryPass,
+			practical_pass as practicalPass,
+			theory_obtained as theoryObtainedChar,
+			practical_obtained as practicalObtainedChar,
+			total_obtained as totalObtainedChar,
+			pass_fail as passFail,
+			inserted_by as updatedBy
+		FROM
+			student_marks
+		WHERE
+			subject= #{subject}
+		AND
+			standard = #{standard}
+		AND
+			section = #{section}
+		AND
+			exam = #{exam}
+		AND 
+			year = (SELECT academic_year_code FROM academic_year ay JOIN status_flag sf ON (ay.year_status = sf.rec_id AND sf.is_active = true) AND sf.status_sym = 'C' AND ay.is_active = true)
+		ORDER BY student_roll;
+		
+	</select>
+	
+	<select id="selectMarksForAllSubject" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.StudentResult">
+		SELECT
+			theory as theory,
+			theory_pass as theoryPass,
+			practical as practical,
+			practical_pass as practicalPass,
+			total as total,
+			pass as pass
+		FROM exam_marks em
+		JOIN subject_group sg ON(sg.rec_id=em.subject_group)
+		JOIN standard std ON(std.rec_id=em.standard)
+		JOIN exam_v1 e ON(e.rec_id=em.exam_v1)
+		WHERE
+			standard_code=#{standard}
+			AND
+			exam_code=#{exam}
+			AND
+			subject_group_code=#{subject};
+	</select>
+	
+	<insert id="insertIntoStudentResult" parameterType="java.util.List">
+	 	<foreach item="studentMarks" collection="list" index="index" open="" close="" separator=";">
+			INSERT INTO student_marks(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				student_roll, student_name, year, standard, section,
+				exam, subject, theory, theory_pass, practical, practical_pass, total, pass, theory_obtained,
+				practical_obtained, total_obtained, pass_fail, weightage, weightage_obtained, inserted_by)
+			VALUES ((select uuid_generate_v4()), 'OBJ-ID',
+				(SELECT rec_id FROM resource WHERE user_id  ilike #{studentMarks.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+				#{studentMarks.rollNumber},
+				(SELECT first_name || ' ' || COALESCE(middle_name,'') || ' ' || COALESCE(last_name,'') FROM resource WHERE roll_number=#{studentMarks.rollNumber}::integer AND is_active=true),
+				(SELECT academic_year_name FROM academic_year WHERE is_active = true AND year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C')),
+				#{studentMarks.standard}, #{studentMarks.section}, #{studentMarks.exam}, #{studentMarks.subject},
+				#{studentMarks.theory}, #{studentMarks.theoryPass}, #{studentMarks.practical}, #{studentMarks.practicalPass}, #{studentMarks.total},
+				#{studentMarks.pass}, #{studentMarks.theoryObtainedChar}, #{studentMarks.practicalObtainedChar}, #{studentMarks.totalObtainedChar}, #{studentMarks.passFail},
+				(SELECT weightage FROM exam WHERE exam_code = #{studentMarks.exam} AND standard=(SELECT rec_id FROM standard WHERE standard_code = #{studentMarks.standard} AND is_active = true)),
+				(#{studentMarks.weightageObtained}*(SELECT weightage FROM exam WHERE exam_code = #{studentMarks.exam} AND standard = (SELECT rec_id FROM standard WHERE standard_code = #{studentMarks.standard} AND is_active = true))), #{studentMarks.updatedBy});
+		</foreach>
+	</insert>
+	<update id="updateIntoStudentResult" parameterType="java.util.List">
+	 	<foreach item="studentMarks" collection="list" index="index" open="" close="" separator=";">
+			UPDATE student_marks SET
+	            updated_by =(SELECT rec_id FROM resource WHERE user_id  ilike #{studentMarks.updatedBy} AND is_active = true),
+	            updated_on=(SELECT extract(epoch FROM now())), theory=#{studentMarks.theory}, practical=#{studentMarks.practical},
+	            total=#{studentMarks.total}, pass=#{studentMarks.pass}, theory_obtained=#{studentMarks.theoryObtainedChar},
+	            practical_obtained=#{studentMarks.practicalObtainedChar}, total_obtained=#{studentMarks.totalObtainedChar},
+	            pass_fail=#{studentMarks.passFail}, theory_pass=#{studentMarks.theoryPass}, practical_pass=#{studentMarks.practicalPass},
+	            weightage=(SELECT weightage FROM exam_v1 WHERE exam_code =#{studentMarks.exam} AND is_active = true AND standard = (SELECT rec_id FROM standard WHERE standard_code = #{studentMarks.standard} AND is_active = true)),
+	            weightage_obtained=(#{studentMarks.weightageObtained}*(SELECT weightage FROM exam_v1 WHERE exam_code =#{studentMarks.exam} AND is_active = true AND standard = (SELECT rec_id FROM standard WHERE standard_code = #{studentMarks.standard} AND is_active = true)))
+	        WHERE
+	        	student_roll=#{studentMarks.rollNumber} AND standard=#{studentMarks.standard} AND
+	        	section=#{studentMarks.section} AND exam=#{studentMarks.exam} AND subject=#{studentMarks.subject};
+		</foreach>
+	</update>
+	
+	<select id="selectStudentsForCoScholasticNew"  parameterType="com.qts.icam.model.academics.CoScholasticResult" resultType="com.qts.icam.model.academics.CoScholasticResult">
+		SELECT
+			r.roll_number::text as rollNumber,
+			r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || COALESCE(r.last_name,'') as name,
+			sec.section_code as section,
+			std.standard_code as standard
+		FROM resource r
+		JOIN section sec on(r.section=sec.rec_id)
+		JOIN standard std on(std.rec_id =sec.standard)
+		WHERE r.roll_number NOT IN(SELECT student_roll::INTEGER FROM student_marks_co_v1 smc JOIN academic_year ay ON (ay.academic_year_code = smc.year AND ay.is_active = true)JOIN status_flag sf ON (ay.year_status = sf.rec_id AND sf.is_active = true) WHERE sf.status_sym = 'C')
+		AND sec.section_code=#{section} AND std.standard_code=#{standard}
+		ORDER BY r.roll_number;
+	</select>
+	
+	<select id="selectDescriptiveIndicatorSkillListForNewPattern" resultMap="selectDescriptiveIndicatorSkillListRM">
+		SELECT
+			dis.serial_id as skill_id,
+			skill_name,
+			skill_desc,
+			skill_code,
+			max_heads
+			FROM descriptive_indicator_skill_v1 dis
+		WHERE
+			dis.is_active=true
+		ORDER BY dis.display_order;
+
+	</select>
+	
+	<insert id="insertCoScholasticResultForNew" parameterType="java.util.List">
+		<foreach item="result" collection="list" index="index" open="" close="" separator=";">
+			INSERT INTO student_marks_co_v1(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				student_roll, student_name, year, standard, section,
+				exam, head,  grade, inserted_by)
+			VALUES ((select uuid_generate_v4()), 'OBJ-ID',
+				(SELECT rec_id FROM resource WHERE user_id  ilike #{result.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+				#{result.rollNumber},#{result.name},
+				(SELECT academic_year_name FROM academic_year WHERE is_active = true AND year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C')),
+				#{result.standard}, #{result.section}, #{result.status}, #{result.skill}, #{result.grade}, #{result.updatedBy}
+				);
+		</foreach>
+	</insert>
+	
+	<insert id="insertGradingSystemNew" parameterType="java.util.List">
+	 	<foreach item="grades" collection="list" index="index" open="" close="" separator=";">
+			INSERT INTO grading_point_v1(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation,
+			marks_grade_range, grade,  type, standard)
+			VALUES ( uuid_generate_v4(), #{grades.objectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{grades.updatedBy} AND is_active = true),
+			 extract(epoch FROM now()),extract(epoch FROM now()),
+			#{grades.range}, #{grades.grade}, #{grades.type},
+			(SELECT rec_id FROM standard WHERE standard_code =#{grades.standard} AND is_active = true))
+		</foreach>
+	</insert>
+	<update id="updateGradingSystemNew" parameterType="java.util.List">
+	 	<foreach item="grades" collection="list" index="index" open="" close="" separator=";">
+			UPDATE grading_point_v1 SET
+				updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{grades.updatedBy} AND is_active = true),
+				updated_on=extract(epoch FROM now()),
+				grade=#{grades.grade}
+				
+			WHERE
+				standard=(SELECT rec_id FROM standard WHERE standard_code =#{grades.standard} AND is_active = true)
+				AND
+				marks_grade_range=#{grades.range}
+				AND
+				type=#{grades.type}
+				AND
+				is_active=true;
+		</foreach>
+	</update>
+	
+	<select id="selectGradingSystemListForStandardNew" resultType="com.qts.icam.model.grade.GradingSystem" parameterType="java.lang.String">
+		SELECT
+			marks_grade_range as range,
+			grade as grade,
+			type as type
+		FROM
+			grading_point_v1 gp
+		JOIN standard s ON(gp.standard=s.rec_id AND s.is_active=true)
+		WHERE
+			s.standard_code=#{standard}
+			AND
+			gp.is_active=true;
+			
+	</select>
+	
+	<select id="selectStudentsCoScholasticResultNew" parameterType="com.qts.icam.model.common.Student" resultType="com.qts.icam.model.academics.CoScholasticResult">
+		SELECT
+			head,
+			grade,
+			
+			inserted_by as updatedBy
+		FROM student_marks_co_v1 smc
+		JOIN academic_year ay on (ay.academic_year_code = smc.year)
+		JOIN status_flag sf on (sf.rec_id = ay.year_status)
+		WHERE sf.status_sym = 'C'
+		AND student_roll = #{section}
+		AND exam = #{standard}
+		AND smc.is_active = true;
+	</select>
+	
+	<update id="deleteCoScholasticResultForNew" parameterType="java.lang.String">
+		DELETE FROM  student_marks_co_v1
+		
+		WHERE
+			student_roll =  #{roll}
+		AND
+			is_active = true;
+	</update>
+	
+	<select id="selectUploadedMarksForStudentsNew" resultType="com.qts.icam.model.academics.StudentResult" parameterType="com.qts.icam.model.academics.StudentResult">
+		SELECT
+			(student_roll :: text) as rollNumber,
+			student_name as name,
+			theory as theory,
+			practical as practical,
+			total as total,
+			pass as pass,
+			theory_pass as theoryPass,
+			practical_pass as practicalPass,
+			theory_obtained as theoryObtainedChar,
+			practical_obtained as practicalObtainedChar,
+			total_obtained as totalObtainedChar,
+			pass_fail as passFail,
+			inserted_by as updatedBy
+		FROM
+			student_marks_v1
+		WHERE
+			subject= #{subject}
+		AND
+			standard = #{standard}
+		AND
+			section = #{section}
+		AND
+			exam_v1 = #{exam}
+		AND 
+			year = (SELECT academic_year_code FROM academic_year ay JOIN status_flag sf ON (ay.year_status = sf.rec_id AND sf.is_active = true) AND sf.status_sym = 'C' AND ay.is_active = true)
+		ORDER BY student_roll;
+	</select>
+	
+	<insert id="insertIntoStudentResultNew" parameterType="java.util.List">
+	 	<foreach item="studentMarks" collection="list" index="index" open="" close="" separator=";">
+			INSERT INTO student_marks_v1(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				student_roll, student_name, year, standard, section,
+				exam_v1, subject, theory, theory_pass, practical, practical_pass, total, pass, theory_obtained,
+				practical_obtained, total_obtained, pass_fail, weightage, weightage_obtained, inserted_by)
+			VALUES ((select uuid_generate_v4()), 'OBJ-ID',
+				(SELECT rec_id FROM resource WHERE user_id  ilike #{studentMarks.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+				#{studentMarks.rollNumber},
+				(SELECT first_name || ' ' || COALESCE(middle_name,'') || ' ' || COALESCE(last_name,'') FROM resource WHERE user_id=#{studentMarks.rollNumber} AND is_active=true),
+				(SELECT academic_year_name FROM academic_year WHERE is_active = true AND year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C')),
+				#{studentMarks.standard}, #{studentMarks.section}, #{studentMarks.exam}, #{studentMarks.subject},
+				#{studentMarks.theory}, #{studentMarks.theoryPass}, #{studentMarks.practical}, #{studentMarks.practicalPass}, #{studentMarks.total},
+				#{studentMarks.pass}, #{studentMarks.theoryObtainedChar}, #{studentMarks.practicalObtainedChar}, #{studentMarks.totalObtainedChar}, #{studentMarks.passFail},
+				(SELECT weightage FROM exam_v1 WHERE exam_code = #{studentMarks.exam} AND standard=(SELECT rec_id FROM standard WHERE standard_code = #{studentMarks.standard} AND is_active = true)),
+				(#{studentMarks.weightageObtained}*(SELECT weightage FROM exam_v1 WHERE exam_code = #{studentMarks.exam} AND standard = (SELECT rec_id FROM standard WHERE standard_code = #{studentMarks.standard} AND is_active = true))), #{studentMarks.updatedBy});
+		</foreach>
+	</insert>
+	
+	<update id="updateIntoStudentResultNew" parameterType="java.util.List">
+	 	<foreach item="studentMarks" collection="list" index="index" open="" close="" separator=";">
+			UPDATE student_marks_v1 SET
+	            updated_by =(SELECT rec_id FROM resource WHERE user_id  ilike #{studentMarks.updatedBy} AND is_active = true),
+	            updated_on=(SELECT extract(epoch FROM now())), theory=#{studentMarks.theory}, practical=#{studentMarks.practical},
+	            total=#{studentMarks.total}, pass=#{studentMarks.pass}, theory_obtained=#{studentMarks.theoryObtainedChar},
+	            practical_obtained=#{studentMarks.practicalObtainedChar}, total_obtained=#{studentMarks.totalObtainedChar},
+	            pass_fail=#{studentMarks.passFail}, theory_pass=#{studentMarks.theoryPass}, practical_pass=#{studentMarks.practicalPass},
+	            weightage=(SELECT weightage FROM exam_v1 WHERE exam_code =#{studentMarks.exam} AND is_active = true AND standard = (SELECT rec_id FROM standard WHERE standard_code = #{studentMarks.standard} AND is_active = true)),
+	            weightage_obtained=(#{studentMarks.weightageObtained}*(SELECT weightage FROM exam_v1 WHERE exam_code =#{studentMarks.exam} AND is_active = true AND standard = (SELECT rec_id FROM standard WHERE standard_code = #{studentMarks.standard} AND is_active = true)))
+	        WHERE
+	        	student_roll=#{studentMarks.rollNumber} AND standard=#{studentMarks.standard} AND
+	        	section=#{studentMarks.section} AND exam_v1=#{studentMarks.exam} AND subject=#{studentMarks.subject};
+		</foreach>
+	</update>
+	
+	<!-- anup.roy//fetch full marks for this standard - subject - exam -->
+	
+	<select id="selectMarksForAllSubjectNew" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.StudentResult">
+		SELECT
+			theory as theory,
+			theory_pass as theoryPass,
+			practical as practical,
+			practical_pass as practicalPass,
+			total as total,
+			pass as pass
+		FROM 
+			exam_marks_v1 emv1
+		JOIN 
+			subject sub ON (emv1.subject = sub.rec_id AND sub.is_active = true)
+		JOIN 
+			standard std ON (emv1.standard = std.rec_id AND std.is_active = true)
+		JOIN 
+			exam_v1 ev1 ON (emv1.exam_v1 = ev1.rec_id AND ev1.is_active = true)
+		WHERE
+			std.standard_code = #{standard}
+		AND
+			ev1.exam_code = #{exam}
+		AND
+			sub.subject_code = #{subject}
+		AND
+			emv1.is_active = true;
+	</select>
+	<!-- New CBSE System end -->
+	
+	<!-- anup.roy for get all scholastic types -->
+	
+	<select id="getScholasticTypeList" resultType="com.qts.icam.model.academics.SubjectGroup">
+		SELECT
+			scholastic_type_code as scholasticTypeCode,
+			scholastic_type_name as scholasticTypeName
+		FROM
+			scholastic_type 
+		WHERE 
+			is_active = true
+	</select>
+
+	<!-- /*Added By ranita.sur on 03082017 for getting the strength of Student*/ -->
+	<select id="selectStrengthOfStudent" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT
+		      sc.capacity
+		FROM 
+		     section sc
+		JOIN
+		      standard s ON (sc.standard=s.rec_id AND s.is_active=true)
+		WHERE
+		      section_name=#{section}
+		AND   
+		   	 standard = (SELECT rec_id FROM standard WHERE standard_code = #{standard} AND is_active=true)
+		AND
+		    sc.is_active=true;
+	</select>
+	
+	<select id="getExamTypeNew" resultType = "com.qts.icam.model.common.ExamType">
+		SELECT
+			exam_type_code as examTypeCode,
+			exam_type_name as examTypeName,
+			term as examTypeDesc
+		FROM
+			exam_type 
+		WHERE
+			is_active = true;
+	</select>
+	
+	<select id="getAllCourses" resultType="com.qts.icam.model.common.Course">
+		SELECT 
+			standard_code as courseCode,
+			standard_name as courseName
+		FROM 
+			standard 
+		WHERE 
+			is_active = true;
+	</select>
+	
+	<select id="getAllTermsList" resultType="com.qts.icam.model.backoffice.Term">
+		SELECT DISTINCT
+			term as termName
+		FROM
+			exam_type
+		WHERE
+			is_active = true
+	</select>
+	
+	<select id="selectExamTypesForTerm" resultType="com.qts.icam.model.common.ExamType" parameterType="java.lang.String">
+		SELECT
+			exam_type_code as examTypeCode,
+			exam_type_name as examTypeName
+		FROM
+			exam_type 
+		WHERE
+			term = #{term}
+		AND
+			is_active = true;
+	</select>
+	
+	<select id="getAllNewExams" resultType="com.qts.icam.model.backoffice.Exam">
+		SELECT
+			exam_name as examName,
+			term as termCode,
+			st.standard_name as standardCode
+		FROM 
+			exam_v1 ev1
+		JOIN
+			standard st ON (ev1.standard = st.rec_id AND st.is_active = true)
+		WHERE
+			ev1.is_active = true			
+	</select>
+	
+	<insert id="submitNewExam" parameterType= "com.qts.icam.model.backoffice.Exam">
+		INSERT INTO
+			exam_v1
+				(
+					rec_id, obj_id, updated_by, updated_on, date_of_creation,
+					exam_code, exam_name, exam_desc, term, standard
+				)
+		VALUES
+				(
+					(select uuid_generate_v4()), #{objectId}, 
+					(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+					(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+					<!-- (SELECT exam_type_code FROM exam_type WHERE term = #{termCode} AND is_active = true),
+					(SELECT exam_type_name FROM exam_type WHERE term = #{termCode} AND is_active = true),
+					(SELECT exam_type_name FROM exam_type WHERE term = #{termCode} AND is_active = true), -->
+					#{examTypeName},
+					(SELECT exam_type_name FROM exam_type WHERE exam_type_code = #{examTypeName} AND is_active = true),
+					(SELECT exam_type_name FROM exam_type WHERE exam_type_code = #{examTypeName} AND is_active = true),
+					#{termCode}, 
+					(SELECT rec_id FROM standard WHERE standard_code = #{standardCode} AND is_active = true)
+				)		
+	</insert>
+	
+	<select id="checkStandardSubjectMappingStatus" resultType="java.lang.String" parameterType="com.qts.icam.model.common.Standard">
+		
+		SELECT DISTINCT standard_name
+		FROM
+			course_subject_mapping csm
+		JOIN
+			course c ON (csm.course = c.rec_id AND c.is_active = true)
+		JOIN
+			standard st ON (st.rec_id = c.standard AND st.is_active = true)
+		WHERE
+			csm.is_active = true
+		AND 
+			st.standard_id = #{standardId};
+	</select>
+	
+	<select id="checkStandardForFeesTemplateAmount" resultType="java.lang.String" parameterType="com.qts.icam.model.common.Standard">
+		
+		SELECT DISTINCT standard_name
+		FROM
+			student_fees_template_amount sfta
+		JOIN
+			course c ON (sfta.course = c.rec_id AND c.is_active = true)
+		JOIN
+			standard st ON (st.rec_id = c.standard AND st.is_active = true)
+		WHERE
+			sfta.is_active = true
+		AND 
+			st.standard_id = #{standardId};
+	</select>
+	
+	<select id="checkStandardDetailsForAStandard" resultType="java.lang.String" parameterType="com.qts.icam.model.common.Standard">
+		
+		SELECT DISTINCT standard_name
+		FROM
+		
+			course c 
+		JOIN
+			standard st ON (st.rec_id = c.standard AND st.is_active = true)
+		WHERE
+			c.is_active = true
+		AND 
+			st.standard_id = #{standardId};
+	</select>
+	
+	<update id="inactiveStandardDetails" parameterType="com.qts.icam.model.common.Standard">
+	 	
+			UPDATE 
+				course
+			SET
+				updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+				updated_on=extract(epoch FROM now()),
+				is_active=false
+			WHERE
+				standard = (SELECT rec_id FROM standard WHERE standard_id = #{standardId} AND is_active = true)
+			AND
+				is_active=true;
+		
+	</update>
+	
+	<select id="checkStandardFromAdmissionDrive" resultType="java.lang.String" parameterType="com.qts.icam.model.common.Standard">
+		
+		SELECT DISTINCT standard_name
+		FROM
+		
+			course c 
+		JOIN
+			standard st ON (st.rec_id = c.standard AND st.is_active = true)
+		JOIN
+			admission_drive ad ON (ad.course = c.rec_id AND ad.is_active = true) 
+		JOIN
+			admission_drive_status ads ON (ads.rec_id = ad.status_of_admission AND ads.is_active = true)
+		WHERE
+			c.is_active = true
+		AND
+			admission_drive_status_code IN ('ONGOING','DONE')
+		AND 
+			st.standard_id = #{standardId};
+	</select>
+	
+	<!-- anup.roy//for fetch all standards for setup marks -->
+	
+	<select id="getStandardsForSetExamMarks" resultType="com.qts.icam.model.common.Standard">
+		SELECT
+			s.standard_id as standardId,
+			s.standard_name as standardName,
+			s.standard_code as standardCode
+		FROM
+			standard s
+		WHERE
+			s.rec_id IN (SELECT standard from course c WHERE c.is_active = true)
+		AND
+			s.is_active = true
+		ORDER BY
+		     s.standard_id;
+	</select>
+
+	<insert id="insertIntoExamProgramMapping" parameterType="com.qts.icam.model.common.Course">
+		INSERT INTO exam_program_mapping(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			course, external_exam)
+		VALUES (uuid_generate_v4(),
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true)	,			
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM course c WHERE standard = (SELECT rec_id FROM standard st WHERE st.standard_name = #{courseCode} AND st.is_active = true)AND c.is_active = true),
+			(SELECT rec_id FROM external_exam WHERE serial_id = (SELECT MAX(serial_id)FROM external_exam WHERE is_active = true)));
+	</insert>
+	
+	<insert id="insertIntoExamVenueMappingForSeatingArrangements" parameterType="com.qts.icam.model.venue.Venue">
+		INSERT INTO exam_venue_mapping(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			venue, external_exam,available_capacity,row_number ,column_number)
+		VALUES (uuid_generate_v4(),
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true)	,			
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM venue  WHERE venue_code = #{venueCode} AND is_active = true),
+			(SELECT rec_id FROM external_exam WHERE serial_id = (SELECT MAX(serial_id)FROM external_exam WHERE is_active = true)),
+			#{availableSeat}::integer,
+			#{rowNumber}::integer,
+			#{columnNumber}::integer);
+	</insert>
+	
+	<!-- Added By Naimisha 21092017 -->
+	<resultMap id="getPrograamDetailsAgainstExamRM" type="com.qts.icam.model.backoffice.Exam">
+		<id property="examCode" column="external_exam_code" jdbcType="VARCHAR" />
+		<result property="examName" column="external_exam_name" jdbcType="VARCHAR" />
+		<result property="algorithm" column="algorithm_code" jdbcType="VARCHAR" />		
+		<collection property="courseList" ofType="com.qts.icam.model.common.Course">
+			<id property="courseCode" column="course_code" jdbcType="VARCHAR" />
+			<result property="courseName" column="course_name" jdbcType="VARCHAR" />
+			<collection property="sectionList" ofType="com.qts.icam.model.common.Section">
+				<id property="sectionName" column="section_name" jdbcType="VARCHAR" />
+				<result property="totalSeat" column="capacity" jdbcType="VARCHAR" />
+			</collection>
+		</collection>
+	</resultMap>
+	<select id="getPrograamDetailsAgainstExam" resultMap="getPrograamDetailsAgainstExamRM" parameterType = "java.lang.String">
+		SELECT
+			external_exam_code,
+			external_exam_name,
+			algorithm_code,
+			course_code,
+			course_name,
+			section_name,
+			capacity
+		FROM
+			external_exam ee
+		JOIN
+			algorithm al ON (ee.algorithm = al.rec_id AND al.is_active = true)
+		JOIN
+			exam_program_mapping epm ON (epm.external_exam = ee.rec_id AND epm.is_active = true)
+		JOIN
+			course c ON (c.rec_id = epm.course  AND c.is_active = true)
+		JOIN 
+			standard st ON (st.rec_id = c.standard AND st.is_active = true)
+		JOIN
+			section s ON (st.rec_id = s.standard AND s.is_active = true)
+		
+		WHERE
+			ee.external_exam_code = #{exam}
+		AND
+			ee.is_active = true
+		AND 
+			section_name != 'NA';
+	</select>
+	
+<!-- 	Added BY Naimisha  17102017-->
+
+	<select id="getStudentListForAProgram" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Student">
+		SELECT
+			scm.roll_number as roll,
+			r.user_id as userId,
+			r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || COALESCE(r.last_name,'') as studentName
+		FROM 
+			resource r 
+		JOIN
+			student_course_mapping scm ON (scm.user_id = r.user_id AND scm.is_active   = true)
+		JOIN 
+			course co ON (scm.course = co.rec_id AND co.is_active = true)
+		WHERE
+			co.course_name=#{programCode}	
+		AND
+			r.is_active = true;
+		
+	</select>
+	
+	<!-- 	Added By Naimisha 16042018 -->
+
+	<insert id="insertClassTeacher" parameterType="com.qts.icam.model.common.Standard">
+		INSERT INTO class_teacher(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation,
+			section, standard, teacher,academic_year)
+		VALUES ((select uuid_generate_v4()), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			(SELECT s.rec_id FROM section s JOIN standard st ON(s.standard = st.rec_id AND st.is_active = true) WHERE standard_code = #{standardCode} AND section_code = #{section} AND s.is_active = true), 
+			(SELECT rec_id FROM standard WHERE standard_code = #{standardCode} AND is_active = true),
+			(SELECT rec_id FROM resource WHERE user_id = #{desc} AND is_active = true),
+			(SELECT ay.rec_id FROM academic_year ay JOIN status_flag sf ON (ay.year_status = sf.rec_id) WHERE sf.status_sym = 'C'));
+	</insert>
+	
+	<select id="getAllClassTeacherList" resultType="com.qts.icam.model.academics.StudentResult">
+		SELECT
+			standard_code as course,
+			standard_name as standard,
+			section_code as section,
+			section_name as desc ,
+			user_id as updatedBy,
+			r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || COALESCE(r.last_name,'') as name,
+			academic_year_code as academicYear
+		FROm
+			class_teacher cl
+		JOIN
+			standard s ON (cl.standard = s.rec_id AND s.is_active = true)
+		JOIN
+			section sc ON (cl.section = sc.rec_id AND sc.is_active = true)
+		JOIN
+			resource r ON (cl.teacher = r.rec_id AND r.is_active = true)
+		JOIN
+			academic_year ay ON(cl.academic_year = ay.rec_id AND ay.is_active = true)
+		AND
+			cl.is_active = true;
+		
+	</select>
+	
+	<select id="selectClassTeacherAgainstStandardAndSection" parameterType="com.qts.icam.model.common.Standard" resultType="com.qts.icam.model.academics.StudentResult" >
+		SELECT
+			standard_code as course,
+			standard_name as standard,
+			section_code as section,
+			section_name as desc ,
+			user_id as updatedBy,
+			r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || COALESCE(r.last_name,'') as name,
+			academic_year_code as academicYear
+		FROm
+			class_teacher cl
+		JOIN
+			standard s ON (cl.standard = s.rec_id AND s.is_active = true)
+		JOIN
+			section sc ON (cl.section = sc.rec_id AND sc.is_active = true)
+		JOIN
+			resource r ON (cl.teacher = r.rec_id AND r.is_active = true)
+		JOIN
+			academic_year ay ON(cl.academic_year = ay.rec_id AND ay.is_active = true)
+		WHERE
+			standard_code = #{standardCode}
+		AND
+			section_code = #{section}
+		AND
+			cl.is_active = true;
+	</select>
+	
+	<select id="getExamNameFromExamTableTimeGrid" resultType="java.lang.String" parameterType = "java.lang.String">
+		SELECT DISTINCT
+			exam
+		FROM
+			exam_time_table_grid
+		WHERE
+			exam = #{exam};
+	</select>
+	
+	<select id="getProgramListAndSemeterForExamRoutine" resultType="com.qts.icam.model.common.Course" parameterType = "java.lang.String">
+		SELECT
+			DISTINCT course_code as courseCode,
+			course_name as courseName,
+			semester as desc,
+			to_char((SELECT to_timestamp((ee.start_date))), 'DD/MM/YYYY') as courseStartTime,
+			to_char((SELECT to_timestamp((ee.end_date))), 'DD/MM/YYYY') as courseEndTime,
+			ee.start_time as startTime,
+			ee.end_time as endTime
+		FROM
+			exam_program_mapping epm
+		JOIN
+			external_exam ee ON (epm.external_exam = ee.rec_id AND ee.is_active = true)
+		JOIN
+			course c ON (epm.course = c.rec_id AND c.is_active = true)
+		WHERE
+			external_exam_code = #{exam}
+		AND
+			epm.is_active = true
+	</select>
+	
+	<select id="getSubjectForCourseAndTermForExamRoutine" resultType="com.qts.icam.model.academics.Subject" parameterType="com.qts.icam.model.common.Course">
+		SELECT
+			subject_code as subjectCode,
+			subject_name as subjectName
+		FROM
+			term_course_subject_mapping tcsm
+		JOIN
+			course c ON (tcsm.course = c.rec_id AND c.is_active = true)
+		JOIN
+			term t ON (tcsm.term = t.rec_id AND t.is_active = true)
+		JOIN
+			subject s ON (s.rec_id = tcsm.subject AND s.is_active = true)
+		WHERE
+			course_code = #{courseCode}
+		AND
+			term_name = #{desc}
+		AND
+			tcsm.is_active = true;
+	</select>
+	
+	<insert id="insertIntoExamTableTimeGrid" parameterType="com.qts.icam.model.academics.Subject">
+			INSERT INTO exam_time_table_grid(
+            	rec_id, cell_id, cell_data, date, exam)
+    		VALUES 
+    			((select uuid_generate_v4()), #{subjectCode},#{subjectName}, #{status}, #{desc});
+	</insert>
+	
+	<select id="getAllRoutineTableGridDataAgainstExam" resultType="com.qts.icam.model.academics.RoutineTableGridData"  parameterType = "java.lang.String">
+		SELECT 
+       		cell_id as gridId,
+       		cell_data as gridData
+       	FROM 
+			exam_time_table_grid
+		WHERE
+			exam = #{exam};
+	</select>
+	
+	<select id="getRoutineTableGridData" parameterType="com.qts.icam.model.backoffice.TimeTableGridData"
+								resultType="com.qts.icam.model.backoffice.TimeTableGridData">
+		SELECT 
+       		cell_id as gridId,
+       		cell_data as gridData
+       	FROM 
+			exam_time_table_grid
+		WHERE
+		    cell_id = #{gridId}
+	</select>
+	
+	<insert id="updateRoutineTableGridData" parameterType="com.qts.icam.model.backoffice.TimeTableGridData">
+		UPDATE
+				exam_time_table_grid 
+			SET
+				cell_data=#{gridData}
+			WHERE
+				cell_id=#{gridId};
+	</insert>
+	
+	<insert id="insertRoutineTableGridData" parameterType="com.qts.icam.model.backoffice.TimeTableGridData">
+		INSERT INTO exam_time_table_grid(
+	            rec_id, cell_id, cell_data)
+	    VALUES 
+	    	((select uuid_generate_v4()), #{gridId}, #{gridData});
+	</insert>
+	
+	<!-- PRAD JUNE 5 2018 -->
+	<resultMap id="schoolEventListRM" type="com.qts.icam.model.event.SchoolEvent">
+		<id property="serialId" column="serial_id" jdbcType="INTEGER" />
+		<result property="eventName" column="event_name" jdbcType="VARCHAR" />
+		<result property="eventDescription" column="event_description" jdbcType="VARCHAR" />
+		<result property="eventStartDate" column="event_start_date" jdbcType="INTEGER" />
+		<result property="eventEndDate" column="event_end_date" jdbcType="INTEGER" />
+		<result property="eventIncharge" column="event_incharge" jdbcType="INTEGER" />
+	</resultMap>
+
+	<select id="schoolEventList" resultMap="schoolEventListRM">
+		SELECT
+			s.serial_id,
+			s.event_name,
+			s.event_description,
+			(to_char((SELECT to_timestamp(s.event_start_date)), 'DD/MM/YYYY')) as event_start_date,				
+			(to_char((SELECT to_timestamp(s.event_end_date)), 'DD/MM/YYYY')) as event_end_date,
+			(SELECT r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || r.last_name FROM resource r WHERE r.is_active = true AND r.rec_id=event_incharge) as event_incharge 
+		FROM
+			school_event s
+		WHERE
+			s.is_active = true
+		ORDER BY 
+		s.serial_id;
+	</select>
+	
+	<insert id="insertSchoolEvent" parameterType="com.qts.icam.model.event.SchoolEvent">
+		INSERT INTO school_event(
+	            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+	            event_name, event_description, event_start_date,event_end_date,event_incharge)
+	    VALUES ((select uuid_generate_v4()), #{schoolEventObjectId},
+	    	(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			#{eventName}, #{eventDescription}, 
+			(SELECT extract(epoch from (SELECT to_timestamp(#{eventStartDate},'DD/MM/YYYY')))), 
+			(SELECT extract(epoch from (SELECT to_timestamp(#{eventEndDate},'DD/MM/YYYY')))),
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{eventIncharge} AND is_active = true));
+	</insert>
+	
+	<select id="selectEventDescription" parameterType="java.lang.Integer" resultType="java.lang.String">
+		SELECT
+			s.event_description
+		FROM
+			school_event s
+		WHERE
+			s.is_active = true
+		AND s.serial_id = #{serialId};
+	</select>
+	
+	<insert id="insertEventAchievement" parameterType="java.util.List">
+	 	<foreach item="eventAchievement" collection="list" index="index" open="" close="" separator=";">
+	        	INSERT INTO event_achievement(rec_id, obj_id, updated_by, updated_on,date_of_creation,school_event,event_position,roll_number,image_file_path)
+		    	VALUES (
+		    			uuid_generate_v4(),
+			   			#{eventAchievement.objectId}, 
+			  			(SELECT rec_id FROM resource WHERE user_id = #{eventAchievement.updatedBy} AND is_active = true),
+			  			extract(epoch FROM now()),
+		          		extract(epoch FROM now()), 
+		          		(SELECT rec_id FROM school_event WHERE serial_id = #{eventAchievement.schoolEvent} AND is_active = true),
+		          		#{eventAchievement.eventPosition},
+		          		#{eventAchievement.rollNumber},
+		          		#{eventAchievement.imageFilePath}
+		  		 );
+        	</foreach>
+      </insert>
+      
+	 <select id="getAllEventAchievements" resultType="com.qts.icam.model.event.SchoolEvent">
+		SELECT 
+			s.event_name as eventName, 
+			(to_char((SELECT to_timestamp(s.event_start_date)), 'DD/MM/YYYY')) as eventStartDate,
+			(to_char((SELECT to_timestamp(s.event_end_date)), 'DD/MM/YYYY')) as eventEndDate, 
+			e.event_position as "eventAchievement.eventPosition", 
+			e.roll_number as "eventAchievement.rollNumber", 
+			e.image_file_path as "eventAchievement.imageFilePath"
+		FROM 
+			school_event s JOIN event_achievement e 
+		ON 
+			(e.school_event = s.rec_id  AND e.is_active = true)
+		WHERE
+			s.is_active= true 
+		ORDER BY
+			s.event_name, e.event_position;
+	</select> 
+	
+	<select id="validateEventName" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT 
+			count(*) 
+		FROM 
+			school_event 
+		WHERE event_name ilike #{eventName} AND is_active= true
+	</select>
+	
+	<select id="selectEventName" resultType="com.qts.icam.model.event.SchoolEvent" parameterType="java.lang.String">
+		SELECT 
+			s.event_name as eventName, 
+			s.event_description as eventDescription,
+			s.event_start_date as eventStartDate,
+			s.event_end_date as eventEndDate,
+			s.event_incharge as eventIncharge
+		FROM 
+			school_event s
+		WHERE
+			s.serial_id=#{serialId} AND s.is_active= true
+	</select>
+	<!-- PRAD ENDS HERE -->
+</mapper>

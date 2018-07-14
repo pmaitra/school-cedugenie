@@ -1,0 +1,705 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+	
+<mapper namespace="com.qts.icam.login.xml.LoginMapper" >
+
+<update id="checkModuleStatusOnStartup" parameterType="com.qts.icam.model.administrator.Module" >
+	UPDATE module
+   	SET 
+		updated_by=(SELECT rec_id FROM "Resource" WHERE user_id ilike #{updatedBy} AND is_is_active=true) ),
+		updated_on=(SELECT extract(epoch FROM now())), 
+        is_is_active=true       
+		WHERE (module_name=#{moduleName});
+</update>
+
+
+ <select id="selectSchoolInformation" resultType="com.qts.icam.model.common.SchoolDetails">
+	   SELECT 
+	    	school_name as schoolDetailsName,
+	    	school_desc as schoolDetailsDesc,
+	    	principal as principal,
+	    	head_master as headmaster,
+	    	estd as estd, 
+	        address as schoolAddress,
+	        mobile as mobile,
+	        phone as phone,
+	        email as email,
+	        phone as phone,
+	        affiliated_board as boardUniversity,
+	        affiliation_code as boardUniversityCode
+		FROM 
+			school
+		WHERE
+			is_active = true;
+    </select>
+
+
+<resultMap id="getUserDetailsRM" type="com.qts.icam.model.common.Resource">			
+	<id property="name" column="name" jdbcType="VARCHAR"/>
+	<result property="fatherFirstName" column="fatherFirstName" jdbcType="VARCHAR"/>
+	<result property="dateOfBirth" column="dateOfBirth" jdbcType="VARCHAR"/>	
+	<result property="emailId" column="email_address" jdbcType="VARCHAR"/>
+	<result property="mobile" column="mobile_no" jdbcType="VARCHAR"/>
+	<result property="bloodGroup" column="blood_group" jdbcType="VARCHAR"/>
+	<result property="resourceTypeName" column="resource_type_name" jdbcType="VARCHAR"/>
+	<result property="panCardNo" column="pan_no" jdbcType="VARCHAR"/>	
+	<result property="gender" column="gender" jdbcType="VARCHAR"/>	
+	<result property="userId" column="user_id" jdbcType="VARCHAR"/>	
+	<association property="image" javaType="com.qts.icam.model.common.Image">
+		<id property="imageName" column="photo" jdbcType="VARCHAR" />
+	</association>		
+</resultMap>
+
+<select id="getUserDetails" resultMap="getUserDetailsRM" parameterType="java.lang.String" >
+		SELECT  DISTINCT
+			 r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as name,
+			(r.father_first_name||' '||r.father_middle_name||' '||r.father_last_name) as fatherFirstName,
+			(to_char((SELECT to_timestamp(r.date_of_birth)), 'DD/MM/YYYY')) as dateOfBirth,
+			r.email_address,
+			r.mobile_no,
+			r.blood_group,
+ 			r.photo,
+			res.resource_type_name,			
+			r.gender,
+			r.pan_no,
+			r.user_id
+ 		FROM 
+			resource r 
+		JOIN resource_type res ON (res.is_active = true) AND (r.resource_type = res.rec_id)		
+ 		WHERE  
+			r.user_id ilike #{userid}; 
+</select>
+
+<select id="getUserAddress" resultType="java.lang.String" parameterType="java.lang.String" >
+		(SELECT
+				address_line || ' Landmark - ' || land_mark || ' ' || city_name || ' Dist - ' || district_name || ' PO - ' || post_office || ' PS - ' || police_station || ' ' || state_name || ' ' || country_name || ' Pin - ' || postal_code as address
+			FROM address add
+			JOIN resource r ON(add.resource=r.rec_id)
+			JOIN city c ON(add.city=c.rec_id)
+			JOIN district d ON(add.district=d.rec_id)
+			JOIN state s ON(add.state=s.rec_id)
+			JOIN country co ON(add.country=co.rec_id)
+			WHERE
+				r.user_id ilike #{userid}
+			AND
+				add.address_type='PRESENT')
+</select>
+
+
+<resultMap id ="getAccessTypeListFromDBResultMap" type="com.qts.icam.model.administrator.AccessType">	
+			<id property="accessTypeName" column="access_type_name" jdbcType="VARCHAR"/>
+			<collection property="roleList" ofType="com.qts.icam.model.administrator.Role">
+				<id property="roleName" column="role_name" jdbcType="VARCHAR"/>
+				<result property="moduleName" column="module_name" jdbcType="VARCHAR"/>
+ 			</collection>
+</resultMap>
+		
+<select id="getAccessTypeListFromDB" parameterType="java.lang.String" resultMap="getAccessTypeListFromDBResultMap">
+		SELECT
+				at.access_type_name,
+				r.role_name,
+				m.module_name
+			FROM 
+					access_type_resource_mapping arm
+			JOIN
+					access_type at ON (at.is_active = true AND arm.access_type = at.rec_id)
+			JOIN
+					resource rs ON (rs.is_active = true AND arm.resource = rs.rec_id)
+			JOIN
+					access_type_role_mapping atrm ON (atrm.is_active = true AND arm.access_type = atrm.access_type)
+			JOIN
+					role r ON (r.is_active = true AND atrm.role = r.rec_id)
+			JOIN
+					module m ON (m.is_active = true AND r.module = m.rec_id)			
+			AND 
+					rs.user_id ilike #{userid}
+			ORDER BY 
+				m.module_name;
+		
+</select>
+
+
+<select id="getRoleListForUser" resultType="com.qts.icam.model.administrator.Role" parameterType="java.lang.String" >	
+			SELECT 
+				r.role_name as roleName,
+				m.module_name as moduleName
+			FROM
+					role_resource_mapping rrm			 
+			JOIN
+					role r ON (r.is_active = true AND rrm.role = r.rec_id)
+			JOIN
+					module m ON (m.is_active = true AND r.module = m.rec_id)
+			JOIN
+					resource rs ON (rs.is_active = true AND rrm.resource = rs.rec_id)
+			AND 
+					rs.user_id ilike #{userid}
+			AND
+					rrm.is_active = true
+			ORDER BY 
+				m.module_name;
+</select>
+
+
+<select id="getFunctionalitiesForRole" resultType="com.qts.icam.model.administrator.Functionality" parameterType="com.qts.icam.model.administrator.Role" >	
+					
+			SELECT
+					mf.functionality_name as functionalityName,
+					frm.view as view,
+					frm.write as insert,
+					frm.update as update,
+					m.module_name as moduleName						 		
+  			FROM 
+  					functionality_role_mapping frm
+  			LEFT JOIN
+  					module m ON(frm.module = m.rec_id) AND (m.is_active = true) 
+			LEFT JOIN
+  					role r ON(frm.role = r.rec_id) AND (r.is_active = true) AND (r.module = m.rec_id)
+			LEFT JOIN
+  					module_functionality mf ON(frm.module_functionality =mf.rec_id) AND (mf.is_active = true)	AND (mf.module = m.rec_id)
+			WHERE				
+					frm.is_active=true
+			AND
+					r.role_name=#{roleName}
+			ORDER BY 
+				m.module_name;
+</select>
+
+
+<select id="getAccessTypeDetails" parameterType="java.lang.String" resultType="com.qts.icam.model.administrator.Role">
+		SELECT
+				at.access_type_name as accessTypeName,
+				r.role_name as roleName,
+				m.module_name as moduleName
+			FROM 
+					access_type_resource_mapping arm			
+			JOIN
+					access_type at ON (at.is_active = true AND arm.access_type = at.rec_id)
+			JOIN
+					resource rs ON (rs.is_active = true AND arm.resource = rs.rec_id)
+			JOIN
+					access_type_role_mapping atrm ON (atrm.is_active = true AND atrm.access_type=at.rec_id)
+			JOIN
+					role r ON (r.is_active = true AND atrm.role = r.rec_id)
+			JOIN
+					module m ON (m.is_active = true AND r.module = m.rec_id)			
+			WHERE
+					arm.is_active = true
+			AND 
+					at.access_type_name =#{accessType.accessTypeName}
+			AND
+					rs.user_id ilike #{userId}
+			AND
+					arm.is_active = true
+			ORDER BY 
+				m.module_name;		
+</select>
+
+
+<select id="getFunctionalitiesForRoleNew" resultType="com.qts.icam.model.administrator.Functionality" parameterType="com.qts.icam.model.administrator.Role" >	
+		SELECT
+			functionality_name as functionalityName
+		FROM
+			module_functionality mf
+		JOIN role r ON(r.module=mf.module) AND (true = r.is_active)
+		WHERE
+			r.role_name=#{roleName}
+		AND
+			mf.is_active=true
+	</select>
+
+<select id="selectNoOfNewNotificationsForAlert" parameterType="String" resultType="Integer">
+		SELECT 
+			COUNT(a.new_alert_status) as newNotification
+		FROM 
+			alert a
+		JOIN 
+			status_flag sf ON (a.new_alert_status = sf.rec_id)
+		JOIN 
+			resource rs ON (rs.is_active = true) AND (a.alert_to = rs.rec_id)
+		JOIN
+			notification_medium nm ON (a.notification_medium = nm.rec_id) AND (nm.is_active = true)
+		WHERE
+			sf.status_sym = 'N'
+		AND
+			nm.notification_medium_name = 'ALERT'
+		AND
+			rs.user_id ilike #{userId}
+</select>
+
+
+
+<select id="fetchEventBasedOnUserId" resultType="com.qts.icam.model.backoffice.CalendarEvent">
+		 SELECT 
+			ced.event_code as calendarEventCode,
+			(select CAST(calender_event_details_id AS text)) as calendarEventDesc ,
+			ced.event_name as calendarEventName,
+			(SELECT to_char((SELECT to_timestamp(start_date)), 'DD/MM/YYYY')) as
+			calendarEventStartDate,
+			(SELECT to_char((SELECT to_timestamp(end_date)), 'DD/MM/YYYY')) as
+			calendarEventEndDate,
+			ced.start_time as calendarEventStartTime,
+			ced.end_time as calendarEventEndTime,
+			ced.event_color as calendarEventEndColor
+		 FROM 
+		 	calender_event_details ced
+		 JOIN
+		 	event_role_mapping erm ON (ced.rec_id = erm.calendar_event_details) AND (true = erm.is_active)
+		 WHERE
+			 erm.role_name = #{roleName}
+		 AND 
+		 	ced.is_active=true;
+
+	</select>
+
+
+
+
+
+<select id="fetchEventCountBasedOnUserId" resultType="com.qts.icam.model.backoffice.CalendarEvent">
+		SELECT
+			count (*) as calendarIntEventCode,
+			(SELECT to_char((SELECT to_timestamp(start_date)), 'DD/MM/YYYY')) as calendarEventObjectId
+		FROM 
+			calender_event_details ced
+		JOIN
+		 	event_role_mapping erm ON (ced.rec_id = erm.calendar_event_details) AND (true = erm.is_active)
+		WHERE
+			 erm.role_name = #{roleName}
+		AND 
+		 	ced.is_active=true
+		GROUP BY (SELECT to_char((SELECT to_timestamp(start_date)), 'DD/MM/YYYY'));
+
+	</select>
+
+
+<select id="fetchEventForAllUser" resultType="com.qts.icam.model.backoffice.CalendarEvent">
+		SELECT 
+			ced.event_code as calendarEventCode,
+			(select CAST(calender_event_details_id AS text)) as calendarEventDesc ,
+			ced.event_name as calendarEventName,
+			(SELECT to_char((SELECT to_timestamp(start_date)), 'DD/MM/YYYY')) as calendarEventStartDate,
+			(SELECT to_char((SELECT to_timestamp(end_date)), 'DD/MM/YYYY')) as calendarEventEndDate,
+			ced.start_time as calendarEventStartTime,
+			ced.end_time as calendarEventEndTime,
+			ced.event_color as calendarEventEndColor
+		 FROM 
+		 	calender_event_details ced
+		 WHERE
+			ced.event_viewer = 'All User'
+		 AND 
+		 	ced.is_active=true;
+    </select>
+
+
+
+ <select id="fetchEventCountForAllUser" resultType="com.qts.icam.model.backoffice.CalendarEvent">
+		SELECT
+			 count (*) as calendarIntEventCode,
+			(SELECT to_char((SELECT to_timestamp(start_date)), 'DD/MM/YYYY')) as calendarEventObjectId
+		FROM 
+		 	calender_event_details ced
+		 WHERE
+			ced.event_viewer = 'All User'
+		 AND 
+		 	ced.is_active=true
+		 GROUP BY (SELECT to_char((SELECT to_timestamp(start_date)), 'DD/MM/YYYY'));
+		
+    </select>
+
+<select id="getFunctionalityListForRole" resultType="com.qts.icam.model.administrator.Functionality" parameterType="com.qts.icam.model.administrator.Role" >	
+					
+	SELECT
+					mf.functionality_name as functionalityName,
+					frm.view as view,
+					frm.write as insert,
+					frm.update as update									 		
+  			FROM 
+  					functionality_role_mapping frm
+  			LEFT JOIN
+  					module m ON(frm.module = m.rec_id)AND (m.is_active = true) 
+			LEFT JOIN
+  					role r ON(frm.role = r.rec_id) AND (r.is_active = true) AND (r.module = m.rec_id)
+			LEFT JOIN
+  					module_functionality mf ON(frm.module_functionality =mf.rec_id)	AND (mf.is_active = true)  AND (mf.module = m.rec_id)
+			WHERE				
+					frm.is_active=true
+			AND
+					r.role_name=#{roleName}	
+			AND
+					m.module_name=#{moduleName};
+</select>
+
+<select id="getFunctionalityListForModule" resultType="com.qts.icam.model.administrator.Functionality" parameterType="com.qts.icam.model.administrator.Role" >	
+					
+				SELECT
+					mf.functionality_name as functionalityName,
+					frm.view as view,
+					frm.write as insert,
+					frm.update as update									 		
+  			FROM 
+  					functionality_role_mapping frm
+  			LEFT JOIN
+  					module m ON(frm.module = m.rec_id) AND (m.is_active = true) 
+			LEFT JOIN
+  					role r ON(frm.role = r.rec_id) AND (r.is_active = true)	AND (r.module = m.rec_id)
+			LEFT JOIN
+  					module_functionality mf ON(frm.module_functionality =mf.rec_id) AND (mf.is_active = true) AND (mf.module = m.rec_id)
+			WHERE				
+					frm.is_active=true
+			AND
+					r.role_name=#{roleName}	
+			AND
+					m.module_name=#{moduleName};
+</select>
+
+
+<select id="getRoleForAccessType" resultType="com.qts.icam.model.administrator.Role" parameterType="com.qts.icam.model.administrator.AccessType" >	
+			SELECT
+					r.role_name as roleName,
+					m.module_name as moduleName									 		
+  			FROM 
+  					access_type_role_mapping arm
+			 JOIN
+  					module m ON (m.is_active = true) 
+  			 JOIN
+  					role r ON (r.is_active = true) AND (r.module = m.rec_id) AND (arm.role = r.rec_id)			
+			 JOIN
+  					access_type at ON (at.is_active = true) AND (arm.access_type = at.rec_id)	
+  			WHERE		 
+				m.module_name=#{moduleName}
+			AND
+				at.access_type_name=#{accessTypeName}
+			AND
+				arm.is_active = true;
+</select>
+
+
+	<update id="updateLoginDetails" parameterType="com.qts.icam.model.login.LoginForm" >
+			UPDATE 
+				login_details
+  			SET  updated_by=(SELECT rec_id FROM resource WHERE user_id ilike #{userId} AND is_active=true),
+				 updated_on=(SELECT extract(epoch FROM now())),
+	        	 log_out_time=(SELECT extract(epoch FROM now())), 
+	        	 login_status=false,
+	        	 is_active=false
+		   WHERE
+				resource=(SELECT rec_id FROM resource WHERE user_id ilike #{userId} AND is_active=true)
+			AND
+				login_status=true
+			AND
+				is_active=true
+	</update>
+
+	<select id="selectmaxActiveUsers" resultType="Integer">	
+			SELECT
+				count(ld.resource) as maxActiveUsers
+			FROM
+				login_Details ld
+			JOIN
+				resource r ON (r.rec_id = ld.resource) AND (r.is_active=true)
+			JOIN
+				resource_type rt ON (rt.rec_id = r.resource_type) AND (rt.is_active = true)
+			WHERE
+				ld.login_status = true
+			AND
+				rt.resource_type_name NOT IN ('TEACHING STAFF');
+	</select>
+	
+	<select id="selectMaxLoginActiveUsersForLicense" resultType="Integer">	
+		SELECT
+			login_active_users as maxUsers
+		FROM 
+			license_tenure
+		WHERE
+			is_active = true;
+	</select>
+
+<select id="checkLoginStatus" resultType="Integer" parameterType="com.qts.icam.model.login.LoginForm" >	
+			SELECT 
+				count(login_id) 
+			FROM 
+				login_details ld			
+			JOIN
+				resource r ON (r.rec_id = ld.resource) AND (true = r.is_active)
+			WHERE
+				r.user_id ilike #{userId}
+			AND
+				ld.is_active=true;
+	</select>
+	
+	<insert id="insertIntoLoginDetails" parameterType="com.qts.icam.model.login.LoginForm" >
+		INSERT INTO login_details(
+	            					rec_id, obj_id, updated_by,
+	            					updated_on, date_of_creation,is_active,
+	            					log_in_code,log_in_time
+	            					<if test="role != null">,role</if>
+	            					<if test="accessType != null">,access_type</if>
+	            					,login_status,
+	            					resource,
+	            					ip_address,
+	            					http_session_id
+	            					)
+	    VALUES (uuid_generate_v4(),
+		   #{objId},
+		   (SELECT rec_id FROM resource WHERE user_id ilike #{userId} AND is_active=true),
+		   (SELECT extract(epoch FROM now())),
+		   (SELECT extract(epoch FROM now())),
+		   true, 
+	       (SELECT ('LD-'||(select COALESCE((SELECT MAX(login_id) FROM login_details), 0 )+1))),
+	       (SELECT extract(epoch FROM now()))
+	       <if test="role != null">,
+	       (SELECT rec_id FROM role WHERE role_name =#{role} AND is_active=true)
+	       </if>
+	       <if test="accessType != null">,
+	       (SELECT rec_id FROM access_type WHERE access_type_name =#{accessType} AND is_active=true)
+	       </if>
+	       ,
+	       true,
+	       (SELECT rec_id FROM resource WHERE user_id ilike #{userId} AND is_active=true),
+	       #{ip},
+	       #{httpSessionId}
+	    );
+	</insert>
+
+
+	<select id="selectPasswordStatus" resultType="String" parameterType="com.qts.icam.model.login.LoginForm" >	
+			SELECT 
+				sf.status_sym as status
+			FROM
+				status_flag sf
+			JOIN
+				user_password_status ups ON  (sf.rec_id = ups.password_status) AND (true = ups.is_active)
+			JOIN
+				resource r ON (r.rec_id = ups.resource) AND (true = r.is_active)
+			WHERE
+				r.user_id ilike #{userId}
+			
+	</select>
+	
+	<select id="selectResourceType" resultType="String" parameterType="com.qts.icam.model.login.LoginForm" >	
+			SELECT
+				rt.resource_type_name as resourceTypeName
+			FROM
+				resource r
+			JOIN
+				resource_type rt ON (rt.rec_id = r.resource_type) AND (true = rt.is_active)AND (true = r.is_active)
+			WHERE
+				r.user_id ilike #{userId};
+	</select>
+	
+	<select id="fetchAllEventsForSuperAdmin" resultType="com.qts.icam.model.backoffice.CalendarEvent">
+		 SELECT 
+			ced.event_code as calendarEventCode,
+			(select CAST(calender_event_details_id AS text)) as calendarEventDesc ,
+			ced.event_name as calendarEventName,
+			(SELECT to_char((SELECT to_timestamp(start_date)), 'DD/MM/YYYY')) as
+			calendarEventStartDate,
+			(SELECT to_char((SELECT to_timestamp(end_date)), 'DD/MM/YYYY')) as
+			calendarEventEndDate,
+			ced.start_time as calendarEventStartTime,
+			ced.end_time as calendarEventEndTime,
+			ced.event_color as calendarEventEndColor,
+			 event_viewer as calendarEventDesc
+		 FROM 
+		 	calender_event_details ced
+		 WHERE
+		 	ced.is_active=true; 
+		 	
+    </select>
+    
+    
+    
+    <select id="fetchAllEventsCountForSuperAdmin" resultType="com.qts.icam.model.backoffice.CalendarEvent">
+		SELECT
+			 count (*) as calendarIntEventCode,
+			(SELECT to_char((SELECT to_timestamp(start_date)), 'DD/MM/YYYY')) as calendarEventObjectId,
+			 event_viewer as calendarEventDesc
+		FROM 
+		 	calender_event_details ced
+		 WHERE
+		 	ced.is_active=true
+		 GROUP BY (SELECT to_char((SELECT to_timestamp(start_date)), 'DD/MM/YYYY')),event_viewer;
+		
+    </select>
+    
+    
+    <select id="lastVisitedOn" resultType="String" parameterType="String" >	
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(max(ld.log_out_time))), 'DD/MM/YYYY HH12:MI:SS AM')) as lastVisitedOn
+		FROM 
+			login_details ld 		 
+		LEFT JOIN 
+			resource r ON (r.is_active=true) AND (ld.resource=r.rec_id)		
+		WHERE  
+			ld.is_active=false		
+		AND
+			r.user_id  ilike #{userId};			
+	</select>
+    
+     <select id="selectExamStartAndEndDateToView" resultType="com.qts.icam.model.backoffice.Exam" >	
+		SELECT
+			ex.exam_name as examName,
+			ex.exam_code as examCode,
+			(SELECT to_char((SELECT to_timestamp(ywe.exam_start_date)), 'DD/MM/YYYY'))	as examStartDate,
+			(SELECT to_char((SELECT to_timestamp(ywe.exam_end_date)), 'DD/MM/YYYY'))	as examEndDate,
+			ex.term as term
+		FROM exam ex
+		LEFT JOIN year_wise_exam ywe ON (ywe.exam = ex.rec_id AND ywe.is_active = true)
+		LEFT JOIN academic_year ay ON (ywe.academic_year = ay.rec_id AND ay.is_active=true AND year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C'))
+		WHERE ex.is_active=true
+		AND ywe.exam_start_date IS NOT NULL
+		AND ywe.exam_end_date IS NOT NULL; 		
+	</select>
+	
+	<select id="selectListAssignedExamCountFromDb" resultType="Integer" >	
+		SELECT
+			count (ex.exam_name) as countExam
+		FROM exam ex
+		LEFT JOIN year_wise_exam ywe ON (ywe.exam = ex.rec_id AND ywe.is_active = true)
+		LEFT JOIN academic_year ay ON (ywe.academic_year = ay.rec_id AND ay.is_active=true AND year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C'))
+		WHERE ex.is_active=true
+		AND ywe.exam_start_date IS NOT NULL
+		AND ywe.exam_end_date IS NOT NULL; 
+	</select>
+	
+	<select id="selectEmployeeProfileImage" resultType="com.qts.icam.model.common.Image" parameterType="java.lang.String">
+	  SELECT 
+       		attachment_location || attached_file_name as imagepath
+       FROM 
+       		attachment a
+       JOIN resource r ON (a.resource = r.rec_id AND a.is_active = true AND r.is_active = true)
+        JOIN attachment_type at ON (a.attachment_type = at.rec_id AND at.is_active = true)
+       
+        WHERE
+			r.user_Id = #{resource.userId}
+			AND
+			at.attachment_type_code = 'PROFIMG';		
+	</select>
+	
+	<select id="selectListFormTaskNotification" resultType="com.qts.icam.model.common.Notification" parameterType="java.lang.String">
+	  SELECT	
+	  			tf.notification_code as notificationObjectId,
+				r.user_id as updatedBy,
+				r1.first_name ||''|| COALESCE(r1.middle_name,' ') ||''|| COALESCE(r1.last_name,' ') as notificationSender,
+				jd.job_name as notificationName,
+				lt.leave_type_name as notificationCode, 
+				(SELECT to_char((SELECT to_timestamp(l.from_date)), 'DD/MM/YYYY'))as notificationDate,
+				(SELECT to_char((SELECT to_timestamp(l.to_date)), 'DD/MM/YYYY'))as notificationDesc,
+				s.status_desc as status,
+				tf.notification_description as notificationSubject
+				
+				
+		FROM 
+				task_notification tf
+		JOIN	resource r ON(tf.approved_by = r.rec_id)
+		JOIN 	resource r1 ON(tf.applied_by = r1.rec_id and r1.is_active = true)
+		JOIN    job_details jd ON (tf.job = jd.rec_id and jd.is_active = true)
+		JOIN    leave l ON (tf.leave = l.rec_id and l.is_active =  'true')
+		JOIN    leave_type lt ON (l.leave_type = lt.rec_id and lt.is_active = true)
+		JOIN 	approval a ON(tf.approve = a.rec_id AND a.is_active = true)
+		JOIN 	status_flag s ON(a.status = s.rec_id AND s.is_active = true)
+		
+		WHERE
+				r.user_id = #{user_id}
+		AND  tf.is_active = true
+		AND tf.is_read = false;	
+	</select>
+	
+	<update id="updateTaskNotification" parameterType="java.lang.String" >
+		UPDATE task_notification
+	   	SET
+	        is_read=true       
+			WHERE (notification_code=#{notificationId});
+	</update>
+	
+	<select id="selectMajorEvents" resultType="com.qts.icam.model.common.MajorEvents" >
+		SELECT  DISTINCT
+			 ev.major_events_id as serial, (to_char((SELECT to_timestamp (ev.major_events_date)), 'DD/MM/YYYY')) as date, ev.major_events_desc as event
+ 		FROM 
+			major_events ev 
+			
+		ORDER BY serial
+			
+	</select>
+	
+	<select id="selectMyEvents" resultType="com.dhtmlx.planner.DHXEvent" >
+		SELECT 
+			my_events_id as event_id, my_events_desc as event_name, to_char((select to_timestamp (my_events_start_date)), 'yyyy-MM-dd HH12:MI:ss') as start_date , 
+			to_char((select to_timestamp (my_events_end_date)), 'yyyy-MM-dd HH12:MI:ss') as end_date 
+		FROM 
+			my_events
+			
+	</select>
+	
+	<insert id="saveMyEvents" parameterType="com.dhtmlx.planner.DHXEvent" >
+		INSERT INTO my_events(
+	            					rec_id, obj_id, updated_by,
+	            					updated_on, date_of_creation,is_active,
+	            					my_events_start_date, my_events_end_date,
+  									my_events_desc text
+	            					)
+	    VALUES (uuid_generate_v4(),
+		   'MY EVENTS',
+		   '80b9d23b-f5e3-426b-961f-dd79a8b35c89',
+		   (SELECT extract(epoch FROM now())),
+		   (SELECT extract(epoch FROM now())),
+		   true, 
+	       select extract(epoch from start_date),
+	       select extract(epoch from end_date),
+	       event_name
+	    );
+	</insert>
+	
+	<update id="updateMyEvents" parameterType="com.dhtmlx.planner.DHXEvent" >
+		UPDATE my_events
+	   	SET
+	        updated_on = (SELECT extract(epoch FROM now())), 
+	        my_events_end_date = select extract(epoch from end_date),
+  		    my_events_desc = event_name
+		WHERE 
+			my_events_id = event_id
+	</update>
+	
+	<update id="deleteMyEvents" parameterType="com.dhtmlx.planner.DHXEvent">
+		DELETE 
+			FROM my_events 
+		WHERE 
+			my_events_id = event_id
+	</update>
+	
+	
+	<select id="selectNotificationListFormTaskDetails" resultType="com.qts.icam.model.common.Notification" parameterType="java.lang.String">
+	 	SELECT
+	 		td.task_notification_code as notificationObjectId,
+			r.user_id as updatedBy,
+			r1.first_name ||' '|| COALESCE(r1.middle_name,' ') ||' '|| COALESCE(r1.last_name,' ') as notificationSender,
+			jd.job_name as notificationName,
+			sf.status_desc,
+			td.notification_description as notificationDesc
+		From 
+			task_details td
+		JOIN
+			resource r ON (td.task_alocatted_by = r.rec_id)
+		JOIN
+			resource r1 ON(td.actualowner_id = r1.rec_id)
+		JOIN
+			job_details jd ON (td.task_type = jd.rec_id)
+		JOIN
+			status_flag sf ON (td.status = sf.rec_id)
+		WHERE
+			td.actualowner_id = (select rec_id from resource where user_id = #{user_id})
+		AND
+			td.is_active = true
+		AND 
+			td.is_read = false
+	</select>
+	<update id="updateTaskDetailsForNotification" parameterType="java.lang.String" >
+			
+		UPDATE task_details
+	   	SET
+	        is_read = true       
+			WHERE task_notification_code=#{notificationId}; 
+	</update>
+</mapper>

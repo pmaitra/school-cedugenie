@@ -1,0 +1,8 @@
+ 
+For Your Information
+
+This email is to acknowledge the login of User: ${emailDetails.emailDetailsReceiver} to the application.
+
+  ${emailDetails.emailDetailsDesc}
+
+

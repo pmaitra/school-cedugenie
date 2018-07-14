@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:p="http://www.springframework.org/schema/p" 
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+						http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+						http://www.springframework.org/schema/aop
+						http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+						http://www.springframework.org/schema/tx
+						http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+						http://www.springframework.org/schema/context
+						http://www.springframework.org/schema/context/spring-context-3.1.xsd
+						http://www.springframework.org/schema/jdbc
+						http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd">
+
+
+	
+ 	<tx:annotation-driven transaction-manager="transactionManager"/> 
+    <!-- saif  -->
+   <!--  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	     <property name="locations" value="classpath:configuration.properties">
+	        <value>/WEB-INF/conf/dbconfig/configuration.properties</value>
+	    </property>
+	     <property name="propertiesPersister" ref="propertiesPersisterBean">
+	    </property>   
+	    <property name="propertiesPersister">
+        	<bean class="com.qts.icam.listner.PropertyPersister" />
+   		 </property>        
+	</bean>  --> 
+	
+	<!--  <bean id="propertiesPersisterBean" class="com.qts.icam.listner.PropertyPersister">
+		 <property name="location" value = "classpath:configuration.properties">  
+		<property name = "location">
+	         <value>C:/icam/conf/configuration.properties</value>
+	    </property> 
+	</bean>  -->
+    
+      <!-- <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" > 
+		<property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean> -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" > 
+		<property name="driverClassName" value="org.postgresql.Driver"/>
+        <property name="url" value="jdbc:postgresql://127.0.0.1/icam_rewa"/>
+        <property name="username" value="pss"/>
+        <property name="password" value="pss"/>
+        <!-- <property name="url" value="jdbc:postgresql://icam.ch6tvtyjtsqa.ap-south-1.rds.amazonaws.com/icam"/>
+        <property name="username" value="icamuser"/>
+        <property name="password" value="icamcore123"/> -->
+    </bean>
+    
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+         <property name="dataSource" ref="dataSource" /> 
+         <property name="configLocation" value="WEB-INF/conf/mybatis/SQLMapConfig.xml" /> 
+    </bean>
+    
+     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"> 
+   		<property name="dataSource" ref="dataSource" />
+ 	</bean>
+    	 	
+	<!-- <bean id="contextSource" class="org.springframework.ldap.core.support.LdapContextSource">
+		<property name="url" value="${directoryServer.url}" />
+		<property name="userDn" value="${directoryServer.userDN}" />
+		<property name="password" value="${directoryServer.password}" />
+		<property name="base" value="${directoryServer.baseDN}"/>
+		<property name="pooled" value="false"/>
+	</bean> -->
+	 <bean id="contextSource" class="org.springframework.ldap.core.support.LdapContextSource">
+		<property name="url" value="ldap://127.0.0.1:10389" />
+		<property name="userDn" value="uid=admin,ou=system" />
+		<property name="password" value="secret" />
+		<property name="pooled" value="false"/>
+	</bean> 
+	
+	<bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">
+		<constructor-arg ref="contextSource" />
+	</bean>
+		
+	
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+	    <property name="host" value="localhost"/>
+	    <property name="port" value="25"/>
+	    <property name="username" value="qls"/>
+	    <property name="password" value="qls"/>
+	    <property name="javaMailProperties">
+	        <props>
+	        	<!-- Use SMTP transport protocol -->
+	            <prop key="mail.transport.protocol">smtp</prop>
+	            <!-- Use SMTP-AUTH to authenticate to SMTP server -->
+	            <prop key="mail.smtp.auth">true</prop>
+	            <!-- Use TLS to encrypt communication with SMTP server -->
+	            <prop key="mail.smtp.starttls.enable">false</prop>
+	            <prop key="mail.debug">true</prop>
+	        </props>
+	    </property>
+	</bean>
+	
+	<bean id="velocityEngine" class="org.springframework.ui.velocity.VelocityEngineFactoryBean">
+           <property name="resourceLoaderPath" value="/WEB-INF/" />
+          <property name="preferFileSystemAccess" value="false" />
+    </bean>		
+</beans>						

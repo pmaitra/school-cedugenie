@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qts.icam.mapper.tender.TenderMapper">
+
+
+	<select id="getAllTenderType" resultType="com.qts.icam.model.tender.TenderType">
+		SELECT 
+			tender_type_code as tenderTypeCode,
+			tender_type as tenderType
+		FROM 
+			tender_type
+		WHERE 
+			is_active=true;	
+	</select>
+	
+	<select id="getAllTenderCategory" resultType="com.qts.icam.model.tender.TenderCategory">
+		SELECT 
+			tender_category_code as tenderCategoryCode,
+			tender_category_name as tenderCategoryName
+		FROM 
+			tender_category
+		WHERE
+			is_active=true AND tender_parent_category IS null;	
+	</select>
+	
+	<select id="getAllTenderSubCategory" resultType="com.qts.icam.model.tender.TenderCategory">
+		SELECT 
+			tender_category_code as tenderCategoryCode,
+			tender_category_name as tenderCategoryName
+		FROM 
+			tender_category
+		WHERE
+			is_active=true 
+		AND tender_parent_category= (SELECT rec_id from tender_category WHERE tender_category_code=#{tenderCategoryCode} AND is_active=true);	
+	</select>
+	
+	<insert id="insertIntoTender" parameterType="com.qts.icam.model.tender.Tender">
+		INSERT INTO tender(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            tender_code, tender_type, tender_open_date, tender_close_date, 
+            tender_spoc, tender_dept, tender_ref_number, tender_status, tender_category)
+    	VALUES (uuid_generate_v4(),
+				#{objectId},
+				(SELECT rec_id FROM resource WHERE user_id ilike #{updatedBy} AND is_active =true),
+				extract(epoch FROM now()),
+				extract(epoch FROM now()),
+				(SELECT  'TD_' ||COALESCE((SELECT MAX(serial_id) FROM tender), 0)+1),
+				(SELECT rec_id FROM tender_type WHERE tender_type_code = #{tenderType} AND is_active = true), 
+				(SELECT extract(epoch from (SELECT to_timestamp(#{tenderOpenDate},'DD/MM/YYYY')))),
+				(SELECT extract(epoch from (SELECT to_timestamp(#{tenderCloseDate},'DD/MM/YYYY')))),
+				(SELECT rec_id FROM resource WHERE user_id ilike #{tenderSPOC} AND is_active =true), 
+				(SELECT rec_id FROM department WHERE department_code = #{department} AND is_active = true),
+				#{tenderReferenceNumber},
+				(SELECT rec_id FROM tender_status WHERE tender_status_code = 'TS-1' AND is_active = true),
+				(SELECT rec_id FROM tender_category WHERE tender_category_code = #{tenderSubCategory} AND is_active = true)
+		);
+
+		
+	</insert>
+	
+		<insert id="insertTenderCommodity" parameterType="com.qts.icam.model.tender.Tender">
+		 <foreach item="commodity" collection="commodityList"  open="" close="" separator=";">
+	        	INSERT INTO tender_commodity(
+							            rec_id, obj_id, updated_by, updated_on, 
+							            date_of_creation,tender,inventory_master_catalogue,quantity)
+		    	VALUES (
+		    			uuid_generate_v4(),
+			   			#{objectId}, 
+			  			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			  			extract(epoch FROM now()),
+		          		extract(epoch FROM now()), 
+		          		(SELECT rec_id FROM tender WHERE serial_id = (SELECT MAX(serial_id) FROM tender WHERE is_active= true)),
+		          		(SELECT rec_id FROM inventory_master_catalogue WHERE commodity_code = #{commodity.commodityName} AND is_active = true),
+		          		#{commodity.quantity}
+		  		 )
+        	</foreach>
+      </insert>	
+      
+      	<insert id="submitTenderAttachmentDoc" parameterType="com.qts.icam.model.tender.Tender">
+		 <foreach item="attachment" collection="attachmentList"  open="" close="" separator=";">
+	        	INSERT INTO tender_document(
+							            rec_id, obj_id, updated_by, updated_on, 
+							            date_of_creation,tender_document_code ,
+  										tender ,
+ 										tender_document_path )
+		    	VALUES (
+		    			uuid_generate_v4(),
+			   			#{objectId}, 
+			  			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			  			extract(epoch FROM now()),
+		          		extract(epoch FROM now()), 
+		          		(SELECT 'ATTCH-' ||COALESCE((SELECT MAX(serial_id) FROM tender_document), 0 )+1),
+		          		(SELECT rec_id FROM tender WHERE serial_id = (SELECT MAX(serial_id) FROM tender WHERE is_active= true)),
+		          		#{attachment.storageRootPath}
+		  		 )
+        	</foreach>
+      </insert>	
+</mapper>

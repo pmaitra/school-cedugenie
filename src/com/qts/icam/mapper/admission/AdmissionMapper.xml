@@ -1,0 +1,2793 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.mapper.admission.AdmissionMapper">
+
+	<!-- ResultMap with id="resultMap_of_selectAll_AdmissionDrive" is referenced 
+		by the following selects with ids - id="selectAll_AdmissionDrive", id="selectCurrent_AdmissionDrive", 
+		id="selectCurrent_AdmissionDriveBySearch". -->
+	<resultMap id="resultMapOfAdmissionDrive" type="com.qts.icam.model.admission.AdmissionForm">
+		<id property="admissionFormYear" column="admission_drive_year" jdbcType="VARCHAR" />
+		<result property="admissionDriveName" column="admission_drive_name" jdbcType="VARCHAR" />
+		<result property="courseClass" column="standard_name" jdbcType="VARCHAR" />
+		<result property="courseName" column="course_name" jdbcType="VARCHAR" />
+		<result property="courseType" column="course_type_name" jdbcType="VARCHAR" />
+		<result property="admissionDriveStartDate" column="admission_drive_start_date" jdbcType="VARCHAR" />
+		<result property="admissionFormSubmissionLastDate" column="admission_drive_form_submission_date" jdbcType="VARCHAR" />
+		<result property="admissionDriveActualEndDate" column="admission_drive_actual_end_date" jdbcType="VARCHAR" />
+		<result property="admissionDriveExpectedEndDate" column="admission_drive_expected_end_date" jdbcType="VARCHAR" />
+		<result property="noOfOpenings" column="number_of_opening" jdbcType="INTEGER" />
+		<result property="noOfAdmittedStudents" column="total_number_admitted" jdbcType="INTEGER" />
+		<result property="status" column="status" jdbcType="VARCHAR" />
+		<result property="streamName" column="stream_name" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<!-- This select tag with id="selectCompletedAdmissionDrive" is being called 
+		by getAdmissionDriveList() method of AdmissionDriveDAO class -->
+	<select id="selectCompletedAdmissionDrive" resultMap="resultMapOfAdmissionDrive">
+			SELECT
+			ad.admission_drive_year,
+			ad.admission_drive_name,
+			st.standard_name,
+			co.course_name,
+			ct.course_type_name,
+			ad.admission_drive_start_date,
+			ad.admission_drive_form_submission_date,
+			ad.admission_drive_expected_end_date,
+			ad.admission_drive_actual_end_date,
+			ad.number_of_opening,
+			ad.total_number_admitted,
+			ads.admission_drive_status_name as status
+			
+		FROM
+			admission_drive ad 
+		JOIN 	course co ON (ad.course = co.rec_id AND ad.is_active=true)
+		JOIN 	course_type ct ON(co.course_type = ct.rec_id AND co.is_active=true AND ct.is_active=true)
+		JOIN 	standard st ON(co.standard = st.rec_id AND st.is_active     = true)
+		JOIN  	admission_drive_status ads ON (ad.status_of_admission = ads.rec_id AND ads.is_active=true)
+			
+		WHERE
+			ads.admission_drive_status_name IN ('DONE' )
+
+		ORDER BY
+			admission_drive_year desc;	
+	</select>
+
+	<!-- This select tag with id="selectCurrentAdmissionDrive" is being called 
+		by getAdmissionDriveList() method of AdmissionDriveDAO class -->
+	<select id="selectCurrentAdmissionDrive" resultMap="resultMapOfAdmissionDrive">
+	SELECT
+			ad.admission_drive_year,
+			ad.admission_drive_name,
+			st.standard_name,
+			co.course_name,
+			ct.course_type_name,
+			ad.admission_drive_start_date,
+			ad.admission_drive_form_submission_date,
+			ad.admission_drive_expected_end_date,
+			ad.admission_drive_actual_end_date,
+			ad.number_of_opening,
+			ad.total_number_admitted,
+			ads.admission_drive_status_name as status
+			
+		FROM
+			admission_drive ad 
+		JOIN 	course co ON (ad.course = co.rec_id AND ad.is_active=true)
+		JOIN 	course_type ct ON(co.course_type = ct.rec_id AND co.is_active=true AND ct.is_active=true)
+		JOIN 	standard st ON(co.standard = st.rec_id AND st.is_active     = true)
+		JOIN  	admission_drive_status ads ON (ad.status_of_admission = ads.rec_id AND ads.is_active=true)
+			
+		WHERE
+			ads.admission_drive_status_name IN ('ONGOING','PUBLISHED')
+	</select>
+
+	<select id="selectAdmissionOpeningStatus" parameterType="com.qts.icam.model.admission.AdmissionForm"
+		resultType="java.lang.Integer">
+		SELECT
+			count(*) as admissionOpeningStatus
+		FROM
+			admission_drive ad 
+		JOIN 	course co ON(ad.course = co.rec_id AND co.is_active=true)
+		JOIN 	course_type ct ON(co.course_type = ct.rec_id AND co.is_active= true AND ct.is_active=true) 
+		JOIN	standard st ON(co.standard = st.rec_id AND st.is_active = true)
+		JOIN	admission_drive_status ads ON(ad.status_of_admission = ads.rec_id AND ads.is_active=true)
+		WHERE
+			ads.admission_drive_status_name like 'ONGOING'
+		AND
+			co.course_code=#{courseCode};
+	</select>
+
+	<select id="selectNoOfOpeningForCourse" parameterType="com.qts.icam.model.admission.AdmissionForm" resultType="java.lang.Integer">
+		SELECT
+			co.number_of_openings as noOfOpeningForCourse
+		FROM
+			course co
+		WHERE
+			
+			co.course_code=#{courseCode}
+		AND
+			co.is_active = true
+		AND
+			co.number_of_openings IS NOT NULL;
+	</select>
+	
+	<select id="selectNoOfAdmittedForCourse" parameterType="com.qts.icam.model.admission.AdmissionForm" resultType="java.lang.Integer">
+
+			SELECT
+			sum(ad.total_number_admitted) as noOfAdmittedForCourse
+		FROM
+			admission_drive ad , course co, course_type ct, standard st,
+			admission_drive_status ads
+		WHERE
+			ad.course = co.rec_id AND ad.is_active=true
+		AND
+			co.course_type = ct.rec_id AND co.is_active=true AND ct.is_active=true
+		AND
+			co.standard = st.rec_id AND st.is_active=true
+		AND
+			ad.status_of_admission = ads.rec_id AND ads.is_active=true
+		AND
+			ads.admission_drive_status_name IN ('DONE','ONGOING')
+		AND
+			co.course_code=#{courseCode};
+	</select>
+
+	<!-- ResultMap with id="select_admission_ResultMap" is referenced by the 
+		selects with id - id="select_admission_form" -->
+	<resultMap id="select_admission_form_ResultMap" type="com.qts.icam.model.admission.AdmissionForm">
+		<id property="courseCode" column="course_code" jdbcType="VARCHAR" />
+		<result property="courseName" column="course_name" jdbcType="VARCHAR" />
+		<result property="courseClass" column="standard_name" jdbcType="VARCHAR" />
+		<result property="courseType" column="course_type_name" jdbcType="VARCHAR" />
+		<result property="noOfOpenings" column="number_of_openings" jdbcType="INTEGER" />
+		<result property="formFees" column="form_fees" jdbcType="DOUBLE" />
+		<result property="courseFees" column="course_fees" jdbcType="DOUBLE" />
+		<result property="admissionDriveName" column="admission_drive_name" jdbcType="VARCHAR" />
+		<result property="admissionDriveStartDate" column="admission_drive_start_date" jdbcType="VARCHAR" />
+		<result property="admissionDriveExpectedEndDate" column="admission_drive_expected_end_date" jdbcType="VARCHAR" />
+		<result property="admissionFormSubmissionLastDate" column="admission_drive_form_submission_date" jdbcType="VARCHAR" />
+		<result property="streamName" column="stream_name" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<!-- This select tag with id="select_admission_form" is being called by 
+		getAdmissionFormList() method of AdmissionDriveDAO class -->
+	<select id="select_admission_form" parameterType="java.util.Map" resultMap="select_admission_form_ResultMap">
+		SELECT
+			co.course_code,
+			co.course_name,
+			st.standard_name,
+			ct.course_type_name,
+			co.number_of_openings
+			
+		FROM
+			course co, standard st,course_type ct 
+		WHERE
+			co.is_active=true
+		AND
+			st.is_active=true
+		AND
+			ct.is_active=true
+		AND
+			co.publish_status=(select rec_id from status_flag where status_desc='PUBLISHED')
+		AND
+			co.standard=st.rec_id
+		AND
+			co.course_type=ct.rec_id
+		AND
+			co.admission_mode = 'OFFLINE';
+	</select>
+
+	<select id="getCourseCodeForDrive" parameterType="com.qts.icam.model.admission.AdmissionForm" resultType="java.lang.String">
+		SELECT
+			co.course_code as courseCode
+		FROM
+			course co
+		JOIN
+			admission_drive ad ON (ad.course = co.rec_id) AND (co.is_active = true)
+		WHERE
+			ad.admission_drive_name=#{admissionDriveName};
+	</select>
+
+	<select id="selectFromFees" parameterType="com.qts.icam.model.admission.AdmissionForm"
+		resultType="com.qts.icam.model.admission.AdmissionForm">
+		SELECT
+			fees_amount as formFees
+		FROM
+			"Fees"
+		WHERE
+			fees_name='FORM FEES'
+		AND
+			active=(select rec_id from "Status_Flag" where status_desc='ACTIVE')
+		AND
+			 class=(SELECT
+			 			 rec_id
+					FROM 
+						"Class"
+					WHERE 
+						class_name=#{courseClass}
+					AND 
+						active=(SELECT rec_id FROM "Status_Flag" WHERE status_sym='A')
+					)
+
+		AND
+			stream=(SELECT 
+						rec_id 
+					FROM 
+						"Stream" 
+					WHERE 
+						active=(SELECT rec_id FROM "Status_Flag" WHERE status_sym='A')
+					AND
+						class=(SELECT rec_id FROM "Class" WHERE class_name=#{courseClass} AND
+							   active=(SELECT rec_id FROM "Status_Flag" WHERE status_sym='A'))
+					AND 
+						stream_name=#{streamName}
+					)
+		AND
+			course_name = #{courseName}
+		AND
+			course_type=(SELECT ct.rec_id FROM "Course_Type" ct,"Status_Flag" sf WHERE
+						ct.active=sf.rec_id AND course_type_name=#{courseType} AND
+						sf.status_sym='A');
+	</select>
+
+	<select id="selectCourseFees" parameterType="com.qts.icam.model.admission.AdmissionForm" resultType="com.qts.icam.model.admission.AdmissionForm">
+		SELECT
+			fees_amount as courseFees
+		FROM
+			"Fees"
+		WHERE
+			fees_name='COURSE FEES'
+		AND
+			active=(select rec_id from "Status_Flag" where status_desc='ACTIVE')
+		AND
+			class=(SELECT rec_id FROM "Class" WHERE class_name=#{courseClass} AND
+					active=(SELECT rec_id FROM "Status_Flag" WHERE status_sym='A'))
+
+		AND
+			stream=(SELECT rec_id FROM "Stream" WHERE active=(SELECT rec_id FROM "Status_Flag"
+															  WHERE status_sym='A')
+					AND
+						class=(SELECT rec_id FROM "Class" WHERE class_name=#{courseClass} AND
+								active=(SELECT rec_id FROM "Status_Flag" WHERE status_sym='A'))
+					AND 
+						stream_name=#{streamName})
+		AND
+			course_name= #{courseName}
+		AND
+			course_type=(SELECT ct.rec_id FROM "Course_Type" ct,"Status_Flag" sf WHERE
+						 ct.active=sf.rec_id AND course_type_name=#{courseType} AND
+						 sf.status_sym='A');
+	</select>
+
+	<resultMap id="getAdmissionForm_ResultMap" type="com.qts.icam.model.admission.AdmissionForm">
+		<id property="courseCode" column="course_code" jdbcType="VARCHAR" />
+		<result property="admissionFormYear" column="academic_year_name" jdbcType="VARCHAR" />
+		<result property="courseName" column="course_name" jdbcType="VARCHAR" />
+		<result property="courseClass" column="standard_name" jdbcType="VARCHAR" />
+		<result property="formFees" column="form_fees" jdbcType="DOUBLE" />
+		<result property="courseFees" column="course_fees" jdbcType="DOUBLE" />
+	</resultMap>
+	<select id="getAdmissionForm" parameterType="java.lang.String" resultMap="getAdmissionForm_ResultMap">
+			
+		SELECT
+			st.standard_name,
+			co.course_code,
+			co.course_name
+		FROM
+			course co, standard st, academic_year ay
+		WHERE
+			co.standard = st.rec_id AND st.is_active = true
+		AND
+			co.course_code=#{courseCode} AND co.is_active = true
+		AND 	
+			ay.year_status = (select rec_id from status_flag where status_desc= 'CURRENT');
+	</select>
+
+	<!-- ResultMap with id="lastFormCodeResultMap" is referenced by the selects 
+		with id - id="lastFormCode" -->
+	<resultMap id="lastFormCodeResultMap" type="com.qts.icam.model.admission.AdmissionForm">
+		<id property="admissionDriveCode" column="print_admission_form_code" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<!-- This select tag with id="lastFormCode" is being called by ?() method 
+		of AdmissionDriveDAO class for printing admission Form -->
+
+	<select id="lastFormCode" parameterType="com.qts.icam.model.admission.AdmissionForm" resultMap="lastFormCodeResultMap">
+		SELECT
+			print_admission_form_code
+		FROM
+			print_admission_form p
+		WHERE
+			p.print_admission_form_name=#{admissionDriveName}
+		AND
+			p.admission_year=#{admissionFormYear}
+		AND
+			p.print_admission_form_class=#{courseClass}
+		AND
+			<!-- p.status IN(select rec_id from status_flag where status_desc !='INACTIVE') -->
+			p.is_active = false
+		AND
+			sequence_number = (SELECT
+									max(sequence_number)
+							   FROM
+									print_admission_form p
+							   WHERE
+									p.print_admission_form_name=#{admissionDriveName}
+							   AND
+									p.admission_year=#{admissionFormYear}
+							   AND
+									p.print_admission_form_class=#{courseClass}
+							   AND
+									<!-- p.status IN(select rec_id from "Status_Flag" where status_desc !='INACTIVE') -->
+									p.is_active = true
+								);
+	</select>
+
+	<!-- This insert tag with id="insertIntoAdmissionForm" is being called by 
+		insertAdmissionDrive() method of AdmissionDriveDAO class -->
+
+	<insert id="insertIntoAdmissionDrive" parameterType="com.qts.icam.model.admission.AdmissionForm" statementType="CALLABLE">
+		select insert_into_admission_drive(
+										#{admissionFormObjectID, mode=IN, jdbcType=VARCHAR},
+										#{admissionDriveCode, mode=IN, jdbcType=VARCHAR},
+										#{admissionDriveName, mode=IN, jdbcType=VARCHAR},
+										#{admissionFormDescription, mode=IN, jdbcType=VARCHAR},
+										#{admissionDriveStartDate, mode=IN, jdbcType=VARCHAR},
+										#{admissionDriveExpectedEndDate, mode=IN, jdbcType=VARCHAR},
+										#{admissionFormYear, mode=IN, jdbcType=VARCHAR},
+										#{courseCode, mode=IN, jdbcType=VARCHAR},
+										#{admissionFormSubmissionLastDate, mode=IN, jdbcType=VARCHAR},
+										#{courseClass, mode=IN, jdbcType=VARCHAR},
+										#{customizedAdmissionProcess.customizedAdmissionProcessCode, mode=IN, jdbcType=VARCHAR},
+										#{formFees, mode=IN, jdbcType=DOUBLE},
+										#{updatedBy, mode=IN, jdbcType=VARCHAR}
+									  )
+	</insert>
+
+	<!-- This select tag with id="getActiveListFromAdmissionDrive" is being 
+		called by insertAdmissionDrive() method of AdmissionDriveDAO class -->
+	<resultMap id="select_admission_ResultMap2" type="com.qts.icam.model.admission.AdmissionForm">
+		<id property="courseCode" column="course_code" jdbcType="VARCHAR" />
+		<result property="admissionFormYear" column="admission_drive_year" jdbcType="VARCHAR" />
+		<result property="courseName" column="course_name" jdbcType="VARCHAR" />
+		<result property="courseClass" column="standard_name" jdbcType="VARCHAR" />
+		<result property="courseType" column="course_type_name" jdbcType="VARCHAR" />
+		<result property="noOfOpenings" column="number_of_opening" jdbcType="INTEGER" />
+		<result property="formFees" column="form_fees" jdbcType="DOUBLE" />
+		<result property="courseFees" column="course_fees" jdbcType="DOUBLE" />
+		<result property="admissionDriveName" column="admission_drive_name" jdbcType="VARCHAR" />
+		<result property="admissionDriveStartDate" column="admission_drive_start_date" jdbcType="VARCHAR" />
+		<result property="admissionDriveExpectedEndDate" column="admission_drive_expected_end_date" jdbcType="VARCHAR" />
+		<result property="admissionFormSubmissionLastDate" column="admission_drive_form_submission_date" jdbcType="VARCHAR" />
+		<result property="status" column="status" jdbcType="VARCHAR" />
+		<result property="streamName" column="stream_name" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getActiveListFromAdmissionDrive" resultMap="select_admission_ResultMap2">
+			SELECT
+			ad.admission_drive_year,
+			st.standard_name,
+			ad.admission_drive_name,
+			co.course_name,
+			ct.course_type_name,
+			to_char((SELECT to_timestamp(ad.admission_drive_start_date)), 'DD/MM/YYYY') as admission_drive_start_date,
+			to_char((SELECT to_timestamp(ad.admission_drive_expected_end_date)), 'DD/MM/YYYY') as admission_drive_expected_end_date,
+			to_char((SELECT to_timestamp(ad.admission_drive_form_submission_date)), 'DD/MM/YYYY') as admission_drive_form_submission_date,
+			ad.number_of_opening,
+			ads.admission_drive_status_name as status
+		FROM
+			admission_drive ad , course co, course_type ct, standard st,
+			admission_drive_status ads
+		WHERE
+			ad.course = co.rec_id AND ad.is_active = true
+		AND
+			co.course_type = ct.rec_id AND co.is_active = true AND ct.is_active = true
+		AND
+			co.standard = st.rec_id AND st.is_active = true
+		AND
+			ad.status_of_admission = ads.rec_id AND ads.is_active = true
+		AND
+			ads.admission_drive_status_name IN ('ONGOING','PUBLISHED');
+		
+	</select>
+
+	<!-- This insert tag with id="insertFormId" is being called by insertAdmissionFormDAO() 
+		method of AdmissionDriveDAO class -->
+	<insert id="insertFormId" parameterType="java.util.List" statementType="CALLABLE">
+		<foreach collection="list" item="admissionForm" open="" close=""
+			separator=";">
+			select insert_into_print_admission_form_table(
+			#{admissionForm.admissionFormObjectID, mode=IN, jdbcType=VARCHAR},
+			#{admissionForm.admissionDriveCode, mode=IN, jdbcType=VARCHAR},
+			#{admissionForm.admissionDriveName, mode=IN, jdbcType=VARCHAR},
+			#{admissionForm.admissionFormDescription, mode=IN, jdbcType=VARCHAR},
+			#{admissionForm.courseClass, mode=IN, jdbcType=VARCHAR},
+			#{admissionForm.admissionFormYear, mode=IN, jdbcType=VARCHAR},
+			#{admissionForm.updatedBy, mode=IN, jdbcType=VARCHAR}
+			)
+		</foreach>
+	</insert>
+
+	<select id="selectFormDetails" parameterType="com.qts.icam.model.admission.AdmissionForm" resultType="com.qts.icam.model.admission.AdmissionForm">
+		SELECT
+			fd.total_no_of_form as noOfOpenings,
+			fd.no_of_form_sold as noOfFormSold,
+			fd.total_price as totalPrice,
+			f.fees_amount as formFees
+		FROM
+			form_details fd
+		JOIN 
+			fees f ON (fd.fees = f.rec_id) AND (f.is_active = true)
+		JOIN 
+			academic_year ay ON (ay.rec_id = academic_year) AND (ay.is_active = true)
+		JOIN 
+			course c ON (c.rec_id = f.course) AND (c.is_active = true)
+		JOIN 
+			admission_drive ad ON (ad.rec_id = fd.drive_name) AND (ad.is_active = true) AND (f.admission_drive = ad.rec_id)
+		WHERE
+			ay.academic_year_name =#{admissionFormYear}
+		AND 
+			ay.year_status=(SELECT rec_id FROM status_flag WHERE status_sym='C')
+		AND 
+			ay.is_active = true
+		AND
+			c.course_code=#{courseClass}
+		AND
+			admission_drive_name=#{admissionDriveName};
+	</select>
+
+	<update id="updateFormDetails" parameterType="com.qts.icam.model.admission.AdmissionForm">
+	UPDATE
+			form_details
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy}),
+			updated_on=(SELECT extract(epoch FROM now())),
+			total_no_of_form=total_no_of_form + #{noOfOpenings},
+			no_of_form_sold=no_of_form_sold+#{noOfFormSold},
+			total_price=#{totalPrice}
+		WHERE
+			drive_name=(SELECT 
+							rec_id 
+						FROM
+							admission_drive 
+						WHERE 
+							admission_drive_name =#{admissionDriveName}
+						AND 
+							is_active = true
+						)
+		AND
+			is_active = true;
+
+	</update>
+
+	<insert id="insertFormDetails" parameterType="com.qts.icam.model.admission.AdmissionForm">
+		INSERT INTO
+				form_details(
+							rec_id,
+							obj_id,
+							updated_by,
+							updated_on,
+							date_of_creation,
+							form_details_code,
+							form_details_name,
+							form_details_desc,
+							drive_name,
+							total_no_of_form,
+							fees
+							)
+				 VALUES (
+						uuid_generate_v4(),
+						#{admissionFormObjectId},
+						(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+						(SELECT extract(epoch FROM now())),
+						(SELECT extract(epoch FROM now())),
+						(SELECT ('FormDetailsCode' ||(select COALESCE((SELECT MAX(form_details_no) FROM form_details), 0 )+1))),
+						(SELECT ('FormDetailsCode' ||(select COALESCE((SELECT MAX(form_details_no) FROM form_details), 0 )+1))),
+						(SELECT ('FormDetailsCode' ||(select COALESCE((SELECT MAX(form_details_no) FROM form_details), 0 )+1))),
+						(SELECT rec_id FROM admission_drive WHERE admission_drive_name =#{admissionDriveName} AND is_active = true),
+						#{noOfOpenings},
+						(SELECT f.rec_id
+									FROM
+									fees f
+									JOIN course co ON (co.form_fees = f.rec_id) AND (co.is_active = true)
+									JOIN admission_drive ad ON (co.rec_id = ad.course)
+									WHERE
+									ad.admission_drive_name=#{admissionDriveName})
+						);
+	</insert>
+
+	<resultMap id="getAdmissionOnProcessResultMap" type="com.qts.icam.model.admission.AdmissionForm">
+		<id property="courseName" column="course_name" jdbcType="VARCHAR" />
+		<result property="courseClass" column="standard_name" jdbcType="VARCHAR" />
+		<result property="courseType" column="course_type_name" jdbcType="VARCHAR" />
+		<result property="courseDuration" column="course_duration" jdbcType="INTEGER" />
+		<result property="admissionFormYear" column="admission_drive_year" jdbcType="VARCHAR" />
+		<result property="admissionDriveName" column="admission_drive_name" jdbcType="VARCHAR" />
+		<result property="noOfOpenings" column="number_of_opening" jdbcType="INTEGER" />
+		<result property="streamName" column="stream_name" jdbcType="INTEGER" />
+	</resultMap>
+	<select id="getAdmissionOnProcessList" parameterType="java.util.Map" resultMap="getAdmissionOnProcessResultMap">
+		SELECT
+			co.course_name,
+			st.standard_name,
+			ct.course_type_name,
+			co.course_duration,
+			ad.admission_drive_year,
+			ad.admission_drive_name,
+			ad.number_of_opening
+		FROM
+			admission_drive ad, course co, course_type ct, standard st
+		WHERE
+			ad.course = co.rec_id
+		AND
+			co.course_type = ct.rec_id
+		AND
+			co.standard = st.rec_id
+		AND
+			ad.status_of_admission IN (select rec_id from admission_drive_status where admission_drive_status_name like 'ONGOING')
+		AND
+			ad.is_active = true
+		AND
+			co.is_active = true
+		AND
+			ct.is_active = true
+		AND
+			st.is_active = true;
+	</select>
+
+	<resultMap id="resultMapOfgetAdmittedDriveList" type="com.qts.icam.model.admission.AdmissionForm">
+		<id property="admissionFormYear" column="admission_drive_year" jdbcType="VARCHAR" />
+		<result property="admissionDriveName" column="admission_drive_name" jdbcType="VARCHAR" />
+		<result property="courseClass" column="standard_name" jdbcType="VARCHAR" />
+		<result property="courseName" column="course_name" jdbcType="VARCHAR" />
+		<result property="courseType" column="course_type_name" jdbcType="VARCHAR" />
+		<result property="admissionDriveStartDate" column="admission_drive_start_date" jdbcType="VARCHAR" />
+		<result property="admissionFormSubmissionLastDate" column="admission_drive_form_submission_date" jdbcType="VARCHAR" />
+		<result property="admissionDriveActualEndDate" column="admission_drive_actual_end_date" jdbcType="VARCHAR" />
+		<result property="admissionDriveExpectedEndDate" column="admission_drive_expected_end_date" jdbcType="VARCHAR" />
+		<result property="noOfOpenings" column="number_of_opening" jdbcType="INTEGER" />
+		<result property="noOfAdmittedStudents" column="total_number_admitted" jdbcType="INTEGER" />
+		<result property="status" column="status" jdbcType="VARCHAR" />
+		
+	</resultMap>
+
+	<!-- This select tag with id="selectCompletedAdmissionDrive" is being called 
+		by getAdmissionDriveList() method of AdmissionDriveDAO class -->
+	<select id="getAdmittedDriveList" resultMap="resultMapOfgetAdmittedDriveList">
+	SELECT
+			ad.admission_drive_year,
+			ad.admission_drive_name,
+			st.standard_name,
+			co.course_name,
+			ct.course_type_name,
+			ad.admission_drive_start_date,
+			ad.admission_drive_form_submission_date,
+			ad.admission_drive_expected_end_date,
+			ad.admission_drive_actual_end_date,
+			ad.number_of_opening,
+			ad.total_number_admitted,
+			ads.admission_drive_status_name as status
+		FROM
+			admission_drive ad , course co, course_type ct, standard st,
+			admission_drive_status ads
+		WHERE
+			ad.course = co.rec_id
+		AND
+			co.course_type = ct.rec_id
+		AND
+			co.standard = st.rec_id
+		AND
+			ad.status_of_admission = ads.rec_id
+		AND
+			ads.admission_drive_status_name IN ('DONE' )
+		AND
+			co.is_active = true
+		AND
+			ad.is_active =  true
+		AND
+			ads.is_active = true
+		AND
+			ct.is_active = true
+		AND
+			st.is_active = true
+		ORDER BY
+			admission_drive_year desc;
+		
+	</select>
+
+	 <select id="selectCustomizedAdmissionProcessForAdmissionDrive" resultType="com.qts.icam.model.admission.CustomizedAdmissionProcess"  parameterType="com.qts.icam.model.admission.AdmissionProcess">
+		SELECT
+			cap.form_submission as formSubmission,
+			cap.schedule_interview as scheduleInterview,
+			cap.interview_result as interviewResult,
+			cap.merit_list as meritList,
+			cap.payment as payment
+		FROM
+			admission_drive ad, 
+			customized_admission_process cap
+		WHERE
+			cap.rec_id = ad.customized_admission_process
+		AND
+			cap.is_active = true
+		AND
+			ad.admission_drive_name = #{formName};
+		
+    </select>
+    
+	<parameterMap id="getPreviousStatus" type="com.qts.icam.model.admission.AdmissionProcess">
+		<parameter property="courseClass" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="admissionYear" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="formName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="searchStatus" jdbcType="VARCHAR" mode="OUT" />
+	</parameterMap>
+
+	 <select id="selectCurrentAdmissionOnProcessStatusForAllProcess" parameterMap="getPreviousStatus" statementType="CALLABLE">
+		{? = call fetch_form_status_for_all_process(?,?,?)}
+	</select>
+	<select id="selectCurrentAdmissionOnProcessStatusFor_FS_ML_P" parameterMap="getPreviousStatus" statementType="CALLABLE">
+		{? = call fetch_form_status_for_FS_ML_P(?,?,?)}
+	</select>
+	 
+
+	<resultMap id="selectClassListResultMap" type="com.qts.icam.model.admission.AdmissionProcess"> 
+		<id property="courseClass" column="print_admission_form_class" />
+	</resultMap>
+	<select id="selectClassList" resultMap="selectClassListResultMap">
+		SELECT
+			DISTINCT(print_admission_form_class)
+		FROM
+			print_admission_form
+		WHERE
+			print_admission_form_class IS NOT NULL;
+		
+	</select>
+
+
+	<resultMap id="openGenerateFormWithClassResultMap" type="com.qts.icam.model.admission.AdmissionProcess">
+		<id property="courseClass" column="print_admission_form_class" />
+		<result property="formId" column="print_admission_form_code" />
+		<result property="admissionYear" column="admission_year" />
+		<result property="formName" column="print_admission_form_name" />
+	</resultMap>
+	<select id="getGenerateFormWithClass" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="openGenerateFormWithClassResultMap">
+		SELECT
+			p.print_admission_form_class,
+			p.print_admission_form_code,
+			p.print_admission_form_name,
+			p.admission_year
+		FROM
+			print_admission_form p
+		WHERE
+			p.print_admission_form_class=#{courseClass}
+		AND
+			p.print_admission_form_name=#{formName}
+		AND
+			p.admission_year=#{admissionYear}
+		AND
+			p.status=(select rec_id from status_flag where status_desc='GENERATED')
+		AND
+			p.phase_submitted is null
+		ORDER BY 
+			print_admission_form_code;
+		
+	</select>
+
+	<update id="ScheduledForm_updateToInactive" parameterType="com.qts.icam.model.admission.AdmissionProcess">
+	UPDATE 
+			print_admission_form
+		SET
+			<!-- status = (select rec_id from status_flag where status_desc = 'INACTIVE') -->
+			is_active = 'false'
+		WHERE
+			print_admission_form_class=#{courseClass}
+		AND
+			print_admission_form_name=#{formName}
+		AND
+			admission_year=#{admissionYear}
+		AND
+			status=(select rec_id from status_flag where status_desc = 'SUBMITTED');
+	
+	</update>
+
+	<resultMap id="getScheduledFormListResultMap" type="com.qts.icam.model.admission.AdmissionProcess">
+		<id property="courseClass" column="print_admission_form_class" />
+		<result property="formId" column="print_admission_form_code" />
+		<result property="formName" column="print_admission_form_name" />
+		<result property="admissionYear" column="admission_year" />
+		<result property="candidateFirstName" column="first_name" />
+		<result property="candidateMiddleName" column="middle_name" />
+		<result property="candidateLastName" column="last_name" />
+		<result property="formStatus" column="status" />
+	</resultMap>
+	<select id="getScheduledFormList" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="getScheduledFormListResultMap">
+		SELECT
+			p.print_admission_form_class,
+			p.print_admission_form_code,
+			p.print_admission_form_name,
+			p.first_name,
+			p.middle_name,
+			p.last_name,
+			p.admission_year,
+			<!-- (select status_desc from status_flag where status_desc='SCHEDULED')as status -->
+			p.phase_scheduled as status
+		FROM
+			print_admission_form p
+		WHERE
+			p.print_admission_form_class=#{courseClass}
+		AND
+			p.print_admission_form_name=#{formName}
+		AND
+			p.admission_year=#{admissionYear}
+		AND
+			p.is_active = true
+		AND
+			<!-- p.status=(select rec_id from status_flag where status_desc='SCHEDULED') -->
+			p.phase_scheduled = 'SCHEDULED'
+		AND
+			p.phase_selected_review_notselected is null
+		ORDER BY
+			print_admission_form_code;
+		
+		
+	</select>
+
+
+	<select id="goBackFromReview" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="getScheduledFormListResultMap">
+		SELECT
+			p.print_admission_form_class,
+			p.print_admission_form_code,
+			p.print_admission_form_name,
+			p.admission_year,
+			(select status_desc from status_flag where status_desc='SCHEDULED')as status
+		FROM
+			print_admission_form p
+		WHERE
+			p.print_admission_form_class=#{courseClass}
+		AND
+			p.print_admission_form_name=#{formName}
+		AND
+			p.admission_year=#{admissionYear}
+		AND
+			p.is_active = true
+		AND
+			p.status=(select rec_id from status_flag where status_desc='SCHEDULED')
+		ORDER BY
+			print_admission_form_code;
+		
+		
+	</select>
+
+
+
+
+	<resultMap id="getSubmittedListResultMap" type="com.qts.icam.model.admission.AdmissionProcess">
+		<id property="courseClass" column="print_admission_form_class" />
+		<result property="formId" column="print_admission_form_code" />
+		<result property="formName" column="print_admission_form_name" />
+		<result property="candidateFirstName" column="first_name" />
+		<result property="candidateMiddleName" column="middle_name" />
+		<result property="candidateLastName" column="last_name" />
+		<result property="formSubmissionDate" column="print_admission_form_date_of_submission" />
+		<result property="formStatus" column="status" />
+		<result property="admissionYear" column="admission_year" />
+	</resultMap>
+	<select id="getSubmittedFormList" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="getSubmittedListResultMap">
+		SELECT 
+			p.print_admission_form_class,
+			p.print_admission_form_code,
+			p.print_admission_form_name,
+			p.first_name,
+			p.middle_name,
+			p.last_name,
+			to_char((SELECT to_timestamp(p.print_admission_form_date_of_submission)), 'DD/MM/YYYY') as print_admission_form_date_of_submission,
+			p.phase_submitted as status,
+			p.admission_year
+			
+		FROM
+			print_admission_form p
+		WHERE
+			p.print_admission_form_class=#{courseClass}
+		AND
+			p.print_admission_form_name=#{formName}
+		AND
+			p.admission_year=#{admissionYear}
+		AND
+			p.is_active = true
+		AND
+			p.phase_submitted = 'SUBMITTED'
+		ORDER BY
+			print_admission_form_code;
+	</select>
+
+	<resultMap id="formInformationForEditingResultMap" type="com.qts.icam.model.admission.AdmissionProcess">
+		<id property="formId" column="print_admission_form_code" />
+		<result property="courseClass" column="print_admission_form_class" />
+		<result property="candidateFirstName" column="first_name" />
+		<result property="candidateMiddleName" column="middle_name" />
+		<result property="candidateLastName" column="last_name" />
+		<result property="formSubmissionDate" column="print_admission_form_date_of_submission" />
+		<result property="candidateEmail" column="email_address" />
+		<result property="candidateContactNo" column="contact_number" />
+		<result property="admissionYear" column="admission_year" />
+		<result property="formName" column="print_admission_form_name" />
+		<result property="category" column="social_category_code" />
+		<result property="gender" column="gender_code" />
+		<result property="dateOfBirth" column="dob" />
+	</resultMap>
+	<select id="formInformationForEditing" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="formInformationForEditingResultMap">
+		SELECT
+			p.print_admission_form_code,
+			p.print_admission_form_class,
+			p.first_name,
+			p.middle_name,
+			p.last_name,
+			p.print_admission_form_date_of_submission,
+			p.email_address,
+			p.contact_number,
+			p.admission_year,
+			p.print_admission_form_name,
+			sc.social_category_code,
+			<!-- g.gender_code, -->
+			to_char((SELECT to_timestamp((p.date_of_birth))), 'DD/MM/YYYY')  as dob
+		FROM
+			print_admission_form p, social_category sc
+		WHERE
+			sc.rec_id = p.social_category
+		<!-- AND
+			g.rec_id = p.gender -->
+		AND
+			p.print_admission_form_code=#{formId}
+		AND
+			p.print_admission_form_name=#{formName}
+		AND
+			p.admission_year=#{admissionYear}
+		AND
+			p.print_admission_form_class=#{courseClass};
+	</select>
+
+
+	<!-- This insert tag with id="insert_upload_list" is being called by insertAdmissionFormService() 
+		method of AdmissionDriveDAO class -->
+	<insert id="insert_upload_list" parameterType="java.util.List" statementType="CALLABLE">
+		<foreach collection="list" item="AdmissionProcess" open="" close="" separator=";">
+			select generalUpload(
+				#{AdmissionProcess.storageRootPath, mode=IN, jdbcType=VARCHAR},
+				#{AdmissionProcess.folderObjectId, mode=IN, jdbcType=VARCHAR},
+				#{AdmissionProcess.folderCode, mode=IN, jdbcType=VARCHAR},
+				#{AdmissionProcess.folderName, mode=IN, jdbcType=VARCHAR},
+				#{AdmissionProcess.folderDescription, mode=IN jdbcType=VARCHAR},
+				#{AdmissionProcess.attachmentObjectId, mode=IN, jdbcType=VARCHAR},
+				#{AdmissionProcess.attachmentCode, mode=IN, jdbcType=VARCHAR},
+				#{AdmissionProcess.attachmentName, mode=IN, jdbcType=VARCHAR},
+				#{AdmissionProcess.attachmentDescription, mode=IN, jdbcType=VARCHAR},
+				#{AdmissionProcess.attachmentSize, mode=IN, jdbcType=INTEGER},
+				#{AdmissionProcess.attachmentFormat, mode=IN, jdbcType=VARCHAR},
+				#{AdmissionProcess.userId, mode=IN, jdbcType=VARCHAR}
+			)
+		</foreach>
+	</insert>
+
+	<!-- This insert tag with id="insert_general_info" is being called by insertAdmissionFormService() 
+		method of AdmissionDriveDAO class -->
+	<insert id="insert_candidate_info" parameterType="com.qts.icam.model.admission.AdmissionProcess" statementType="CALLABLE">
+		select insert_into_submission_form_candidates_fields(
+				#{candidateLastName, mode=IN, jdbcType=VARCHAR},
+				#{candidateFirstName, mode=IN, jdbcType=VARCHAR},
+				#{candidateMiddleName, mode=IN, jdbcType=VARCHAR},
+				#{candidateEmail, mode=IN, jdbcType=VARCHAR},
+				#{candidateContactNo, mode=IN, jdbcType=VARCHAR},
+				#{formId, mode=IN, jdbcType=VARCHAR},
+				#{formSubmissionDate, mode=IN, jdbcType=VARCHAR},
+				#{courseClass, mode=IN, jdbcType=VARCHAR},
+				#{formName, mode=IN, jdbcType=VARCHAR},
+				#{admissionYear, mode=IN, jdbcType=VARCHAR},
+				#{gender, mode=IN, jdbcType=VARCHAR},
+				#{dateOfBirth, mode=IN, jdbcType=VARCHAR},
+				#{category, mode=IN, jdbcType=VARCHAR},
+				#{userId, mode=IN, jdbcType=VARCHAR}
+		)
+
+	</insert>
+
+	<!-- ResultMap with id="selectFormID_ResultMap" is referenced by the select 
+		with id - id="selectFormID" -->
+	<resultMap id="getFullNameResultMap" type="com.qts.icam.model.admission.AdmissionProcess">
+		<id property="candidateFirstName" column="first_name" />
+		<result property="candidateMiddleName" column="middle_name" />
+		<result property="candidateLastName" column="last_name" />
+	</resultMap>
+
+	<!-- This select tag with id="selectFormID" is being called by getformIdList() 
+		method of AdmissionDriveDAO class -->
+	<select id="getFullName" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="getFullNameResultMap">
+		SELECT
+			first_name, middle_name, last_name
+		FROM
+			print_admission_form p
+		WHERE
+			p.status=(select rec_id from status_flag where status_desc='SCHEDULED')
+		AND
+			p.print_admission_form_code=#{formId}
+		AND
+			p.print_admission_form_class=#{courseClass}
+		AND
+			p.print_admission_form_name=#{formName}
+		AND
+			p.admission_year=#{admissionYear}
+	</select>
+
+	<update id="update_candidate_info" parameterType="com.qts.icam.model.admission.AdmissionProcess" statementType="CALLABLE">
+		select update_candidate_info(
+			#{formId, mode=IN, jdbcType=VARCHAR},
+			#{formSubmissionDate, mode=IN, jdbcType=VARCHAR},
+			#{candidateLastName, mode=IN, jdbcType=VARCHAR},
+			#{candidateFirstName, mode=IN, jdbcType=VARCHAR},
+			#{candidateMiddleName, mode=IN, jdbcType=VARCHAR},
+			#{candidateEmail, mode=IN, jdbcType=VARCHAR},
+			#{candidateContactNo, mode=IN, jdbcType=VARCHAR},
+			#{courseClass, mode=IN, jdbcType=VARCHAR},
+			#{formName, mode=IN, jdbcType=VARCHAR},
+			#{admissionYear, mode=IN, jdbcType=VARCHAR},
+			#{gender, mode=IN, jdbcType=VARCHAR},
+			#{dateOfBirth, mode=IN, jdbcType=VARCHAR},
+			#{category, mode=IN, jdbcType=VARCHAR}
+		)
+	</update>
+
+	<!-- This insert tag with id="insert_interview_Details" is being called 
+		by insertInterviewScheduleDao() method of AdmissionDriveDAO class -->
+	<insert id="insert_interview_Details" parameterType="com.qts.icam.model.admission.AdmissionProcess" statementType="CALLABLE">
+		select insert_into_submission_form_InterviewDetails(
+			#{formId, mode=IN, jdbcType=VARCHAR},
+			#{courseClass, mode=IN, jdbcType=VARCHAR},
+			#{interviewDateAndTime, mode=IN, jdbcType=VARCHAR},
+			#{examinerName, mode=IN, jdbcType=VARCHAR},
+			#{reviewerName, mode=IN, jdbcType=VARCHAR},
+			#{roomNo, mode=IN jdbcType=VARCHAR},
+			#{venue, mode=IN, jdbcType=VARCHAR},
+			#{formName, mode=IN, jdbcType=VARCHAR},
+			#{admissionYear, mode=IN, jdbcType=VARCHAR},
+			#{updatedBy, mode=IN, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<resultMap id="getFormIdListResultMap" type="com.qts.icam.model.admission.Form">
+		<id property="strFormId" column="print_admission_form_code" />
+	</resultMap>
+	<select id="getFormIdList" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="getFormIdListResultMap">
+<!-- 		SELECT -->
+<!-- 			p.print_admission_form_code, -->
+<!-- 			p.print_admission_form_class, -->
+<!-- 			p.admission_year, -->
+<!-- 			p.print_admission_form_name -->
+<!-- 		FROM -->
+<!-- 			print_admission_form p -->
+<!-- 		WHERE -->
+<!-- 			p.phase_submitted = 'SUBMITTED'--> 
+<!-- 			 p.status IN(SELECT rec_id -->
+<!-- 						FROM status_flag -->
+<!-- 						WHERE status_desc='SUBMITTED'or status_desc='NOTSELECTED')  -->
+			
+<!-- 		AND -->
+<!-- 			p.print_admission_form_class=#{courseClass} -->
+<!-- 		AND -->
+<!-- 			p.print_admission_form_name=#{formName} -->
+<!-- 		AND -->
+<!-- 			p.admission_year=#{admissionYear} -->
+<!-- 		ORDER BY -->
+<!-- 			p.print_admission_form_code; -->
+			SELECT
+			p.print_admission_form_code,
+			p.print_admission_form_class,
+			p.admission_year,
+			p.print_admission_form_name
+		FROM
+			print_admission_form p
+		WHERE
+			 p.phase_submitted = 'SUBMITTED'
+		AND
+			 p.phase_scheduled is null	
+		AND
+			p.print_admission_form_class=#{courseClass}
+		AND
+			p.print_admission_form_name=#{formName}
+		AND
+			p.admission_year=#{admissionYear}
+		ORDER BY
+			p.print_admission_form_code;
+	</select>
+
+	<update id="deleteNotSubmittedForms" parameterType="com.qts.icam.model.admission.AdmissionProcess">
+		DELETE FROM
+			print_admission_form
+		WHERE
+			print_admission_form_class=#{courseClass}
+		AND
+			print_admission_form_name=#{formName}
+		AND
+			admission_year=#{admissionYear}
+		AND
+			status = (select rec_id from status_flag where status_desc='GENERATED');
+	</update>
+
+	<resultMap id="getResourceListResultMap" type="com.qts.icam.model.common.Resource">
+		<id property="userId" column="user_id" />
+	</resultMap>
+	<select id="getResourceList" resultMap="getResourceListResultMap">
+		SELECT
+			user_id
+		FROM
+			resource r,employee_details ed
+		WHERE
+			resource_type=(select rec_id from resource_type where resource_type_name='TEACHING STAFF')
+		AND
+			r.is_active = true
+		AND
+			ed.resource = r.rec_id
+		AND
+			ed.is_active = true;
+	</select>
+
+
+	<resultMap id="getInterviewDetailsResultMap" type="com.qts.icam.model.admission.AdmissionProcess">
+		<id property="formId" column="print_admission_form_code" />
+		<result property="courseClass" column="print_admission_form_class" />
+		<result property="formName" column="print_admission_form_name" />
+		<result property="candidateFirstName" column="first_name" />
+		<result property="candidateMiddleName" column="middle_name" />
+		<result property="candidateLastName" column="last_name" />
+		<result property="interviewDateAndTime" column="interview_date" />
+		<result property="formStatus" column="status" />
+		<result property="admissionYear" column="admission_year" />
+	</resultMap>
+	<select id="getInterviewDetails" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="getInterviewDetailsResultMap">
+		SELECT 
+			p.print_admission_form_code,
+			p.print_admission_form_class,
+			p.print_admission_form_name,
+			p.first_name,
+			p.middle_name,
+			p.last_name,
+			p.interview_date,
+			p.admission_year,
+			p.phase_scheduled as status
+		FROM 
+			print_admission_form p 
+		WHERE
+			p.print_admission_form_class = #{courseClass}
+		AND
+			p.print_admission_form_name = #{formName}
+		AND
+			p.admission_year = #{admissionYear}
+		AND
+			p.is_active = true
+		AND
+			p.phase_scheduled = 'SCHEDULED'
+		ORDER BY
+			p.print_admission_form_code;
+	</select>
+
+
+	<resultMap id="getInterviewScheduleForEditResultMap" type="com.qts.icam.model.admission.AdmissionProcess">
+		<id property="formId" column="print_admission_form_code" />
+		<result property="courseClass" column="print_admission_form_class" />
+		<result property="examinerName" column="interview_examiner_name" />
+		<result property="reviewerName" column="interview_reviewer_name" />
+		<result property="roomNo" column="interview_room_no" />
+		<result property="venue" column="interview_venue" />
+		<result property="interviewDateAndTime" column="interview_date" />
+		<result property="admissionYear" column="admission_year" />
+		<result property="formName" column="print_admission_form_name" />
+	</resultMap>
+	<select id="getInterviewScheduleForEdit" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="getInterviewScheduleForEditResultMap">
+		SELECT
+			print_admission_form_code,
+			print_admission_form_class,
+			interview_examiner_name,
+			interview_room_no,
+			interview_venue,
+			interview_date,
+			interview_reviewer_name,
+			print_admission_form_name,
+			admission_year
+		FROM
+			 print_admission_form
+		WHERE
+			print_admission_form_code=#{formId}
+		AND
+			print_admission_form_name=#{formName}
+		AND
+			admission_year=#{admissionYear};
+	</select>
+
+
+
+	<resultMap id="selectFormIdResultMap" type="com.qts.icam.model.admission.AdmissionProcess">
+		<id property="candidateFirstName" column="first_name" />
+		<result property="candidateMiddleName" column="middle_name" />
+		<result property="candidateLastName" column="last_name" />
+		<result property="formId" column="print_admission_form_code" />
+		<result property="courseClass" column="print_admission_form_class" />
+	</resultMap>
+	<select id="selectFormID" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="selectFormIdResultMap">
+		SELECT
+			first_name,
+			middle_name,
+			last_name,
+			print_admission_form_code,
+			print_admission_form_class
+		FROM
+			print_admission_form
+		WHERE
+			status=(select rec_id from status_flag where status_desc='SCHEDULED')
+		AND
+			print_admission_form_class=#{courseClass}
+		ORDER BY
+			print_admission_form_code;
+	</select>
+
+
+	<!-- ResultMap with id="resultMap_of_select_complete_path" is referenced 
+		by the select with id - id="select_complete_path" -->
+	<resultMap id="resultMap_of_select_complete_path" type="com.qts.icam.model.common.Storage">
+		<id property="storageObject" column="obj_id" jdbcType="VARCHAR" />
+		<result property="storageCode" column="storage_code" jdbcType="VARCHAR" />
+		<result property="storageName" column="storage_name" jdbcType="VARCHAR" />
+		<result property="storageDesc" column="storage_desc" jdbcType="VARCHAR" />
+		<result property="storageRootPath" column="storage_root_path" jdbcType="VARCHAR" />
+		<result property="appConfFile" column="app_conf_file" jdbcType="VARCHAR" />
+		<collection property="folders" column="folder_name" javaType="ArrayList" ofType="com.qts.icam.model.common.Folder">
+			<id property="folderObjectId" column="obj_id" jdbcType="VARCHAR" />
+			<result property="folderCode" column="folder_code" jdbcType="VARCHAR" />
+			<result property="folderName" column="folder_name" jdbcType="VARCHAR" />
+			<result property="folderDesc" column="folder_desc" jdbcType="VARCHAR" />
+			<collection property="attachments" column="folder_name" javaType="ArrayList" ofType="com.qts.icam.model.common.Attachment">
+				<id property="attachmentobjectId" column="obj_id" jdbcType="VARCHAR" />
+				<result property="attachmentCode" column="attachment_code" jdbcType="VARCHAR" />
+				<result property="attachmentName" column="attachment_name" jdbcType="VARCHAR" />
+				<result property="attachmentDesc" column="attachment_desc" jdbcType="VARCHAR" />
+				<result property="attachmentSize" column="attachment_size" jdbcType="INTEGER" />
+				<result property="attachmentFormat" column="attachment_format" jdbcType="VARCHAR" />
+			</collection>
+		</collection>
+	</resultMap>
+
+	<!-- This select tag with id="select_complete_path" is being called by getattachmentList() 
+		method of AdmissionDriveDAO class -->
+	<select id="select_complete_path" parameterType="String" resultMap="resultMap_of_select_complete_path">
+		SELECT
+			s.storage_root_path,
+			s.storage_name,
+			f.folder_name,
+			a.attachment_name,
+			a.attachment_format
+		FROM
+			"Folder" f
+		join 
+			"Attachment" a on f.rec_id = a.attachment_folder
+		join 
+			"Storage" s on s.rec_id = a.attachment_location
+		WHERE
+			f.active=(select rec_id from "Status_Flag" where status_desc='ACTIVE')
+		AND
+			a.active=(select rec_id from "Status_Flag" where status_desc='ACTIVE')
+		AND
+			s.active=(select rec_id from "Status_Flag" where status_desc='ACTIVE')
+		AND
+			f.folder_name = #{folder_name};
+	</select>
+
+	<!-- This insert tag with id="insert_marks_list" is being called by insertResultDetailsDao() 
+		method of AdmissionDriveDAO class -->
+	<insert id="insert_marks_list" parameterType="java.util.List" statementType="CALLABLE">
+		<foreach collection="list" item="marksListToDB" open="" close="" separator=";">
+			select insert_into_admission_subject_marks(
+				#{marksListToDB.strMarksObjId, mode=IN, jdbcType=VARCHAR},
+				#{marksListToDB.strFormId, mode=IN, jdbcType=VARCHAR},
+				#{marksListToDB.strSubjectName, mode=IN, jdbcType=VARCHAR},
+				#{marksListToDB.intSubjectMarks, mode=IN, jdbcType=INTEGER},
+				#{marksListToDB.formName, mode=IN, jdbcType=VARCHAR},
+				#{marksListToDB.admissionYear, mode=IN, jdbcType=VARCHAR},
+				#{marksListToDB.courseClass, mode=IN, jdbcType=VARCHAR},
+				#{marksListToDB.updatedBy, mode=IN, jdbcType=VARCHAR}
+			)
+		</foreach>
+	</insert>
+
+	<!-- This insert tag with id="update_marks_list" is being called by updateResultDetailsDao() 
+		method of AdmissionDriveDAO class -->
+	<insert id="update_marks_list" parameterType="com.qts.icam.model.admission.AdmissionProcess" statementType="CALLABLE">
+		select inactive_into_admission_subject_marks(
+			#{formId, mode=IN, jdbcType=VARCHAR},
+			#{formName, mode=IN, jdbcType=VARCHAR},
+			#{admissionYear, mode=IN, jdbcType=VARCHAR},
+			#{courseClass, mode=IN, jdbcType=VARCHAR},
+			#{updatedBy, mode=IN, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<!-- This insert tag with id="update_admiss_form_rec_with_decision_info" 
+		is being called by insertResultDetailsDao() method of AdmissionDriveDAO class -->
+	<insert id="update_admiss_form_rec_with_decision_info" parameterType="com.qts.icam.model.admission.AdmissionProcess" statementType="CALLABLE">
+		select insert_into_submission_form_Interview_result(
+			#{formId, mode=IN, jdbcType=VARCHAR},
+			#{formStatus, mode=IN, jdbcType=VARCHAR},
+			#{comment, mode=IN, jdbcType=VARCHAR},
+			#{totalMarks, mode=IN, jdbcType=INTEGER},
+			#{formName, mode=IN, jdbcType=VARCHAR},
+			#{admissionYear, mode=IN, jdbcType=VARCHAR},
+			#{courseClass, mode=IN, jdbcType=VARCHAR},
+			#{updatedBy, mode=IN, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<resultMap id="CandidateResultMap" type="com.qts.icam.model.admission.AdmissionProcess">
+		<id property="formId" column="print_admission_form_code" />
+		<result property="candidateFirstName" column="first_name" />
+		<result property="candidateMiddleName" column="middle_name" />
+		<result property="candidateLastName" column="last_name" />
+		<result property="formName" column="print_admission_form_name" />
+		<result property="courseClass" column="print_admission_form_class" />
+		<result property="admissionYear" column="admission_year" />
+		<result property="totalMarks" column="total_marks" />
+		<result property="formStatus" column="status" />
+	</resultMap>
+	<select id="selectedCandidate" parameterType="com.qts.icam.model.admission.AdmissionProcess"
+		resultMap="CandidateResultMap">
+			SELECT
+			print_admission_form_code,
+			first_name,
+			middle_name,
+			last_name,
+			print_admission_form_name,
+			print_admission_form_class,
+			total_marks,
+			admission_year,
+			<!--  (select status_desc from status_flag where status_desc=#{formStatus}) as	status  -->
+			phase_selected_review_notselected as status
+		FROM
+			print_admission_form
+		WHERE
+		
+			phase_selected_review_notselected IN ('SELECTED','REVIEW','NOTSELECTED')
+		
+		AND
+			print_admission_form_class=#{courseClass}
+		AND
+			print_admission_form_name=#{formName}
+		AND
+			admission_year=#{admissionYear}
+		AND
+			is_active = true
+		ORDER BY
+			print_admission_form_code,phase_selected_review_notselected;
+	</select>
+
+	<resultMap id="selectMarksListForEditResultMap" type="com.qts.icam.model.admission.Marks">
+		<id property="strSubjectName" column="admission_subject_marks_subject" />
+		<result property="intSubjectMarks" column="admission_subject_marks_marks" />
+	</resultMap>
+	<select id="selectMarksListForEdit" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="selectMarksListForEditResultMap">
+		SELECT
+			admission_subject_marks_subject,
+			admission_subject_marks_marks
+		FROM
+			admission_subject_marks
+		WHERE
+			print_admission_form=(SELECT
+										rec_id
+								  FROM
+										print_admission_form
+								  WHERE
+										print_admission_form_code = #{formId}
+								  AND
+										print_admission_form_name = #{formName}
+								  AND
+										admission_year = #{admissionYear}
+									AND
+										print_admission_form_class = #{courseClass}
+								)
+		AND 
+			is_active = true;
+	</select>
+
+
+
+
+	<resultMap id="selectDecisionForEditResultMap" type="com.qts.icam.model.admission.AdmissionProcess">
+		<id property="formId" column="print_admission_form_code" />
+		<result property="courseClass" column="print_admission_form_class" />
+		<result property="formName" column="print_admission_form_name" />
+		<result property="candidateFirstName" column="first_name" />
+		<result property="candidateMiddleName" column="middle_name" />
+		<result property="candidateLastName" column="last_name" />
+		<result property="comment" column="comment" />
+		<result property="formStatus" column="decision" />
+		<result property="admissionYear" column="admission_year" />
+		<result property="formName" column="print_admission_form_name" />
+	</resultMap>
+	<select id="selectDecisionForEdit" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="selectDecisionForEditResultMap">
+		SELECT
+			print_admission_form_code,
+			print_admission_form_class,
+			print_admission_form_name,
+			first_name,
+			middle_name,
+			last_name,
+			comment,
+			decision,
+			print_admission_form_name,
+			admission_year
+		FROM
+			print_admission_form
+		WHERE
+			print_admission_form_code=#{formId}
+		AND
+			print_admission_form_name=#{formName}
+		AND
+			admission_year=#{admissionYear}
+		ORDER BY
+			print_admission_form_code;
+	</select>
+ 
+	<update id="ScheduledReviwedNotselected_updateToInactive" parameterType="com.qts.icam.model.admission.AdmissionProcess">
+		UPDATE
+			print_admission_form
+		SET
+			updated_on=(SELECT extract(epoch FROM now())),
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+			is_active = true
+		WHERE
+			print_admission_form_class=#{courseClass}
+		AND
+			print_admission_form_name=#{formName}
+		AND
+			admission_year=#{admissionYear}
+		AND
+			status IN (select rec_id from status_flag where status_desc IN ('SCHEDULED' , 'REVIEW' , 'NOTSELECTED'));
+	</update>
+
+	<update id="updateStatusToSetFee" parameterType="com.qts.icam.model.admission.AdmissionProcess">
+		UPDATE
+			print_admission_form
+		SET
+			updated_on=(SELECT extract(epoch FROM now())),
+			updated_by=(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			status = (select rec_id from status_flag where status_desc='SETFEE'),
+			phase_setfee='SETFEE'
+		WHERE
+			print_admission_form_class=#{courseClass}
+		AND
+			print_admission_form_name=#{formName}
+		AND
+			admission_year=#{admissionYear}
+		AND
+		<choose>
+    		<when test="admissionForm != null and admissionForm.customizedAdmissionProcess != null and admissionForm.customizedAdmissionProcess.interviewResult == false and admissionForm.customizedAdmissionProcess.meritList == true">
+     			 status=(select rec_id from status_flag where status_desc='SUBMITTED')
+   			</when>
+   			<otherwise>
+				 status=(select rec_id from status_flag where status_desc='SELECTED')
+			</otherwise>
+		</choose>
+
+	</update>
+
+	<select id="getInterviewResultForViewMeritList" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="CandidateResultMap">
+		SELECT
+			print_admission_form_code,
+			first_name,
+			middle_name,
+			last_name,
+			print_admission_form_name,
+			print_admission_form_class,
+			admission_year,
+			total_marks,
+			(select status_desc from status_flag where status_desc='SETFEE') as status
+		FROM
+			print_admission_form p
+		WHERE
+			phase_setfee = 'SETFEE'
+		AND
+			phase_required_paid_waived  is null
+		AND
+			print_admission_form_class=#{courseClass}
+		AND
+			print_admission_form_name=#{formName}
+		AND
+			admission_year=#{admissionYear}
+		ORDER BY
+			print_admission_form_code;
+	</select>
+
+
+
+	<resultMap id="getRequiredCandidatesResultMap" type="com.qts.icam.model.admission.AdmissionProcess">
+		<id property="formId" column="print_admission_form_code" />
+		<result property="candidateFirstName" column="first_name" />
+		<result property="candidateMiddleName" column="middle_name" />
+		<result property="candidateLastName" column="last_name" />
+		<result property="formName" column="print_admission_form_name" />
+		<result property="courseClass" column="print_admission_form_class" />
+		<result property="lastFeesSubmissionDate" column="admission_fees_last_date" />
+		<result property="formStatus" column="form_fees_paid_status" />
+		<result property="admissionYear" column="admission_year" />
+		<result property="formName" column="print_admission_form_name" />
+		<result property="status" column="phase_admitted" />
+		<result property="paymentDate" column="date_of_payment" />
+		<result property="category" column="phase_required_paid_waived" />
+	</resultMap>
+
+	<select id="getRequiredAdmittedCandidates" parameterType="com.qts.icam.model.admission.AdmissionProcess"
+		resultMap="getRequiredCandidatesResultMap">
+		<!-- SELECT
+			paf.print_admission_form_code,
+			paf.first_name,
+			paf.middle_name,
+			paf.last_name,
+			paf.print_admission_form_name,
+			paf.print_admission_form_class,
+			paf.admission_fees_last_date,
+			paf.admission_year,
+			paf.print_admission_form_name,
+			sf.status_desc as status,
+			form_fees_paid_status
+		FROM
+			print_admission_form paf
+		JOIN
+			"Status_Flag" sf ON (sf.rec_id = paf.active)
+		WHERE
+			sf.status_desc IN ('REQUIRED','ADMITTED')
+		AND
+			print_admission_form_class=#{courseClass}
+		AND
+			admission_year=#{admissionYear}
+		AND
+			print_admission_form_name=#{formName}
+		ORDER BY
+			print_admission_form_code; -->
+		SELECT
+			paf.print_admission_form_code,
+			paf.first_name,
+			paf.middle_name,
+			paf.last_name,
+			paf.print_admission_form_name,
+			paf.print_admission_form_class,
+			paf.admission_fees_last_date,
+			paf.admission_year,
+			paf.print_admission_form_name,
+			paf.form_fees_paid_status,
+			paf.phase_required_paid_waived,
+			paf.phase_admitted  
+		FROM
+			print_admission_form paf
+		WHERE
+			print_admission_form_class=#{courseClass}
+		AND
+			admission_year=#{admissionYear}
+		AND
+			print_admission_form_name=#{formName}
+		AND	
+			(paf.phase_required_paid_waived = 'REQUIRED'
+			
+			OR 	paf.phase_admitted = 'ADMITTED'
+			OR	paf.form_fees_paid_status = 'FEESPAID')
+		ORDER BY
+			print_admission_form_code;
+	</select>
+	
+	<select id="getEndDateStatusForAdmissionDrive" parameterType="com.qts.icam.model.admission.AdmissionProcess"
+		resultType="Boolean">
+	 <![CDATA[ 
+		SELECT
+			(SELECT extract(epoch from (SELECT to_timestamp(( SELECT to_char((SELECT to_timestamp((ad.admission_drive_expected_end_date))), 'DD/MM/YYYY')), 'DD/MM/YYYY'))))<= (SELECT extract(epoch FROM now()::date)) as dateStatus 
+		FROM
+			admission_drive ad
+		WHERE
+			ad.admission_drive_name = #{formName}
+		AND
+			is_active = true;
+		]]>
+	</select>
+
+	<select id="getPaymentList" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="getRequiredCandidatesResultMap">
+<!-- 		SELECT
+			paf.print_admission_form_code,
+			to_char((SELECT to_timestamp((paf.date_of_payment))), 'DD/MM/YYYY') as date_of_payment,
+			paf.first_name,
+			paf.middle_name,
+			paf.last_name,
+			paf.print_admission_form_name,
+			paf.print_admission_form_class,
+			paf.admission_fees_last_date,
+			paf.admission_year,
+			paf.print_admission_form_name,
+			sf.status_desc as status,
+			paf.form_fees_paid_status,
+			to_char((SELECT to_timestamp(r.date_of_admission)), 'DD/MM/YYYY') as
+			date_of_admission
+		FROM
+			"Print_Admission_Form" paf
+		JOIN
+			"Status_Flag" sf ON (sf.rec_id = paf.active)
+		LEFT JOIN
+			"Resource" r ON (paf.print_admission_form_code = r.admission_form_id) AND (paf.print_admission_form_name = r.admission_drive_name) AND(paf.admission_year = r.admission_year)
+		WHERE
+			sf.status_desc IN ('REQUIRED','ADMITTED')
+		AND
+			paf.print_admission_form_class=#{courseClass}
+		AND
+			paf.print_admission_form_code=#{formId}
+		AND
+			paf.print_admission_form_name=#{formName}
+		AND
+			paf.admission_year=#{admissionYear}; -->
+		SELECT
+			paf.print_admission_form_code,
+			to_char((SELECT to_timestamp((paf.date_of_payment))), 'DD/MM/YYYY') as date_of_payment,
+			paf.first_name,
+			paf.middle_name,
+			paf.last_name,
+			paf.print_admission_form_name,
+			paf.print_admission_form_class,
+			paf.admission_fees_last_date,
+			paf.admission_year,
+			paf.print_admission_form_name,
+			paf.phase_admitted ,
+			paf.form_fees_paid_status,
+			
+			<!-- to_char((SELECT to_timestamp(r.date_of_admission)), 'DD/MM/YYYY') as date_of_admission, -->
+			paf.phase_required_paid_waived
+		FROM
+			print_admission_form paf
+		WHERE
+			paf.print_admission_form_class=#{courseClass}
+		AND
+			paf.print_admission_form_code=#{formId}
+		AND
+			paf.print_admission_form_name=#{formName}
+		AND
+			paf.admission_year=#{admissionYear}
+			
+		AND	
+			(paf.phase_required_paid_waived = 'REQUIRED'
+			
+		OR 	paf.phase_admitted = 'ADMITTED'
+		OR	form_fees_paid_status = 'FEESPAID');
+	</select>
+
+
+	<insert id="updateCandidatePaymentStatus" parameterType="com.qts.icam.model.admission.AdmissionProcess" 	statementType="CALLABLE">
+		select insert_into_submission_form_date_of_payment(
+														#{formId, mode=IN, jdbcType=VARCHAR},
+														#{courseClass, mode=IN, jdbcType=VARCHAR},
+														#{paymentDate, mode=IN, jdbcType=VARCHAR},
+														#{formStatus, mode=IN, jdbcType=VARCHAR},
+														#{formName, mode=IN, jdbcType=VARCHAR},
+														#{admissionYear, mode=IN, jdbcType=VARCHAR},
+														#{courseClass, mode=IN, jdbcType=VARCHAR},
+														#{updatedBy, mode=IN, jdbcType=VARCHAR}
+														)
+	</insert>
+
+	<resultMap id="getAdmittedStudentsListResultMap" type="com.qts.icam.model.admission.AdmissionProcess">
+		<id property="formId" column="print_admission_form_code" />
+		<result property="candidateFirstName" column="first_name" />
+		<result property="candidateMiddleName" column="middle_name" />
+		<result property="candidateLastName" column="last_name" />
+		<result property="candidateContactNo" column="contact_number" />
+		<result property="candidateEmail" column="email_address" />
+		<result property="admissionYear" column="admission_year" />
+		<result property="formName" column="print_admission_form_name" />
+		<result property="courseClass" column="print_admission_form_class" />
+		<result property="courseName" column="course_name" />
+		<result property="courseType" column="course_type_name" />
+		<result property="paymentDate" column="date_of_payment" />
+		<result property="formStatus" column="status" />
+		<result property="formStatus" column="phase_admitted" />
+	</resultMap>
+	<select id="admittedDriveStudentListDetails" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="getAdmittedStudentsListResultMap">
+	<!-- 	SELECT  		
+				paf.first_name, 
+				paf.middle_name, 
+				paf.last_name, 
+				co.course_name,
+				ct.course_type_name,
+				paf.print_admission_form_name, 
+				paf.print_admission_form_class, 
+				paf.contact_number,
+				paf.email_address,
+				paf.admission_year,
+				paf.print_admission_form_code,
+				paf.date_of_payment,
+				paf.phase_admitted
+		FROM 
+				 print_admission_form paf, admission_drive ad, course co, course_type ct 
+		WHERE
+				paf.status=(select rec_id from status_flag where status_desc='ADMITTED')
+		AND
+				paf.print_admission_form_name = ad.admission_drive_name
+		AND 
+				ad.course = co.rec_id
+		AND
+				co.course_type = ct.rec_id
+		AND
+				print_admission_form_class=#{courseClass}
+		AND
+				print_admission_form_name=#{formName}
+		AND 
+				admission_year=#{admissionYear} -->
+			SELECT  		
+				paf.first_name, 
+				paf.middle_name, 
+				paf.last_name, 
+				co.course_name,
+				ct.course_type_name,
+				paf.print_admission_form_name, 
+				paf.print_admission_form_class, 
+				paf.contact_number,
+				paf.email_address,
+				paf.admission_year,
+				paf.print_admission_form_code,
+				paf.date_of_payment,
+				paf.phase_admitted
+		FROM 
+				 print_admission_form paf, admission_drive ad, course co, course_type ct 
+		WHERE
+				paf.phase_admitted = 'ADMITTED'
+		AND
+				paf.print_admission_form_name = ad.admission_drive_name
+		AND 
+				ad.course = co.rec_id
+		AND
+				co.course_type = ct.rec_id
+		AND
+				print_admission_form_class=#{courseClass}
+		AND
+				print_admission_form_name=#{formName}
+		AND 
+				admission_year=#{admissionYear}
+	</select>
+
+	<select id="listOfPaymentDone" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="getAdmittedStudentsListResultMap">
+		SELECT
+			p.print_admission_form_code,
+			p.first_name,
+			p.middle_name,
+			p.last_name,
+			p.print_admission_form_name,
+			p.print_admission_form_class,
+			p.admission_year,
+			p.date_of_payment,
+			s.status_desc as status
+		FROM
+			"Print_Admission_Form" p, "Status_Flag" s
+		WHERE
+			s.rec_id = p.active
+		AND
+			s.status_desc IN ('PAID','WAIVED')
+		AND
+			p.print_admission_form_class=#{courseClass}
+		AND
+			p.print_admission_form_name=#{formName}
+		AND
+			p.admission_year=#{admissionYear}
+		ORDER BY
+			p.print_admission_form_code;
+	</select>
+
+	<update id="closeAdmission" parameterType="com.qts.icam.model.admission.AdmissionProcess">
+		select closeadmission(
+		#{formName, mode=IN, jdbcType=VARCHAR},
+		#{admissionYear, mode=IN, jdbcType=VARCHAR},
+		#{courseClass, mode=IN, jdbcType=VARCHAR},
+		#{updatedBy, mode=IN, jdbcType=VARCHAR}
+		)
+	</update>
+
+
+	<!-- This insert tag with id="insert_meritList_selected_list" is being called 
+		by insertMeritList() method of AdmissionDriveDAO class -->
+	<insert id="insert_meritList_selected_list" parameterType="com.qts.icam.model.admission.AdmissionProcess" statementType="CALLABLE">
+		select insert_into_submission_form_InterviewsSelected(
+															#{formId, mode=IN, jdbcType=VARCHAR},
+															#{lastFeesSubmissionDate, mode=IN, jdbcType=VARCHAR},
+															#{formName, mode=IN, jdbcType=VARCHAR},
+															#{admissionYear, mode=IN, jdbcType=VARCHAR},
+															#{courseClass, mode=IN, jdbcType=VARCHAR},
+															#{updatedBy, mode=IN, jdbcType=VARCHAR}
+															)
+
+	</insert>
+
+
+
+	
+
+	
+
+	<!-- END SEARCH FOR HISTORY PAGES -->
+
+	<parameterMap id="generateAdmissionDriveCodeParameterMap" type="com.qts.icam.model.admission.AdmissionForm">
+		<parameter property="courseCode" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="courseClass" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="admissionDriveName" jdbcType="VARCHAR" mode="OUT" />
+	</parameterMap>
+
+	<select id="generateAdmissionDriveCode" parameterMap="generateAdmissionDriveCodeParameterMap" statementType="CALLABLE">
+		{? = call generateAdmissionDriveCode(?,?)}
+	</select>
+
+	<select id="selectCourseName" parameterType="com.qts.icam.model.admission.AdmissionForm" resultType="com.qts.icam.model.admission.AdmissionForm">
+		SELECT
+			co.course_name as courseName,
+			ct.course_type_name as courseType,
+			(SELECT to_char((SELECT to_timestamp(co.admission_available_from_date)),'DD/MM/YYYY'))as admissionDriveStartDate,
+			(SELECT to_char((SELECT to_timestamp(co.admission_available_to_date)),'DD/MM/YYYY'))as admissionDriveExpectedEndDate
+		FROM
+			course co, course_type ct
+		WHERE
+			co.course_type=ct.rec_id
+		AND 
+			co.is_active = true
+		AND
+			ct.is_active = true
+		AND
+			co.course_code=#{courseCode};
+	</select>
+	
+	<select id="selectCustomizedAdmissionProcess"  resultType="com.qts.icam.model.admission.CustomizedAdmissionProcess">
+       SELECT 
+			cap.customized_admission_process_code as customizedAdmissionProcessCode,
+			cap.form_submission as formSubmission,
+			cap.schedule_interview as scheduleInterview,
+			cap.interview_result as interviewResult,
+			cap.merit_list as meritList,
+			cap.payment as payment
+	   FROM
+			customized_admission_process cap
+	  
+	   WHERE
+			cap.is_active = true;
+	</select>
+	
+	
+
+
+
+	<insert id="insertIntoTransactionalWorkingAreaForAdmissionFormFees" parameterType="com.qts.icam.model.admission.AdmissionForm">
+
+
+			INSERT INTO transactional_working_area(
+										            rec_id,
+										            obj_id,
+										            updated_by,
+										            updated_on, 
+										            date_of_creation,
+										            transactional_working_area_code,
+										            transactional_working_area_name, 
+										            transactional_working_area_desc,
+										            resource_type,
+										            resource,
+										            transaction_date,
+										            gross_amount,
+										            net_amount,
+										            transaction_mode,
+										            reason_of_transaction,
+										            desc_of_transaction,
+										            transaction_status,
+										            academic_year,
+										            paid_against,
+										            transaction_year,
+										            transaction_month
+										            <choose>
+														<when test="paymentMode == 'BANK'">
+											    	   		,bank_amount
+														</when>
+														<otherwise>
+												 			,cash_amount
+														</otherwise>
+											    	</choose>
+											   ,department,
+											   income_expense,
+											   <!-- anup.roy 02.08.2017 for entry in ledger field Modified By NAimisha 21082017-->
+											   ledger
+										)VALUES(
+  												uuid_generate_v4(),
+	    										#{admissionFormObjectId},
+	    										(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+	    										extract(epoch FROM now()), 
+												extract(epoch FROM now()),
+												(SELECT('TWA' ||(SELECT COALESCE((SELECT MAX(transactional_working_area_id) FROM transactional_working_area), 0)+1))),
+												'ADMISSION FORM FEES', 
+												'ADMISSION FORM FEES',
+												'FORM SALE',
+           										#{strMessage},       
+	   											extract(epoch FROM now()),
+	   											#{totalPrice},
+	   											#{totalPrice}, 
+           										#{paymentMode},
+           										'FEES',
+       											'FEES',
+												'PENDING',
+												(SELECT
+													academic_year_name
+												 FROM
+													academic_year
+												 WHERE
+													is_active = true
+												 AND
+													year_status = (SELECT rec_id FROM status_flag WHERE status_sym ='C')
+												),
+												(SELECT
+														course_name
+													 FROM
+														course co
+													 JOIN
+														admission_drive ad ON (ad.is_active = true AND co.rec_id = ad.course)
+													 WHERE
+														ad.admission_drive_name = #{admissionDriveName}
+												),
+            									to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'YYYY'),
+            									to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'MM')
+            									<choose>
+													<when test="paymentMode == 'BANK'">
+					 									,#{totalPrice}
+													</when>
+													<otherwise>
+					  									,#{totalPrice}
+													</otherwise>
+												</choose>
+												,'ADMISSION',
+												'INCOME',
+												<!-- anup.roy 02.08.2017 for entry in ledger field -->
+												(SELECT rec_id FROM ledger where ledger_code = 'FORM FEES' AND is_active = true)
+										);
+	</insert>
+	
+	
+	<resultMap id="selectCurrenntAdmissionDriveListResultMap"
+		type="com.qts.icam.model.admission.AdmissionDrive">
+		<id property="admissionDriveName" column="admission_drive_name"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectCurrenntAdmissionDriveList" parameterType="com.qts.icam.model.common.Resource"
+		resultMap="selectCurrenntAdmissionDriveListResultMap">
+		SELECT
+		ad.admission_drive_name
+		FROM
+		admission_drive ad ,
+		course co, course_type ct, 
+		admission_drive_status ads
+		WHERE
+		ad.course = co.rec_id AND
+		ad.is_active = true
+		AND
+		co.course_type = ct.rec_id AND
+		co.is_active = true AND ct.is_active = true
+		
+		AND
+		ad.status_of_admission =
+		ads.rec_id AND ads.is_active = true
+		AND
+		ads.admission_drive_status_name
+		IN ('ONGOING' )
+		AND
+		co.course_code=#{klass}
+		AND
+		ad.admission_drive_year=#{code}
+	</select>
+	<!-- /*by naimisha*/ -->
+	<select id="getStreamClassYearCourseDetails" resultType="com.qts.icam.model.admission.AdmissionForm" parameterType="com.qts.icam.model.admission.AdmissionProcess">
+			SELECT
+				co.course_name as courseName,
+				ct.course_type_name as courseType,
+				st.standard_name as courseClass,
+				ay.academic_year_name as admissionFormYear,
+				cap.form_submission as "customizedAdmissionProcess.formSubmission",
+				cap.schedule_interview as "customizedAdmissionProcess.scheduleInterview",
+				cap.interview_result as "customizedAdmissionProcess.interviewResult",
+				cap.merit_list as "customizedAdmissionProcess.meritList",
+				cap.payment as  "customizedAdmissionProcess.payment",
+				to_char((SELECT to_timestamp((co.admission_available_from_date))), 'DD/MM/YYYY') as admissionDriveStartDate,
+				to_char((SELECT to_timestamp((co.admission_available_to_date))), 'DD/MM/YYYY') as admissionDriveExpectedEndDate
+			FROM
+				course co, course_type ct,
+				academic_year ay, standard st ,
+				admission_drive ad, customized_admission_process cap
+			WHERE
+				co.course_type = ct.rec_id 
+			AND
+				co.is_active = true AND ct.is_active
+			AND
+				ad.course = co.rec_id
+			AND
+				ad.is_active = true 
+			AND
+				ad.admission_drive_year = ay.academic_year_name
+			AND
+				ad.is_active  = true AND ay.is_active = true
+			AND
+				co.standard = st.rec_id
+			AND
+				st.is_active = true
+			
+			AND
+				cap.rec_id = ad.customized_admission_process
+			AND
+				cap.is_active = true
+			AND
+				ad.admission_drive_name=#{formName};
+	</select>
+	
+	<update id="updateAdmissionDriveCompletionStatusToFormSubmitted" parameterType="java.lang.String">
+		UPDATE
+			admission_drive
+		SET
+			drive_completion_status = 'FORMSUBMITTED'
+		WHERE
+			admission_drive_name = #{admissionDriveName};
+	</update>
+	
+	<update id="updateAdmissionDriveCompletionStatusToInterviewScheduled" parameterType="java.lang.String">
+		UPDATE
+			admission_drive
+		SET
+			drive_completion_status = 'INTERVIEWSCHEDULED'
+		WHERE
+			admission_drive_name = #{admissionDriveName};
+	</update>
+	
+	<update id="updateAdmissionDriveCompletionStatusToInterviewResult" parameterType="java.lang.String">
+		UPDATE
+			admission_drive
+		SET
+			drive_completion_status = 'INTERVIEWRESULT'
+		WHERE
+			admission_drive_name = #{admissionDriveName};
+	</update>
+	<update id="updateAdmissionDriveCompletionStatusToViewMeritList" parameterType="java.lang.String">
+		UPDATE
+			admission_drive
+		SET
+			drive_completion_status = 'MERITLIST'
+		WHERE
+			admission_drive_name = #{admissionDriveName};
+	</update>
+	
+	<select id="selectAdmissionDriveCompletionStatus" parameterType="java.lang.String" resultType = "java.lang.String">
+		SELECT
+			 drive_completion_status
+		FROM
+			 admission_drive 
+		WHERE
+			 admission_drive_name = #{strDriveName};
+	</select>
+	
+	<select id="selectStateOfAdmission" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultType = "java.lang.String">
+		SELECT 
+				ads.admission_drive_status_name
+		FROM 
+				admission_drive ad, admission_drive_status ads
+			
+		WHERE
+				ad.status_of_admission = ads.rec_id
+			
+		AND
+				ad.status_of_admission = (select rec_id from admission_drive_status  where admission_drive_status_name ='DONE' )
+		AND
+				ad.admission_drive_name =  #{formName}
+		AND
+				ad.admission_drive_year =  #{admissionYear};
+	</select>
+	
+	<select id="getAllStudentForViewMeritList" parameterType="com.qts.icam.model.admission.AdmissionProcess" resultMap="CandidateResultMap">
+		SELECT
+			print_admission_form_code,
+			first_name,
+			middle_name,
+			last_name,
+			print_admission_form_name,
+			print_admission_form_class,
+			admission_year,
+			total_marks,
+			(select status_desc from status_flag where status_desc='SETFEE') as status
+		FROM
+			print_admission_form p
+		WHERE
+			phase_setfee = 'SETFEE'
+		 AND
+			phase_required_paid_waived IN ('REQUIRED','PAID','WAIVED')
+		AND
+			print_admission_form_class=#{courseClass}
+		AND
+			print_admission_form_name=#{formName}
+		AND
+			admission_year=#{admissionYear}
+		ORDER BY
+			print_admission_form_code;
+	</select>
+	<update id="updateADmissionDriveStatus" parameterType="java.lang.String">
+		UPDATE
+			admission_drive
+		SET
+			status_of_admission = (SELECT rec_id FROM admission_drive_status WHERE admission_drive_status_name = 'DONE'),
+			admission_drive_actual_end_date = (SELECT extract(epoch FROM now()))
+		WHERE
+			admission_drive_name = #{driveName};
+	</update>
+	
+	<!-- anup.roy 30062017 -->
+	
+	<resultMap id="selectProgrammeDetailsRM" type="com.qts.icam.model.common.ProgrammeDetailsForPortal">
+		<id property="admissionDrive" column="admission_drive" jdbcType="VARCHAR" />
+		<result property="programCode" column="course_code" jdbcType="VARCHAR" />
+		<result property="programName" column="course_name" jdbcType="VARCHAR" />
+		<result property="programType" column="course_type_name" jdbcType="VARCHAR" />
+		<result property="totalSeat" column="number_of_openings" jdbcType="INTEGER" />		
+		<result property="formIssuanceDate" column="form_issuance_date" jdbcType="INTEGER" />	
+		<result property="formSubmissionLastDate" column="last_form_submission_date" jdbcType="INTEGER" />	
+		<result property="candidateScrutinyDate" column="candidate_scrutiny_date" jdbcType="INTEGER" />
+		<result property="interviewDate" column="interview_date" jdbcType="INTEGER" />
+		<result property="interviewStartTime" column="interview_start_time" jdbcType="INTEGER" />
+		<result property="marksSubmissionDate" column="marks_submission_date" jdbcType="INTEGER" />
+		<result property="feesPaymentStartDate" column="admission_available_from_date" jdbcType="INTEGER" />
+		<result property="feesPaymentEndDate" column="admission_available_to_date" jdbcType="INTEGER" />
+		<result property="courseFees" column="course_form_fees" jdbcType="VARCHAR" />
+		<collection property="termWiseFeesList" ofType="com.qts.icam.model.common.TermWiseFees">
+			<id property="termName" column="term_name" jdbcType="VARCHAR" />
+			<collection property="categoryAndFeesList" ofType="com.qts.icam.model.common.CategoryAndFees">
+				<id property="feesStructureName" column="fees_structure_name" jdbcType="VARCHAR" />
+				<collection property="socialCategoryList" ofType="com.qts.icam.model.common.SocialCategory">
+					<id property="socialCategoryName" column="social_category_name" jdbcType="VARCHAR" />
+					<result property="amount" column="amount" jdbcType="DOUBLE" />
+				</collection>
+			</collection>
+		</collection>
+	</resultMap>
+	<select id="selectProgrammeDetails" resultMap="selectProgrammeDetailsRM">
+		SELECT 
+			admission_drive,
+			course_code,
+			course_name,
+			course_type_name,
+			number_of_openings,
+			cd.form_issuance_date,
+			cd.last_form_submission_date,
+			cd.candidate_scrutiny_date,
+			cd.interview_date,
+			cd.interview_start_time,
+			cd.marks_submission_date,
+			cd.admission_available_from_date,
+			cd.admission_available_to_date,
+			fees_structure_name,
+			cd.course_form_fees,
+			amount,
+			social_category_name ,
+			term_name
+		FROM
+			course c
+		JOIN
+			course_type ct ON (c.course_type = ct.rec_id AND ct.is_active = true)
+		LEFT JOIN
+			course_details cd ON (cd.course = c.rec_id AND cd.is_active = false)
+		JOIN
+			student_fees_template_amount sfta ON (sfta.course = c.rec_id AND sfta.is_active = true)
+		JOIN
+			social_category sc ON (sfta.social_category = sc.rec_id AND sc.is_active = true)
+		JOIN
+			student_fees_template_details sftd ON (sfta.student_fees_template_details = sftd.rec_id AND sftd.is_active = true)
+		JOIN
+			fees_structure fs ON(sftd.fees_structure = fs.rec_id AND fs.is_active = true)
+		JOIN
+			term t ON (sfta.term = t.rec_id AND t.is_active = true)
+		WHERE
+			c.course_code = #{courseCode}
+		AND 
+			c.is_active = true
+		AND
+			cd.course_details_id = (SELECT MAX(course_details_id) FROM course_details WHERE is_active = false)
+		ORDER BY
+			fees_structure_name,term_id,social_category_name;
+	</select>
+	
+	<insert id="insertDetailsOfAllCandidatesFromPortal" parameterType="com.qts.icam.model.common.AdmissionFormForPortalStudents">
+		<foreach item="data" collection="data"  open="" close="" separator=";">
+			INSERT INTO 
+					print_admission_form
+									(
+										rec_id, obj_id, updated_by, updated_on, date_of_creation,
+										print_admission_form_code,
+										print_admission_form_name,
+										application_id,
+										candidate_id,
+										user_id,
+										first_name,
+										middle_name,
+										last_name,
+										date_of_birth,
+										phase_submitted,
+										contact_number,
+										email_address,
+										gender,
+										course,
+										form_fees_invoice_id,
+										form_fees_payment_method,
+										form_fees_amount,
+										date_of_payment
+									)
+			VALUES
+									(
+										(select uuid_generate_v4()),#{data.objectId},(select rec_id from resource where user_id = #{data.updatedBy} and is_active = true),
+										(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+										(SELECT ('PAF-' ||(select COALESCE((SELECT MAX(print_admission_form_id) FROM print_admission_form), 0 )+1))),
+										#{data.driveName},
+										#{data.admissionFormId},
+										#{data.portalCandidateDetails.portalCandidateId}
+										<choose>
+											<when test="null == data.portalCandidateDetails.userId">
+												,null
+											</when>
+											<otherwise>
+												,#{data.portalCandidateDetails.userId}
+											</otherwise>
+										</choose>
+										,#{data.portalCandidateDetails.firstName},
+										#{data.portalCandidateDetails.middleName},
+										#{data.portalCandidateDetails.lastName},
+										#{data.portalCandidateDetails.dateOfBirth},
+										'SUBMITTED',
+										#{data.portalCandidateDetails.contactNo},
+										#{data.portalCandidateDetails.email},
+										#{data.portalCandidateDetails.sex},
+										(SELECT cd.course FROM course_details cd WHERE cd.admission_drive = #{data.driveName} AND cd.is_active = true)
+										<choose>
+											<when test="null != data.paymentDetails">
+												,#{data.paymentDetails.invoiceId}
+												,#{data.paymentDetails.paymentMethod}
+												,#{data.paymentDetails.paymentAmount}
+												,#{data.paymentDetails.paymentDate}
+											</when>
+											<otherwise>
+												,null,null,0.00,0
+											</otherwise>
+										</choose>
+									);
+			<foreach item="qualification" collection="data.qualificationDetails"  open="" close="" separator=";">
+				INSERT INTO 
+						print_admission_form_details
+									(
+							            rec_id,obj_id,updated_by,updated_on,date_of_creation,
+							            print_admission_form_details_code,
+							            print_admission_form,
+							            previous_academic_id,
+							            previous_academic_degree,
+							            previous_academic_specialization,
+							            previous_academic_institute,
+							            previous_academic_affiliation,
+							            previous_academic_completion_status,
+							            previous_academic_end_date,
+							            previous_academic_percentage, 
+							            previous_academic_cgpa
+						            )
+			    VALUES 
+			    					(
+							    		(select uuid_generate_v4()),
+										#{data.objectId},
+										(select rec_id from resource where user_id=#{data.updatedBy} and is_active = true),
+										(SELECT extract(epoch FROM now())),
+										(SELECT extract(epoch FROM now())),
+										(SELECT ('PAFD-' ||(select COALESCE((SELECT MAX(print_admission_form_details_id) FROM print_admission_form_details), 0 )+1))),
+							    		(SELECT rec_id FROM print_admission_form WHERE application_id = #{data.admissionFormId} AND print_admission_form_name = #{data.driveName} AND is_active = true),
+							    		#{qualification.academicId},
+										#{qualification.degree},
+										#{qualification.specialization},
+										#{qualification.instituteName},
+										#{qualification.affiliation},
+							    		#{qualification.statusOfCompletion},
+										#{qualification.previousCourseEndDate},
+										#{qualification.percentage},
+										#{qualification.cgpa}
+			    					);
+			</foreach>
+			<if test="null != data.professionalDetails">
+				<foreach item="profession" collection="data.professionalDetails"  open="" close="" separator=";">
+					UPDATE
+						print_admission_form_details 
+					SET	
+						previous_professional_id = #{profession.professionalId},
+						previous_organization = #{profession.organization},
+						previous_designation = #{profession.designation},
+						previous_job_role = #{profession.jobRole},
+						previous_job_start_date = #{profession.jobStartDate},
+						previous_job_end_date = #{profession.jobEndDate}
+					WHERE
+						print_admission_form = (SELECT rec_id FROM print_admission_form WHERE application_id = #{data.admissionFormId} AND is_active = true)
+					AND
+						is_active = true;	
+				</foreach>	
+			</if>
+		</foreach>
+	</insert>
+	
+	<update id="saveScrutinizedCandidatesFromPortal" parameterType="com.qts.icam.model.common.AdmissionFormForPortalStudents">
+		<foreach item="data" collection="data"  open="" close="" separator=";">
+			UPDATE 
+				print_admission_form
+			SET
+				updated_by = (SELECT rec_id from resource where user_id = #{data.updatedBy} and is_active = true),
+				phase_scheduled = 'SCHEDULED',
+				updated_on = (SELECT extract(epoch FROM now()))
+			WHERE
+				application_id = #{data.admissionFormId}
+			AND
+				print_admission_form_name = #{data.driveName}
+			AND
+				is_active = true;
+		</foreach>
+	</update>
+	
+	<update id="saveSelectedCandidatesFromPortal" parameterType="com.qts.icam.model.common.AdmissionFormForPortalStudents">
+		<foreach item="data" collection="data"  open="" close="" separator=";">
+			<choose>
+				<when test='"Selected".equals(data.selectionStatus)'>
+					UPDATE 
+						print_admission_form
+					SET
+						updated_by = (SELECT rec_id from resource where user_id = #{data.updatedBy} and is_active = true),
+						phase_required_paid_waived = 'REQUIRED',
+						updated_on = (SELECT extract(epoch FROM now())),
+						marks_from_portal = #{data.marks},
+						selectionstatus_from_portal = #{data.selectionStatus}
+					WHERE
+						application_id = #{data.admissionFormId}
+					AND
+						print_admission_form_name = #{data.driveName}
+					AND
+						is_active = true;
+				</when>
+				<otherwise>
+					UPDATE 
+						print_admission_form
+					SET
+						updated_by = (SELECT rec_id from resource where user_id = #{data.updatedBy} and is_active = true),
+						updated_on = (SELECT extract(epoch FROM now())),
+						marks_from_portal = #{data.marks},
+						selectionstatus_from_portal = #{data.selectionStatus}
+					WHERE
+						application_id = #{data.admissionFormId}
+					AND
+						print_admission_form_name = #{data.driveName}
+					AND
+						is_active = true;
+				</otherwise>
+			</choose>
+		</foreach>
+	</update>
+	
+	<select id="getUnsendProgramsWithLocations" resultType="com.qts.icam.model.common.Course">
+		SELECT DISTINCT
+			course_code as courseCode,
+			course_name as courseName,
+			course_id as serialId
+		FROM
+			venue_teacher_mapping vtm
+		JOIN
+			course c ON (vtm.course = c.rec_id AND c.is_active = true)
+		WHERE 
+			vtm.is_active = true;
+	</select>
+	
+	<select id="getDriveWithUnsentLocationAgainstCourse" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT
+			admission_drive as drive
+		FROM
+			course_details cd
+		JOIN
+			course c ON (cd.course = c.rec_id AND c.is_active = true)
+		JOIN 
+			admission_drive_status ads ON (cd.drive_status = ads.rec_id AND ads.is_active = true)
+		JOIN 
+			academic_year ay ON (cd.academic_year = ay.rec_id AND ay.is_active = true)
+		WHERE 
+			ads.admission_drive_status_code = 'PUBLISHED'
+		AND
+			ay.year_status = (select rec_id from status_flag sf where sf.status_sym = 'C' and sf.is_active = true)
+		AND
+			c.course_code = #{course}
+		AND
+			cd.location_send_status = false
+		AND	
+			cd.is_active = true;
+	</select>
+	
+	<update id="updateLocationSendStatusForDrive" parameterType="java.lang.String">
+		UPDATE
+			course_details
+		SET
+			location_send_status = true
+		WHERE
+			admission_drive = #{drive}
+		AND
+			is_active = true;	
+	</update>
+	
+	<resultMap id="selectLocationDetailsAndInterviewPannelRM" type="com.qts.icam.model.admission.LocationDetailsForPortal">
+		<id property="venueCode" column="venue_code" jdbcType="INTEGER" />
+		<result property="venueTeacherMappingId" column="venue_teacher_mapping_id" jdbcType="VARCHAR" />
+		<result property="venueName" column="venue_name" jdbcType="VARCHAR" />
+		<result property="area" column="area" jdbcType="VARCHAR" />		
+		<result property="city" column="city" jdbcType="VARCHAR" />	
+		<result property="stateName" column="state_name" jdbcType="VARCHAR" />	
+		<result property="zoneName" column="zone_name" jdbcType="VARCHAR" />
+		<result property="pin" column="pin" jdbcType="VARCHAR" />
+		<result property="interviewDate" column="interviewDate" jdbcType="VARCHAR" />
+		<collection property="nameIdList" ofType="com.qts.icam.model.common.NameId">
+			<id property="userId" column="user_id" jdbcType="VARCHAR" />
+			<result property="name" column="name" jdbcType="VARCHAR" />
+		</collection> 
+	</resultMap>
+	<select id="selectLocationDetailsAndInterviewPannel"  resultMap="selectLocationDetailsAndInterviewPannelRM">
+		SELECT 
+			venue_teacher_mapping_id,
+			venue_code,
+			venue_name,
+			area ,
+			city,
+			state_name,
+			zone_name,
+			pin,
+			to_char((SELECT to_timestamp(c.interview_date)), 'YYYY-MM-DD') as interviewDate,
+			r.user_id,
+			r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || COALESCE(r.last_name,' ') as name
+		FROM
+			venue v 
+		JOIN
+			venue_type vt ON (vt.rec_id = v.venue_type AND vt.is_active = true)
+		JOIN
+			venue_teacher_mapping vtm ON (v.rec_id = vtm.venue AND vtm.is_active = true)
+		JOIN
+			course c ON (vtm.course = c.rec_id AND c.is_active = true)
+		JOIN
+			resource r ON (r.rec_id = vtm.resource AND r.is_active = true)
+		JOIN
+			location l ON (v.location = l.rec_id AND l.is_active = true)
+		JOIN
+			state s ON (l.state = s.rec_id AND s.is_active = true)
+		JOIN
+			zone z ON (l.zone = z.rec_id AND z.is_active = true)
+		WHERE
+			vt.venue_type_code = 'examCenter'
+		ORDER By venue_teacher_mapping_id;
+	</select>
+	
+	<update id="saveAdmittedCandidatesFromPortal" parameterType="com.qts.icam.model.common.AdmissionFormForPortalStudents">
+		<foreach item="data" collection="data"  open="" close="" separator=";">
+			UPDATE 
+				print_admission_form
+			SET
+				updated_by = (SELECT rec_id from resource where user_id = #{data.updatedBy} and is_active = true),
+				phase_admitted = 'ADMITTED',
+				updated_on = (SELECT extract(epoch FROM now())),
+				status = (SELECT rec_id FROM status_flag WHERE status_desc = 'CURRENT' AND is_active = true),
+				registration_id = #{data.registrationId}
+			WHERE
+				application_id = #{data.admissionFormId}
+			AND
+				print_admission_form_name = #{data.driveName}	
+			AND
+				is_active = true;
+			<foreach item = "pay" collection="data.paymentForAdmittedCandidates" open="" close="" separator=";">
+				INSERT INTO
+					submitted_admission_fees_break_up
+							(
+								rec_id, obj_id, updated_by, updated_on, date_of_creation,
+					            submited_admission_fees_break_up_code, submited_admission_fees_break_up_name, 
+					            submited_admission_fees_break_up_desc, print_admission_form, 
+					            fees_category, fees_amount, payment_mode, payable_amount, 
+					            term_name, invoice_id, payment_date
+							)
+				VALUES
+							(
+								(select uuid_generate_v4()),
+								#{data.objectId},
+								(select rec_id from resource where user_id=#{data.updatedBy} and is_active = true),
+								(SELECT extract(epoch FROM now())),
+								(SELECT extract(epoch FROM now())),
+								#{data.objectId}, #{pay.feesCategory}, #{pay.feesCategory},
+								(SELECT rec_id FROM print_admission_form WHERE application_id = #{data.admissionFormId} AND print_admission_form_name = #{data.driveName} AND is_active = true),
+								#{pay.feesCategory}, #{pay.totalAmountToPay}, 'PAID', #{pay.paymentAmount},
+								#{pay.termName}, #{pay.invoiceId}, #{pay.paymentDate}
+							);
+			</foreach>	
+		</foreach>
+	</update>
+	
+	<select id="selectalumniDataListForPortal" resultType="com.qts.icam.model.common.Data">
+		SELECT
+			r.email_address as email
+		FROM 
+			history_student hs
+		JOIN
+			student_course_mapping scm ON (hs.roll_number = scm.roll_number AND scm.is_active = false)
+		JOIN
+			resource r ON (scm.user_id = r.user_id AND r.is_active = true)
+	</select>
+	
+	<select id="selectUnsendProgramsToPortal" resultType="com.qts.icam.model.common.Course">
+		SELECT 
+			course_code as courseCode,
+			course_id as courseId,
+			course_name as courseName
+		FROM
+			course
+		WHERE
+			post = false
+		AND	
+			is_active = true
+	</select>
+	
+	<update id="changeStausForSentProgram" parameterType="java.lang.String">
+		UPDATE
+			course_details
+		SET
+			post = true,
+			is_active = true,
+			drive_status = (SELECT rec_id FROM admission_drive_status WHERE admission_drive_status_code = 'PUBLISHED')
+		WHERE
+			admission_drive = #{admissionDrive}	
+		AND
+			is_active = false
+	</update>
+	
+	<resultMap id="selectInterviewLocationDetailsForPortalRM" type="com.qts.icam.model.admission.LocationDetailsForPortal">
+		<id property="city" column="city" jdbcType="VARCHAR" />
+		<result property="interviewDate" column="interview_date" jdbcType="INTEGER" />
+		<result property="stateName" column="state_name" jdbcType="VARCHAR" />
+		<result property="venueName" column="venue_name" jdbcType="VARCHAR" />
+		<result property="area" column="area" jdbcType="VARCHAR" />
+		<result property="zoneName" column="zone_name" jdbcType="VARCHAR" />
+		<result property="pin" column="pin" jdbcType="VARCHAR" />
+		<collection property="nameIdList" ofType="com.qts.icam.model.common.NameId">
+			<id property="email" column="email_address" jdbcType="VARCHAR" />
+			<result property="firstName" column="first_name" jdbcType="VARCHAR" />
+			<result property="middleName" column="middle_name" jdbcType="VARCHAR" />
+			<result property="lastName" column="last_name" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="selectInterviewLocationDetailsForPortal"  resultMap="selectInterviewLocationDetailsForPortalRM" parameterType="java.lang.String">
+		SELECT 
+			interview_date,
+			city,
+			state_name,
+			venue_name,
+			area,
+			zone_name,
+			pin,
+			first_name,
+			middle_name,
+			last_name,
+			email_address
+		FROM
+			venue v 
+		JOIN
+			venue_type vt ON (vt.rec_id = v.venue_type AND vt.is_active = true)
+		JOIN
+			venue_teacher_mapping vtm ON (v.rec_id = vtm.venue AND vtm.is_active = true)
+		JOIN
+			course c ON (vtm.course = c.rec_id AND c.is_active = true)
+		JOIN
+			resource r ON (r.rec_id = vtm.resource AND r.is_active = true)
+		JOIN
+			location l ON (v.location = l.rec_id AND l.is_active = true)
+		JOIN
+			state s ON (l.state = s.rec_id AND s.is_active = true)
+		JOIN
+			zone z ON (l.zone = z.rec_id AND z.is_active = true)
+		WHERE
+			vt.venue_type_code = 'examCenter'
+		AND
+			c.course_code = #{courseCode}	
+		ORDER BY
+			city;
+	</select>
+	
+	<select id="selectUnpublishedNotices" resultType="com.qts.icam.model.common.NoticeBoard">
+		SELECT
+			notice_board_subject as noticeName,
+			notice_board_desc as noticeDesc,
+			date_of_creation as noticeId,
+			(SELECT to_char((SELECT to_timestamp(date_of_creation)), 'DD-MM-YYYY')) as time
+		FROM
+			notice_board
+		WHERE
+			is_active = true	
+	</select>
+	
+	<!-- new added by sourav.bhadra -->
+	<select id="selectTotalFormFeesAgainstToday" resultType="com.qts.icam.model.admission.AdmissionForm">
+		SELECT 
+			c.course_name as courseName, 
+			SUM(paf.form_fees_amount) as totalPrice
+		FROM 
+			print_admission_form paf
+		JOIN 
+			course c ON (paf.course = c.rec_id AND c.is_active = true)
+		WHERE 
+			(SELECT to_char((SELECT to_timestamp(paf.date_of_creation)),'DD/MM/YYYY')) = to_char( now(), 'DD/MM/YYYY' )
+		AND 
+			paf.is_active = true
+		GROUP BY 
+			c.course_name;
+	</select>
+	
+	<insert id="insertTotalAdmissionFormFeesIntoTransactionalWorkingAreaAgainstCourse" parameterType="java.util.List">
+		<foreach item="formFees" collection="list" index="index" open="" close="" separator=";">
+			INSERT INTO transactional_working_area(
+				rec_id,
+				obj_id,
+				updated_by,
+				updated_on, 
+				date_of_creation,
+				transactional_working_area_code,
+				transactional_working_area_name, 
+				transactional_working_area_desc,
+				resource_type,
+				<!-- resource, -->
+				transaction_date,
+				gross_amount,
+				net_amount,
+				transaction_mode,
+				reason_of_transaction,
+				desc_of_transaction,
+				transaction_status,
+				academic_year,
+				paid_against,
+				transaction_year,
+				transaction_month,
+				bank_amount,
+				department,
+				income_expense,
+				ledger
+			)VALUES(
+				uuid_generate_v4(),
+				#{formFees.admissionFormObjectId},
+				(SELECT rec_id FROM resource WHERE user_id =#{formFees.updatedBy} AND is_active = true),
+				extract(epoch FROM now()), 
+				extract(epoch FROM now()),
+				(SELECT('TWA' ||(SELECT COALESCE((SELECT MAX(transactional_working_area_id) FROM transactional_working_area), 0)+1))),
+				'ADMISSION FORM FEES', 
+				'ADMISSION FORM FEES',
+				'FORM SALE',
+				<!-- (SELECT admission_drive_id FROM admission_drive WHERE admission_drive_name = #{admissionDriveName} AND is_active = true), -->
+				extract(epoch FROM now()),
+				#{formFees.totalPrice},
+				#{formFees.totalPrice}, 
+				#{formFees.paymentMode},
+				'FEES',
+				'FEES',
+				'PENDING',
+				(SELECT academic_year_name FROM academic_year WHERE is_active = true AND year_status = (SELECT rec_id FROM status_flag WHERE status_sym ='C')),
+				#{formFees.courseName},
+				to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'YYYY'),
+				to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'MM')
+				,#{formFees.totalPrice}
+				,'ADMISSION DEPARTMENT',
+				'INCOME',
+				(SELECT rec_id FROM ledger WHERE ledger_code = 'BANK')
+			);
+		</foreach>
+	</insert>
+	
+	<select id="selectTotalFeesFromAdmission" resultType="com.qts.icam.model.admission.AdmissionForm">
+		SELECT 
+				c.course_name as courseName, 
+				SUM(admission_fees_received) as totalPrice
+		FROM 
+				print_admission_form paf
+		JOIN 
+				course c ON (paf.course = c.rec_id AND c.is_active = true)
+		WHERE 
+				(SELECT to_char((SELECT to_timestamp(paf.date_of_creation)),'DD/MM/YYYY')) = to_char( now(), 'DD/MM/YYYY' )
+		AND 
+				paf.is_active = true
+		AND	
+				paf.phase_admitted = 'ADMITTED'
+		GROUP BY 
+				c.course_name;
+	</select>
+	
+	<!-- naimisha.ghosh 24062017 -->
+	
+	<insert id="insertTotalAdmissionFeesIntoTransactionalWorkingArea" parameterType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		INSERT INTO transactional_working_area(
+			rec_id,
+			obj_id,
+			updated_by,
+			updated_on, 
+			date_of_creation,
+			transactional_working_area_code,
+			transactional_working_area_name, 
+			transactional_working_area_desc,
+			resource,
+			transaction_date,	
+			transaction_year,
+			transaction_month,
+			gross_amount,
+			net_amount,
+			transaction_mode
+			<choose>
+				<when test="transactionMode == 'BANK'">
+					,bank_amount,
+					cheque_no,
+					bank_name,
+					bank_code,
+					bank_location
+				</when>
+				<otherwise>
+					,cash_amount
+				</otherwise>
+			</choose>
+			,reason_of_transaction,
+			desc_of_transaction,
+			paid_against,
+			transaction_status,
+			academic_year,
+			department,
+			resource_type,
+			income_expense,
+			ledger)
+		VALUES(
+			uuid_generate_v4(),
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			extract(epoch FROM now()), 
+			extract(epoch FROM now()),
+			(SELECT('TWA' ||(SELECT COALESCE((SELECT MAX(transactional_working_area_id) FROM transactional_working_area), 0)+1))),
+			#{transactionalWorkingAreaName}, 
+			#{transactionalWorkingAreaDesc},
+			#{resource},
+			extract(epoch FROM now()),			
+			to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'YYYY'),
+			to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'MM'),
+			#{netAmount},
+			#{netAmount}, 
+			#{transactionMode}
+			<choose>
+				<when test="transactionMode == 'BANK'">
+					,#{netAmount},
+					#{chequeNo},
+					#{bankName},
+					#{bankCode},
+					#{bankLocation}
+				</when>
+				<otherwise>
+					,#{netAmount}
+				</otherwise>
+			</choose>
+			,'ADMISSION',
+			#{descOfTransaction},
+			#{paidAgainst},
+			'PENDING',
+			(SELECT academic_year_name FROM academic_year WHERE year_status=(SELECT rec_id FROM status_flag WHERE status_sym='C')),
+			 (SELECT department_name FROM department WHERE department_code = #{department}), 
+			<!-- 'INVENTORY AND MESS', -->
+			'STUDENT',
+			#{incomeExpense},
+			(SELECT rec_id FROM ledger WHERE ledger_code = #{academicYear} AND is_active = true)
+		);
+	</insert>
+	
+	<select id="fetchStudentNameAgainstRegistrationId" resultType="com.qts.icam.model.common.Student" parameterType = "java.lang.String">
+		SELECT
+			first_name || ' ' || COALESCE(middle_name,'') || ' ' || COALESCE(last_name,' ') as studentName,
+			admission_fees_received as totAmmount,
+			c.course_code as courseName,
+			term_code as term,
+			social_category_code as courseId
+		FROM
+			print_admission_form paf
+		JOIN
+			course c ON (paf.course = c.rec_id AND paf.is_active = true)
+		JOIN
+			term t ON (t.rec_id  = paf.term AND t.is_active = true)
+		JOIN
+			social_category sc ON (sc.rec_id = paf.social_category)
+		WHERE
+			registration_id = #{registrationId};
+	</select>
+	
+	<select id="fetchStudentFeesDetailsForACourse" resultType="com.qts.icam.model.backoffice.Fees" parameterType = "com.qts.icam.model.common.Student">
+		SELECT
+			 fs.fees_structure_code as feesCode,
+			 amount as feesName
+		FROM
+			student_fees_template_amount sfta
+		LEFT JOIN
+			student_fees_template_details sftd ON (sfta.student_fees_template_details = sftd.rec_id AND sftd.is_active = true)
+		LEFT JOIN
+			fees_structure fs ON (sftd.fees_structure = fs.rec_id AND fs.is_active = true)
+		JOIN
+			social_category sc ON (sfta.social_category = sc.rec_id AND sc.is_active = true)
+		JOIN
+			course c ON (sfta.course = c.rec_id AND c.is_active = true)
+		JOIN
+			print_admission_form paf ON (paf.course = c.rec_id AND paf.is_active = true)
+		JOIN
+			term t ON (sfta.term = t.rec_id AND t.is_active = true)
+		WHERE
+			c.course_code = #{courseName}
+		AND
+			term_code = #{term}
+		AND
+			social_category_code = #{courseId}
+		AND
+			registration_id = #{registrationId};
+	</select>
+	
+	 <parameterMap id="generateAdmissionDriveCodeForAProgramParameterMap" type="com.qts.icam.model.admission.AdmissionForm">
+		<parameter property="courseCode" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="admissionDriveName" jdbcType="VARCHAR" mode="OUT" />
+	</parameterMap>
+
+	<select id="generateAdmissionDriveCodeForAProgram" parameterMap="generateAdmissionDriveCodeForAProgramParameterMap" statementType="CALLABLE">
+		{? = call generateadmissiondrivecodeforprogram(?)}
+	</select> 
+	<!-- <update id="generateAdmissionDriveCodeForAProgram" parameterType="com.qts.icam.model.admission.AdmissionForm"
+		statementType="CALLABLE">
+		select generateadmissiondrivecodeforprogram(
+		#{courseCode, mode=IN, jdbcType=VARCHAR}
+		)
+	</update> -->
+	<!-- anup.roy for select list for distinct classes 02.08.2017  -->
+	<select id="selectStandardListForDrive" resultType="com.qts.icam.model.common.Standard">
+		SELECT DISTINCT
+			c.course_id as standardId,
+			c.course_name as standardName,
+			c.course_code as standardCode
+		FROM
+			course c
+		JOIN
+			admission_drive ad ON (ad.course = c.rec_id AND ad.is_active = true)
+		WHERE
+			c.is_active = true
+		ORDER BY
+		     c.course_id;
+	</select>
+	
+	<select id="getAllOnlineCourses" resultType="com.qts.icam.model.common.Course">
+		SELECT
+			c.course_code as courseCode,
+			c.course_name as courseName
+		FROM
+			course c
+		WHERE
+			c.publish_status = (SELECT rec_id FROM status_flag sf WHERE sf.status_desc = 'PUBLISHED' AND sf.is_active = true)
+		AND
+			c.admission_mode = 'ONLINE'
+		AND
+			c.is_active = true
+	</select>
+	
+	<select id="getDriveAgainstCourse" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			cd.admission_drive as drive
+		FROM 
+			course_details cd
+		JOIN
+			course c ON (cd.course = c.rec_id AND c.is_active = true)
+		JOIN 
+			admission_drive_status ads ON (cd.drive_status = ads.rec_id AND ads.is_active = true)
+		JOIN 
+			academic_year ay ON (cd.academic_year = ay.rec_id AND ay.is_active = true)
+		WHERE 
+			c.course_code = #{course}
+		AND 
+			ads.admission_drive_status_code = 'PUBLISHED'
+		AND
+			ay.year_status = (select rec_id from status_flag sf where sf.status_sym = 'C' and sf.is_active = true)
+		AND 
+			cd.is_active = true
+	</select>	
+</mapper>

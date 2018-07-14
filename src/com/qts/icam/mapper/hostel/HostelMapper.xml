@@ -1,0 +1,1253 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.mapper.hostel.HostelMapper">
+	<insert id="insertHostelFacility" parameterType="com.qts.icam.model.hostel.HostelFacility">
+		INSERT INTO hostel_facility(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			hostel_facility_code, hostel_facility_name, hostel_facility_desc)
+		VALUES ((select uuid_generate_v4()), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			#{hostelFacilityCode}, #{hostelFacilityName}, #{desc});			
+		<foreach item="hstl" collection="hostelList"  open="" close="" separator=";">
+			INSERT INTO hostel_facility_hostel_mapping(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+				hostel, hostel_facility)
+			VALUES (uuid_generate_v4(), #{objectId},
+				(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+				extract(epoch FROM now()),extract(epoch FROM now()),
+				(SELECT rec_id FROM hostel WHERE hostel_code =#{hstl.hostelCode} AND is_active = true),
+				(SELECT rec_id FROM hostel_facility WHERE hostel_facility_code =#{hostelFacilityCode} AND is_active = true));
+		</foreach>
+	</insert>
+	
+	<resultMap id="selectHostelFacilityDetailsRM" type="com.qts.icam.model.hostel.HostelFacility">
+		<id property="hostelFacilityId" column="hostel_facility_id" jdbcType="INTEGER" />
+		<result property="hostelFacilityCode" column="hostel_facility_code" jdbcType="VARCHAR" />
+		<result property="hostelFacilityName" column="hostel_facility_name" jdbcType="VARCHAR" />
+		<collection property="hostelList" ofType="com.qts.icam.model.hostel.Hostel">
+			<id property="hostelId" column="hostel_id" jdbcType="INTEGER" />
+			<result property="hostelCode" column="hostel_code" jdbcType="VARCHAR" />				
+			<result property="hostelName" column="hostel_name" jdbcType="VARCHAR" />
+			<result property="desc" column="hostel_desc" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="selectHostelFacilityDetails" parameterType="java.lang.String" resultMap="selectHostelFacilityDetailsRM">
+		SELECT
+			hf.hostel_facility_id,
+			hf.hostel_facility_code,
+			hf.hostel_facility_name,
+			h.hostel_id,
+			h.hostel_code,
+			h.hostel_name,
+			h.hostel_desc
+		FROM hostel_facility hf
+		JOIN hostel_facility_hostel_mapping hfhm ON(hf.rec_id=hfhm.hostel_facility AND hfhm.is_active=true)
+		JOIN hostel h ON(h.rec_id=hfhm.hostel AND h.is_active=true)
+		WHERE
+			hf.is_active=true
+			AND
+			hf.hostel_facility_code=#{hostelFacilityCode}
+		ORDER BY hf.hostel_facility_id;
+	</select>
+	
+	<update id="inactiveHostelFacilityMapping" parameterType="com.qts.icam.model.hostel.HostelFacility">
+	 	<foreach item="oldHostel" collection="oldHostelList" index="index" open="" close="" separator=";">
+			UPDATE hostel_facility_hostel_mapping SET
+				updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+				updated_on=extract(epoch FROM now()),
+				is_active=false
+			WHERE
+				hostel=(SELECT rec_id FROM hostel WHERE hostel_code =#{oldHostel.hostelCode} AND is_active = true)
+				AND
+				hostel_facility=(SELECT rec_id FROM hostel_facility WHERE hostel_facility_code =#{hostelFacilityCode} AND is_active = true)
+				AND
+				is_active=true;
+		</foreach>
+	</update>
+	<select id="selectInactiveHostelFacilityMapping" resultType="com.qts.icam.model.hostel.HostelFacility" parameterType="com.qts.icam.model.hostel.HostelFacility">
+		SELECT
+			hf.hostel_facility_code as hostelFacilityCode,
+			h.hostel_code as hostel
+		FROM hostel_facility_hostel_mapping hfhm
+		JOIN hostel_facility hf ON(hf.rec_id=hfhm.hostel_facility AND hf.is_active=true)
+		JOIN hostel h ON(h.rec_id=hfhm.hostel AND h.is_active=true)
+		WHERE
+			hfhm.is_active=false
+			AND
+			hf.hostel_facility_code=#{hostelFacilityCode}
+			AND
+			h.hostel_code=#{hostel};
+	</select>
+	<update id="updateHostelFacilityMapping" parameterType="com.qts.icam.model.hostel.HostelFacility">
+		UPDATE hostel_facility_hostel_mapping SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			is_active=true
+		WHERE
+			hostel=(SELECT rec_id FROM hostel WHERE hostel_code =#{hostel} AND is_active = true)
+			AND
+			hostel_facility=(SELECT rec_id FROM hostel_facility WHERE hostel_facility_code =#{hostelFacilityCode} AND is_active = true)
+			AND
+			is_active=false;
+	</update>
+	<insert id="insertNewHostelFacilityMapping" parameterType="com.qts.icam.model.hostel.HostelFacility">
+		INSERT INTO hostel_facility_hostel_mapping(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			hostel, hostel_facility)
+		VALUES (uuid_generate_v4(), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+			extract(epoch FROM now()),extract(epoch FROM now()),
+			(SELECT rec_id FROM hostel WHERE hostel_code =#{hostel} AND is_active = true),
+			(SELECT rec_id FROM hostel_facility WHERE hostel_facility_code =#{hostelFacilityCode} AND is_active = true));
+	</insert>
+	<update id="updateHostelFacility" parameterType="com.qts.icam.model.hostel.HostelFacility">
+		UPDATE hostel_facility SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			hostel_facility_code=#{hostelFacilityName},
+			hostel_facility_name=#{hostelFacilityName},
+			hostel_facility_desc=#{desc}
+		WHERE
+			hostel_facility_code=#{hostelFacilityCode}
+			AND
+			is_active=true;
+	</update>
+	
+	<select id="selectAllStudentsForEveryHostel" resultType="com.qts.icam.model.common.Student">
+		SELECT
+			r.roll_number as rollNumber,
+			r.first_name || ' ' || COALESCE(r.middle_name ,'') || ' ' || COALESCE(r.last_name ,' ') as studentName,
+			sec.section_name as section,
+			std.standard_name as standard,
+			host.hostel_name as house
+		FROM
+			resource r
+			LEFT JOIN section sec ON(r.section=sec.rec_id AND sec.is_active=true)
+			LEFT JOIN standard std ON(sec.standard=std.rec_id AND std.is_active=true)
+			LEFT JOIN hostel host ON(r.hostel=host.rec_id AND host.is_active=true)
+			JOIN resource_type rt ON(rt.rec_id=r.resource_type AND rt.is_active=true)
+			LEFT JOIN subject sub ON (r.second_language = sub.rec_id AND sub.is_active = true)
+		WHERE
+			r.is_active=true
+			AND
+			rt.resource_type_name='STUDENT'
+	</select>
+	
+	<!-- Total hostel portion will be from here -->
+	
+	<select id="getHostelTypeList" resultType="com.qts.icam.model.common.HostelType">
+	    SELECT
+			hostel_type_code as hostelTypeCode,
+			hostel_type_name as hostelTypeName
+	    FROM
+			hostel_type
+	    WHERE
+			is_active = true;
+	</select>
+	
+	<select id="selectHostel" resultType="com.qts.icam.model.hostel.Hostel">
+		SELECT
+			ht.hostel_type_name as "hostelType.hostelTypeName",
+			h.hostel_id as hostelId,
+			h.hostel_code as hostelCode,
+			h.hostel_name as hostelName,
+			h.abbreviation as hostelAbbreviation,
+			h.zone as zone,
+			g.gender_name as gender
+		FROM 
+			hostel h
+		JOIN
+			hostel_type ht ON (h.hostel_type = ht.rec_id AND ht.is_active = true)
+		JOIN
+			gender g ON (h.gender = g.rec_id AND g.is_active = true)
+		WHERE 
+			h.is_active = true
+		ORDER BY h.hostel_id;
+	</select>
+	
+	<insert id="insertHostel" parameterType="com.qts.icam.model.hostel.Hostel">
+		INSERT INTO hostel(
+							rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+							hostel_code, hostel_name, zone, hostel_type,gender,abbreviation)
+					VALUES (
+							(select uuid_generate_v4()), #{objectId},(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+							(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+							#{hostelCode}, #{hostelName}, #{zone},
+							(SELECT rec_id FROM hostel_type WHERE hostel_type_code = #{hostelType.hostelTypeCode} AND is_active = true),
+							(SELECT rec_id FROM gender WHERE gender_code = #{gender} AND is_active = true),#{hostelAbbreviation});
+	</insert>
+	
+	<update id="updateHostel" parameterType="com.qts.icam.model.hostel.Hostel">
+		UPDATE hostel SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = extract(epoch FROM now()),
+			hostel_code = #{hostelName},
+			hostel_name = #{hostelName},
+			abbreviation = #{hostelAbbreviation},
+			zone = #{zone}
+		WHERE
+			hostel_code = #{hostelCode}
+		AND
+			is_active = true;
+	</update>
+	
+	<resultMap id="selectRoomTypeResultMap" type="com.qts.icam.model.common.RoomType">
+		<id property="roomTypeCode" column="hostel_room_type_code" jdbcType="VARCHAR"/>	
+		<result property="roomTypeName" column="hostel_room_type_name" jdbcType="VARCHAR"/>
+		<collection property="socialCategoryList" ofType="com.qts.icam.model.common.SocialCategory">
+			<id property="socialCategoryCode" column="social_category_code" jdbcType="VARCHAR"/>
+			<result property="socialCategoryName" column="social_category_name" jdbcType="VARCHAR"/>
+			<result property="amount" column="charge" jdbcType="DOUBLE"/>
+		</collection>
+	</resultMap>
+	
+	<select id="selectRoomType" resultMap="selectRoomTypeResultMap">
+		 SELECT 
+				hrt.hostel_room_type_code,
+				hrt.hostel_room_type_name,
+				sc.social_category_code,
+				sc.social_category_name,
+				COALESCE(hrtc.charge, 0 )as charge
+			FROM
+				hostel_room_type hrt
+			JOIN
+				social_category sc ON  (sc.is_active = true) 
+			LEFT JOIN 
+				hostel_room_type_charge hrtc ON (hrtc.hostel_room_type = hrt.rec_id) AND (hrtc.is_active = true) AND (sc.rec_id = hrtc.social_category)
+			WHERE
+				 hrt.is_active = true
+			ORDER BY sc.social_category_id;
+	</select>
+	
+	<select id="getSocialCategoryList" resultType = "com.qts.icam.model.common.SocialCategory">
+		SELECT
+			social_category_id as socialCategoryId,
+			social_category_code as socialCategoryCode,
+			social_category_name as socialCategoryName
+		FROM 
+			social_category
+		WHERE
+			is_active = true
+		ORDER BY 
+			social_category_id;			
+	</select>
+	
+	<insert id="insertRoomType" parameterType="com.qts.icam.model.common.RoomType">
+	
+		INSERT INTO hostel_room_type(
+								rec_id, obj_id, updated_by, updated_on, date_of_creation,
+								hostel_room_type_code, hostel_room_type_name)
+   							VALUES(
+    								(SELECT uuid_generate_v4()),
+		    						#{roomTypeObjectId},
+		    						(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+		    						(SELECT extract(epoch FROM now())),
+		    						(SELECT extract(epoch FROM now())),
+		    						upper(#{roomTypeName}),
+		    						upper(#{roomTypeName}));
+	</insert>
+	
+	<insert id="insertRoomTypeCharge" parameterType="com.qts.icam.model.common.SocialCategory">
+		INSERT INTO hostel_room_type_charge(
+	            rec_id, obj_id, updated_by, updated_on, date_of_creation,
+	            hostel_room_type, social_category, charge)
+	    VALUES (
+	    	(SELECT uuid_generate_v4()), #{objectId},
+		    (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+		    (SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+		    (SELECT rec_id FROM hostel_room_type WHERE hostel_room_type_name = #{desc} AND is_active = true),
+		    (SELECT rec_id FROM social_category WHERE social_category_code = #{socialCategoryCode} AND is_active = true),
+		    #{amount});
+	</insert>
+	
+	<resultMap id="selectRoomTypeDetailsResultMap" type="com.qts.icam.model.common.RoomType">
+		<id property="roomTypeCode" column="hostel_room_type_code" jdbcType="VARCHAR"/>	
+		<result property="roomTypeName" column="hostel_room_type_name" jdbcType="VARCHAR"/>
+		<result property="roomTypeDesc" column="hostel_room_type_desc" jdbcType="VARCHAR"/>
+		<collection property="socialCategoryList" ofType="com.qts.icam.model.common.SocialCategory">
+			<id property="socialCategoryCode" column="social_category_code" jdbcType="VARCHAR"/>
+			<result property="socialCategoryName" column="social_category_name" jdbcType="VARCHAR"/>
+			<result property="amount" column="charge" jdbcType="DOUBLE"/>
+		</collection>
+	</resultMap>	
+	
+	<select id="selectRoomTypeDetails" resultMap="selectRoomTypeDetailsResultMap">
+		 SELECT 
+				hrt.hostel_room_type_code,
+				hrt.hostel_room_type_name,
+				sc.social_category_code,
+				sc.social_category_name,
+				COALESCE(hrtc.charge, 0 )as charge
+			FROM
+				hostel_room_type hrt
+			JOIN
+				social_category sc ON  (sc.is_active = true) 
+			LEFT JOIN 
+				hostel_room_type_charge hrtc ON (hrtc.hostel_room_type = hrt.rec_id) AND (hrtc.is_active = true) AND (sc.rec_id = hrtc.social_category)
+			WHERE
+				 hrt.is_active = true
+			AND
+				 hrt.hostel_room_type_code = #{roomType}
+			ORDER BY sc.social_category_id
+	</select>
+	
+	<update id="inactiveRoomTypeCharge" parameterType="com.qts.icam.model.common.RoomType">
+		UPDATE 
+			hostel_room_type_charge
+		SET
+			is_active = false
+		WHERE
+			hostel_room_type = ((SELECT rec_id from hostel_room_type WHERE hostel_room_type_code = #{roomTypeCode}))
+	</update>
+	
+	<update id="updateRoomType" parameterType="com.qts.icam.model.common.RoomType">
+		UPDATE 
+			hostel_room_type
+		SET
+			hostel_room_type_code = upper(#{roomTypeName}),
+			hostel_room_type_name = upper(#{roomTypeName})
+		WHERE
+			hostel_room_type_code = #{roomTypeCode}
+		AND
+			is_active = true;
+	</update>
+	
+	<insert id="insertHostelFacilities" parameterType="com.qts.icam.model.hostel.HostelFacility">
+		INSERT INTO hostel_facility (
+									rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+									hostel_facility_code, hostel_facility_name, hostel, hostel_facility_desc)
+    						VALUES(
+    								(SELECT uuid_generate_v4()),
+		    						#{hostelFacilityObjectId},
+		    						(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+		    						(SELECT extract(epoch FROM now())),
+		    						(SELECT extract(epoch FROM now())),
+		    						upper(#{hostelFacilityName}),
+		    						upper(#{hostelFacilityName}),
+		    						(SELECT rec_id FROM hostel WHERE hostel_name = #{hostelName} AND is_active=true),
+		    						#{hostelFacilityDesc});
+		
+	</insert>
+	
+	<insert id="insertHostelFacilitiesCharge" parameterType="com.qts.icam.model.hostel.HostelFacility">
+		INSERT INTO hostel_facility_charge(
+								            rec_id, obj_id, updated_by, updated_on, date_of_creation, hostel_facility, social_category, charge)
+								    VALUES (
+										    (SELECT uuid_generate_v4()),
+										    #{hostelFacilityObjectId},
+										    (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active=true),
+										    (SELECT extract(epoch FROM now())),
+										    (SELECT extract(epoch FROM now())),
+										    (SELECT rec_id FROM hostel_facility WHERE hostel =(SELECT rec_id FROM hostel WHERE hostel_name =#{hostelName} AND is_active=true) AND hostel_facility_code =upper(#{hostelFacilityName}) AND is_active=true),
+										    (SELECT rec_id FROM social_category WHERE social_category_code =#{socialCategory.socialCategoryCode} AND is_active=true),
+										    #{socialCategory.amount}
+										    );
+	</insert>
+	
+	<resultMap id="selectHostelFacilitiesListResultMap" type="com.qts.icam.model.hostel.HostelFacility">
+		<id property="hostelFacilityCode" column="hostel_facility_code" jdbcType="VARCHAR"/>	
+		<result property="hostelFacilityName" column="hostel_facility_name" jdbcType="VARCHAR"/>	
+		<result property="hostelFacilityDesc" column="hostel_facility_desc" jdbcType="VARCHAR"/>
+		<collection property="hostelList" ofType="com.qts.icam.model.hostel.Hostel">
+			<id property="hostelCode" column="hostel_code" jdbcType="VARCHAR"/>	
+			<result property="hostelName" column="hostel_name" jdbcType="VARCHAR"/>	
+		</collection>
+	</resultMap>	
+	
+	<select id="selectHostelFacilitiesList" resultMap="selectHostelFacilitiesListResultMap">	
+		SELECT
+			hf.hostel_facility_code,
+			hf.hostel_facility_name,
+			hf.hostel_facility_desc,
+			h.hostel_name,
+			h.hostel_code
+		FROM 
+			hostel_facility hf		
+		JOIN 
+			hostel h ON (h.rec_id = hf.hostel AND h.is_active = true)	
+		WHERE
+			hf.is_active = true;
+	</select>
+	
+	<resultMap id="selectHostelFacilityResultMap" type="com.qts.icam.model.hostel.HostelFacility">	
+		<id property="hostelFacilityCode" column="hotel_facility_code" jdbcType="VARCHAR"/>	
+		<result property="hostelFacilityName" column="hotel_facility_name" jdbcType="VARCHAR"/>	
+		<result property="hostelFacilityDesc" column="hostel_facility_desc" jdbcType="VARCHAR"/>
+		<collection property="hostelList" ofType="com.qts.icam.model.hostel.Hostel">
+			<id property="hostelCode" column="hostel_code" jdbcType="VARCHAR"/>	
+			<result property="hostelName" column="hostel_name" jdbcType="VARCHAR"/>	
+		</collection>
+		<collection property="socialCategoryList" ofType="com.qts.icam.model.common.SocialCategory">
+			<id property="socialCategoryName" column="social_category_name" jdbcType="VARCHAR"/>	
+			<result property="amount" column="charge" jdbcType="DOUBLE"/>	
+		</collection>
+	</resultMap>	
+	
+	<select id="selectHostelFacility" parameterType="String" resultMap="selectHostelFacilityResultMap">	
+		SELECT 		
+			h.hostel_code,	
+			h.hostel_name,
+			hf.hostel_facility_code,
+			hf.hostel_facility_name,
+			hf.hostel_facility_desc,
+			hfc.charge,
+			sc .social_category_name
+		FROM 
+			hostel_facility hf		
+		JOIN 
+			hostel h ON (h.rec_id = hf.hostel)
+		LEFT JOIN   
+			 hostel_facility_charge hfc ON (hfc.hostel_facility = hf.rec_id )	
+		LEFT JOIN
+			social_category sc ON (sc.rec_id = hfc.social_category)
+		WHERE	
+			hf.hostel_facility_code = #{hostelFacilityCode}
+		AND 
+			h.is_active = true	
+		AND
+			hf.is_active = true
+		AND 
+			hfc.is_active = true;
+	</select>
+	
+	<resultMap id="hostelRoomFcilityListResultMap" type="com.qts.icam.model.common.RoomFacility">
+		<id property="roomFacilityCode" column="hostel_room_facility_code" jdbcType="VARCHAR"/>
+		<result property="roomFacilityName" column="hostel_room_facility_name" jdbcType="VARCHAR"/>			
+	</resultMap>
+	
+	<select id="hostelRoomFcilityList" resultMap="hostelRoomFcilityListResultMap">	
+		SELECT 
+			hostel_room_facility_code,
+			hostel_room_facility_name
+		FROM 
+			hostel_room_facility		
+		WHERE 
+			is_active = true
+		AND 
+			hostel_room_facility_code IS NOT NULL;	
+	</select> 
+	
+	<parameterMap id="insertRoomMapResult" type="com.qts.icam.model.common.Room" >   	 	
+   	 	<parameter property="roomObjectId" jdbcType="VARCHAR" mode="IN" />  
+   	 	<parameter property="updatedBy"  jdbcType="VARCHAR" mode="IN" />    	 	
+   	 	<parameter property="roomName"  jdbcType="VARCHAR" mode="IN" /> 
+   	 	<parameter property="roomDesc"  jdbcType="VARCHAR" mode="IN" />  
+   	 	<parameter property="bedTotal"  jdbcType="INTEGER" mode="IN" /> 
+   	 	<parameter property="bedOccupied"  jdbcType="INTEGER" mode="IN" />   	 	 
+   	 	<parameter property="roomTypeCode"  jdbcType="VARCHAR" mode="IN" /> 
+   	 	<parameter property="hostelName"  jdbcType="VARCHAR" mode="IN" /> 
+   	 	<parameter property="roomSerialId" jdbcType="INTEGER" mode="OUT" />   	 	
+	</parameterMap>
+	
+	<insert id="insertRoom" parameterMap="insertRoomMapResult" statementType="CALLABLE">
+		{? = call insert_into_room(?,?,?,?,?,?,?,?)}
+	</insert>
+	
+	<insert id="editRoomFacility" parameterType="com.qts.icam.model.common.RoomFacility" statementType="CALLABLE">
+		
+		select edit_room_and_facility(
+				#{roomFacilityObjectId, mode=IN, jdbcType=VARCHAR},							
+				#{updatedBy, mode=IN, jdbcType=VARCHAR},
+				#{roomCode, mode=IN, jdbcType=VARCHAR},
+				#{roomFacilityCode, mode=IN, jdbcType=VARCHAR},							
+				#{roomFacilityName, mode=IN, jdbcType=VARCHAR},									
+				#{roomFacilityQuantity, mode=IN, jdbcType=INTEGER}
+				)
+	</insert>
+	
+	<select id="checkRoomAvailability" parameterType="com.qts.icam.model.common.Room" resultType="com.qts.icam.model.common.RoomType">
+		SELECT
+			hostel_room_type_availability_code as status
+		FROM
+			hostel_room_type_availability hrta
+		JOIN 
+			hostel h ON (hrta.hostel = h.rec_id AND h.is_active = true)
+		JOIN 
+			hostel_room_type rt ON (hrta.room_type = rt.rec_id AND rt.is_active = true)
+		WHERE
+			h.hostel_code = #{hostelName}
+		AND
+			rt.hostel_room_type_code = #{roomTypeCode}
+		AND
+			hrta.is_active = true;
+	</select>
+	
+	<update id="updateRoomAvailability" parameterType="com.qts.icam.model.common.Room">
+		UPDATE hostel_room_type_availability
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			total_seat = (total_seat+(#{bedTotal})),
+			avl_seat = (avl_seat+(#{bedTotal}))
+		WHERE
+			hostel_room_type_availability_code = #{roomCode}
+		AND
+			is_active = true;
+	</update>
+	
+	<insert id="insertRoomAvailability" parameterType="com.qts.icam.model.common.Room">
+		INSERT INTO hostel_room_type_availability(
+										            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+										            hostel_room_type_availability_code, hostel_room_type_availability_name, hostel, room_type, total_seat, avl_seat)
+									    VALUES (
+											uuid_generate_v4(),
+											#{roomObjectId},
+											(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+									        (SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+									        (SELECT ('HRTA-CODE-' ||(select COALESCE((SELECT MAX(hostel_room_type_availability_id) FROM hostel_room_type_availability), 0 )+1))),
+									        (SELECT ('HRTA-NAME-' ||(select COALESCE((SELECT MAX(hostel_room_type_availability_id) FROM hostel_room_type_availability), 0 )+1))),
+									        (SELECT rec_id FROM hostel WHERE hostel_code =#{hostelName} AND is_active=true),
+									        (SELECT rec_id FROM hostel_room_type WHERE hostel_room_type_code =#{roomTypeCode} AND is_active=true),
+									        #{bedTotal}, 
+									        #{bedTotal});
+	</insert>
+	
+	<resultMap id="roomListResultMap" type="com.qts.icam.model.common.Room">
+		<id property="roomCode" column="hostel_room_code" jdbcType="VARCHAR"/>	
+		<id property="roomName" column="hostel_room_name" jdbcType="VARCHAR"/>	
+		<id property="bedTotal" column="total_bed" jdbcType="INTEGER"/>	
+		<id property="bedVaccent" column="bed_vacent" jdbcType="INTEGER"/>	
+		<id property="bedOccupied" column="bed_occupied" jdbcType="INTEGER"/>			
+		<id property="hostelName" column="hostel_name" jdbcType="VARCHAR"/>		
+	</resultMap>
+	<select id="roomList" parameterType="java.util.Map" resultMap="roomListResultMap">	
+		SELECT
+			r.hostel_room_code,
+			r.hostel_room_name,
+			r.total_bed,
+			r.bed_vacent,
+			r.bed_occupied,
+			h.hostel_name
+		FROM 
+			hostel_room r
+		JOIN 
+			hostel h ON (r.hostel = h.rec_id)
+		WHERE
+			r.is_active = true	
+		AND 
+			r.hostel_room_code IS NOT NULL;			
+	</select>
+	
+	<resultMap id="editRoomAndFacilitiesListResultMap" type="com.qts.icam.model.common.Room">
+	<id property="hostelName" column="hostel_name" jdbcType="VARCHAR"/>	
+	<result property="roomCode" column="hostel_room_code" jdbcType="VARCHAR"/>	
+	<result property="roomName" column="hostel_room_name" jdbcType="VARCHAR"/>	
+	<result property="roomDesc" column="hostel_room_desc" jdbcType="VARCHAR"/>	
+	<result property="bedTotal" column="total_bed" jdbcType="INTEGER"/>	
+	<collection property="roomFacilityList" ofType="com.qts.icam.model.common.RoomFacility">
+		<id property="roomFacilityName" column="hostel_room_facility_name" jdbcType="VARCHAR"/>
+		<result property="roomFacilityCode" column="hostel_room_facility_code" jdbcType="VARCHAR"/>
+		<result property="roomFacilityQuantity" column="quantity" jdbcType="INTEGER"/>
+	</collection>
+		
+	<collection property="roomTypeList" ofType="com.qts.icam.model.common.RoomType">
+		<id property="roomTypeCode" column="hostel_room_type_code" jdbcType="VARCHAR"/>
+		<result property="roomTypeName" column="hostel_room_type_name" jdbcType="VARCHAR"/>
+	</collection>
+	</resultMap>
+	
+	<select id="editRoomAndFacilitiesList" parameterType="String" resultMap="editRoomAndFacilitiesListResultMap">	
+		SELECT 			
+			h.hostel_name,
+			hrt.hostel_room_type_code,
+			hrt.hostel_room_type_name,
+			hr.hostel_room_code,
+			hr.hostel_room_name,
+			hr.hostel_room_desc,
+			hr.total_bed,
+			hrf.hostel_room_facility_code,
+			hrf.hostel_room_facility_name,
+			hrfm.quantity
+		FROM 
+			hostel h
+		JOIN 
+			hostel_room hr ON (h.rec_id = hr.hostel)
+		JOIN 
+			hostel_room_type hrt ON (hr.hostel_room_type = hrt.rec_id)
+		LEFT JOIN 
+			hostel_room_facility_mapping hrfm ON (hr.rec_id = hrfm.hostel_room)
+		RIGHT JOIN 
+			hostel_room_facility hrf ON (hrf.rec_id = hrfm.hostel_room_facility) 	
+		WHERE	
+			hr.hostel_room_code = #{roomCode}
+		AND			
+			hr.is_active = true
+		AND 
+			hrf.is_active = true
+		AND 
+			hrfm.is_active = true;
+	</select> 
+	
+	<select id="selectFacilityQuantity" parameterType="com.qts.icam.model.common.RoomFacility" resultType="com.qts.icam.model.common.RoomFacility">	
+					 	
+		SELECT 
+			hrfm.quantity as roomFacilityQuantity
+		FROM 
+			hostel_room_facility_mapping hrfm
+		JOIN	
+			hostel_room hr ON(hr.rec_id = hrfm.hostel_room AND hr.is_active = true)
+		JOIN		
+			hostel_room_facility hrf ON (hrf.rec_id = hrfm.hostel_room_facility AND hrf.is_active = true)		
+		WHERE	
+			hrfm.is_active = true
+		AND 
+			hrf.hostel_room_facility_code =#{roomFacilityCode}
+		AND 
+			hr.hostel_room_code =#{room.roomCode};
+	</select>
+	
+	<resultMap id="selectRoomForNoFacilityResultMap" type="com.qts.icam.model.common.Room">	
+		<id property="hostelName" column="hostel_name" jdbcType="VARCHAR"/>	
+		<result property="roomCode" column="hostel_room_code" jdbcType="VARCHAR"/>	
+		<result property="roomName" column="hostel_room_name" jdbcType="VARCHAR"/>	
+		<result property="roomDesc" column="hostel_room_desc" jdbcType="VARCHAR"/>	
+		<result property="bedTotal" column="total_bed" jdbcType="INTEGER"/>		
+		<collection property="roomTypeList" ofType="com.qts.icam.model.common.RoomType">
+			<id property="roomTypeCode" column="hostel_room_type_code" jdbcType="VARCHAR"/>
+			<result property="roomTypeName" column="hostel_room_type_name" jdbcType="VARCHAR"/>
+		</collection>
+	</resultMap>
+	
+	<select id="selectRoomForNoFacility" parameterType="String" resultMap="selectRoomForNoFacilityResultMap">	
+		SELECT 			
+			h.hostel_name,
+			hrt.hostel_room_type_code,
+			hrt.hostel_room_type_name,
+			hr.hostel_room_code,
+			hr.hostel_room_name,
+			hr.hostel_room_desc,
+			hr.total_bed
+			
+		FROM 
+			hostel h
+		JOIN 
+			hostel_room hr ON (h.rec_id = hr.hostel AND hr.is_active = true)
+		JOIN 
+			hostel_room_type hrt ON (hr.hostel_room_type = hrt.rec_id AND hrt.is_active = true)
+		WHERE	
+			hr.hostel_room_code = #{roomCode}
+		AND			
+			hr.is_active = true;
+	</select>
+	
+	<!-- ranita.sur 26062017 -->
+	
+	<select id="hostelSelectStudentList" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Resource" >	
+		SELECT 
+			r.user_id as userId,
+			r.first_name as firstName,
+  			r.middle_name as middleName,					
+			r.last_name as lastName,
+  			r.father_first_name as fatherFirstName,
+  			r.father_middle_name as fatherMiddleName,
+  			r.father_last_name as fatherLastName,
+  			r.mother_first_name as motherFirstName,
+  			r.mother_middle_name as motherMiddleName,
+  			r.mother_last_name as motherLastName,
+  			to_char((SELECT to_timestamp(r.date_of_birth)), 'DD/MM/YYYY') as dateOfBirth,
+  			r.email_address as emailId,
+  			r.mobile_no as mobile,
+  			r.religion as religion,
+  			sc.section_name as "section.sectionName",
+  			st.standard_name as klass,
+   			r.gender as gender
+		FROM 		
+			 resource r
+		JOIN
+			resource_type rt ON (r.resource_type = rt.rec_id  AND rt.is_active = true)
+		JOIN 
+			student_course_mapping scm ON (scm.user_id=r.user_id AND scm.is_active=true)
+		JOIN  
+			section sc ON (scm.section=sc.rec_id AND sc.is_active=true)
+		JOIN 
+			standard st ON (sc.standard = st.rec_id  AND st.is_active = true)
+		JOIN 
+			student_hostel_room_mapping shrm ON (shrm.student_roll_number = r.rec_id  AND shrm.is_active = true)
+		JOIN 
+			hostel_room hr ON (shrm.hostel_room = hr.rec_id  AND hr.is_active = true)
+		WHERE
+			rt.resource_type_name = 'STUDENT'		
+		AND
+			hr.hostel_room_code = #{roomCode}
+		AND
+			r.is_active = true;			
+	</select> 	
+	
+	<resultMap id="selectPresentAddressForStudentResultMap" type="com.qts.icam.model.common.Address">			
+		<id property="presentAddressCityVillage" column="city_name" jdbcType="VARCHAR"/>	
+		<result property="presentAddressPinCode" column="postal_code" jdbcType="VARCHAR"/>	
+		<result property="presentAddressState" column="state_name" jdbcType="VARCHAR"/>	
+		<result property="presentAddressCountry" column="country_name" jdbcType="VARCHAR"/>			
+		<result property="presentAddressPoliceStation" column="police_station" jdbcType="VARCHAR"/>	
+		<result property="presentAddressLine" column="address_1" jdbcType="VARCHAR"/>
+		<result property="presentAddressPostOffice" column="post_office" jdbcType="VARCHAR"/>	
+		<result property="presentAddressDistrict" column="district_name" jdbcType="VARCHAR"/>
+	</resultMap>
+	<select id="selectPresentAddressForStudent" resultMap="selectPresentAddressForStudentResultMap">	
+		SELECT 	
+			c.city_name,
+  			a.postal_code,
+  			s.state_name,
+  			cty.country_name,
+  			a.police_station,
+  			a.address_line,
+  			a.post_office,
+  			d.district_name
+  		FROM
+  			address a
+		LEFT JOIN 
+			city c ON (a.city = c.rec_id AND c.is_active = true)
+		LEFT JOIN 
+			state s ON (a.state = s.rec_id AND s.is_active = true)
+		LEFT JOIN 
+			district d ON (a.district = d.rec_id AND d.is_active = true)
+		LEFT JOIN 
+			country cty ON (a.country = cty.rec_id AND cty.is_active = true)
+		JOIN 
+			resource r ON (a.resource = r.rec_id AND r.is_active = true)
+		WHERE 
+			r.roll_number = #{userId}	
+	</select>
+	
+	
+	
+	<select id="getStudentList" resultType="com.qts.icam.model.common.Resource">	
+		SELECT distinct
+			r.user_id as userId, 
+			r.first_name as firstName , 
+			r.middle_name as middleName, 
+			r.last_name as lastName
+		FROM
+			resource r
+		JOIN    
+		    student_course_mapping scm ON(scm.user_id=r.user_id AND scm.is_active=true)
+		JOIN  
+			course c ON (scm.course = c.rec_id AND c.is_active = true)
+		JOIN
+			course_type ct ON(c.course_type=ct.rec_id AND ct.is_active=true)
+		WHERE
+			resource_type=( SELECT rec_id FROM resource_type WHERE resource_type_name = 'STUDENT')
+		AND
+			scm.is_active = true
+		AND 
+		   c.is_active=true
+
+		EXCEPT(	
+		SELECT
+				r.user_id as userId, 
+				r.first_name , 
+				r.middle_name , 
+				r.last_name 
+				
+		FROM
+			resource r
+		JOIN    
+		   	student_course_mapping scm ON(scm.user_id=r.user_id AND scm.is_active=true)
+		JOIN  
+			course c ON (scm.course = c.rec_id AND c.is_active = true)
+		JOIN
+			course_type ct ON(c.course_type=ct.rec_id AND ct.is_active=true)
+		JOIN
+			student_hostel_room_mapping shrm ON( shrm.student_roll_number=r.rec_id   AND shrm.is_active = true)
+		WHERE
+			r.is_active = true
+		);
+	</select>
+	
+	<select id="getHostelList" resultType="com.qts.icam.model.hostel.Hostel">	
+		SELECT
+			hostel_name as hostelName, 
+			hostel_code as hostelCode
+		FROM
+			hostel 
+		WHERE
+			is_active = true;
+	</select>
+	
+	<select id="selectHostelRoomTypeByStudent" parameterType="com.qts.icam.model.common.Resource" resultType="com.qts.icam.model.hostel.Hostel">
+		SELECT
+			h.hostel_name as hostelName,
+			h.hostel_code as hostelCode,
+			hrt.hostel_room_type_name as "room.roomTypeName",
+			hrt.hostel_room_type_code as "room.roomTypeCode"
+		FROM
+			hostel h
+		JOIN
+			hostel_room_type hrt ON (hrt.is_active = true)
+		JOIN
+			resource r ON (r.is_active = true)
+		JOIN
+			hostel_room_type_availability hrta ON  (hrta.is_active = true) AND (hrta.hostel = h.rec_id) AND (hrt.rec_id = hrta.room_type)
+		WHERE
+			h.is_active = true
+		AND
+			r.user_id = #{userId};
+	</select>
+	
+	<select id="getStudentDetails" parameterType ="java.lang.String" resultType = "com.qts.icam.model.common.Resource">	
+		SELECT DISTINCT
+			r.first_name as firstName , 
+			r.middle_name as middleName, 
+			r.last_name as lastName
+		FROM
+			resource r
+		WHERE
+			resource_type=( SELECT rec_id FROM resource_type WHERE resource_type_name = 'STUDENT')
+		AND   
+		    r.user_id=#{userId}
+		AND 
+		    r.is_active=true;
+	</select>
+	
+	<resultMap id="getRoomTypeListRM" type="com.qts.icam.model.common.RoomType">			
+		<id property="roomTypeName" column="hostel_room_type_name" jdbcType="VARCHAR"/>
+		<result property="roomTypeCode" column="hostel_room_type_code" jdbcType="VARCHAR"/>
+	</resultMap>
+	<select id="getRoomTypeList" parameterType ="java.lang.String" resultMap="getRoomTypeListRM">	
+		SELECT	
+			distinct hrt.hostel_room_type_code, 
+			hrt.hostel_room_type_name
+		FROM
+			hostel_room hr
+		JOIN
+			hostel_room_type hrt ON  (hrt.is_active = true)	
+		JOIN
+			hostel h ON(hr.hostel=h.rec_id) AND (hr.hostel_room_type=hrt.rec_id)AND (h.is_active=true)
+		WHERE
+			hr.is_active = true
+		AND
+			h.hostel_code=#{hostelName};
+	</select>
+	
+	<resultMap id="getRoomListRM" type="com.qts.icam.model.common.Room">			
+		<id property="roomName" column="hostel_room_name" jdbcType="VARCHAR"/>
+		<result property="roomCode" column="hostel_room_code" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	<select id="getRoomList" parameterType ="com.qts.icam.model.common.Room" resultMap="getRoomListRM">	
+		SELECT
+			hostel_room_name, 
+			hostel_room_code
+		FROM
+			hostel_room
+		WHERE
+			hostel = (SELECT rec_id FROM hostel WHERE hostel_code = #{hostelName})
+		AND
+			hostel_room_type = (SELECT rec_id FROM hostel_room_type WHERE hostel_room_type_code =#{roomTypeName})
+		AND
+			is_active = true;
+	</select>
+	
+	<resultMap id="getRoomFacilitiesRM" type="com.qts.icam.model.common.Room">			
+			<id property="bedTotal" column="total_bed" jdbcType="INTEGER"/>
+			<result property="bedVaccent" column="bed_vacent" jdbcType="INTEGER"/>
+			<collection property="roomFacilityList" ofType="com.qts.icam.model.common.RoomFacility">
+				<id property="roomFacilityCode" column="hostel_room_facility_code" jdbcType="VARCHAR"/>
+				<result property="roomFacilityName" column="hostel_room_facility_name" jdbcType="VARCHAR"/>
+				<result property="roomFacilityQuantity" column="quantity" jdbcType="INTEGER"/>
+			</collection>	
+	</resultMap>
+	<select id="getRoomFacilities" parameterType ="com.qts.icam.model.common.Room" resultMap="getRoomFacilitiesRM">	
+		SELECT
+			hrf.hostel_room_facility_code, 
+			hrf.hostel_room_facility_name,
+			hrfm.quantity,
+			hr.total_bed,
+			hr.bed_vacent
+		FROM
+			hostel_room hr
+		LEFT JOIN	
+			hostel_room_facility hrf ON (hrf.is_active = true)
+		LEFT JOIN 
+			hostel_room_facility_mapping hrfm ON (hrf.rec_id = hrfm.hostel_room_facility) AND (hrfm.is_active = true) AND (hrfm.hostel_room = hr.rec_id)
+		WHERE
+			hr.is_active = true
+		AND 
+			hr.hostel_room_code = #{roomCode}
+	</select>
+	
+	<!-- ranita.sur 24062017 -->
+	
+	<insert id="insertStudentHostelRoom" parameterType="com.qts.icam.model.hostel.Hostel">
+		INSERT INTO 
+			student_hostel_room_mapping
+				(
+					 rec_id,
+					 obj_id,
+					 updated_by,
+					 updated_on, 
+					 date_of_creation,
+					 student_roll_number,
+					 hostel_room
+				 )
+		VALUES (
+				 	uuid_generate_v4(),
+					#{objectId},
+					(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+					(SELECT extract(epoch FROM now())),
+					(SELECT extract(epoch FROM now())),
+					(SELECT rec_id FROM resource WHERE user_id = #{hostelAbbreviation}),
+					(SELECT rec_id FROM hostel_room WHERE hostel_room_code = #{hostelDesc} AND
+					 hostel=(SELECT rec_id FROM hostel WHERE hostel_code = #{hostelName} AND 
+					 is_active = true)
+					 AND
+					 is_active=true)
+			 );
+	</insert> 
+	
+	<update id="updateBed" parameterType="java.lang.String">
+		UPDATE
+			hostel_room
+		SET
+			bed_occupied = bed_occupied+1,
+	    	bed_vacent = bed_vacent-1
+		WHERE
+			hostel_room_code = #{code}
+		AND 
+			is_active = true;
+	</update>
+	
+	<!-- ranita.sur 24062017 -->
+	
+	<resultMap id="getStudentsInHostelListRM" type="com.qts.icam.model.hostel.Hostel">
+			<association property="resource" javaType="com.qts.icam.model.common.Resource">
+		   	    <id property="firstName" column="first_name" jdbcType="VARCHAR"/>
+				<result property="middleName" column="middle_name" jdbcType="VARCHAR"/>
+				<result property="lastName" column="last_name" jdbcType="VARCHAR"/>
+				<result property="userId" column="user_Id" jdbcType="VARCHAR"/>
+				<result property="klass" column="course_name" jdbcType="VARCHAR"/>
+				<result property="sectionName" column="section_name" jdbcType="VARCHAR"/>
+				<result property="category" column="hostel_name" jdbcType="VARCHAR"/>
+			</association>
+			<association property="room" javaType="com.qts.icam.model.common.Room">
+		   	    <id property="roomName" column="hostel_room_name" jdbcType="VARCHAR"/>
+			</association>
+	</resultMap>
+	<select id="getStudentsInHostelList" parameterType="java.util.Map" resultMap="getStudentsInHostelListRM">	
+		SELECT
+			r.first_name, 
+			r.middle_name, 
+			r.last_name, 
+			r.user_id,
+			cr.course_name, 
+			sec.section_name, 
+			hr.hostel_room_name, 
+			h.hostel_name
+		FROM 
+			hostel h 
+		JOIN	
+			hostel_room hr ON (hr.hostel = h.rec_id AND hr.is_active = true)
+		JOIN
+			student_hostel_room_mapping shrm ON (shrm.hostel_room = hr.rec_id AND shrm.is_active = true)
+		JOIN	
+			resource r ON (shrm.student_roll_number = r.rec_id AND r.is_active = true)
+		JOIN
+			student_course_mapping scm ON (r.user_id = scm.user_id AND scm.is_active = true)
+		JOIN
+			section sec ON (scm.section = sec.rec_id AND sec.is_active = true)
+		JOIN 
+			course cr ON (scm.course = cr.rec_id AND cr.is_active = true)
+		WHERE
+			h.is_active = true;
+
+	</select>
+	
+	<!-- ranita.sur 24062017 -->
+	
+	<select id="getStudentHostelDetails" parameterType="java.lang.String" resultType="com.qts.icam.model.hostel.Hostel">
+		SELECT
+			hr.hostel_room_name as hostelDesc,
+			h.hostel_name as hostelName,
+			hrt.hostel_room_type_name as hostelCode
+		FROM
+			student_hostel_room_mapping shrm
+		JOIN 
+			hostel_room hr ON (hr.rec_id = shrm.hostel_room AND hr.is_active = true)
+		JOIN 
+			hostel_room_type hrt ON (hrt.rec_id = hr.hostel_room_type AND hrt.is_active = true)
+		JOIN 
+			hostel h ON (h.rec_id = hr.hostel AND h.is_active = true)
+		JOIN 
+			resource r ON(r.rec_id = shrm.student_roll_number AND r.is_active = true)
+		WHERE
+			r.user_id = #{userId}
+		AND
+			shrm.is_active = true	
+	</select>
+	
+	<update id="updateBedAfterDeallocation" parameterType="com.qts.icam.model.hostel.Hostel">
+		UPDATE hostel_room
+		SET
+			bed_vacent = bed_vacent+1,
+			bed_occupied = bed_occupied-1,
+			updated_by = (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now()))
+		WHERE
+			hostel = (SELECT rec_id FROM hostel WHERE hostel_code = #{hostelName} AND is_active = true)
+		AND
+			hostel_room_type = (SELECT rec_id FROM hostel_room_type WHERE hostel_room_type_code = #{hostelCode} AND is_active = true)
+		AND
+			hostel_room_code = #{hostelDesc}
+		AND
+			is_active = true;
+			
+		UPDATE hostel_room_type_availability
+		SET
+			avl_seat = avl_seat+1,
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now()))
+		WHERE
+			hostel = (SELECT rec_id FROM hostel WHERE hostel_code = #{hostelName} AND is_active = true)
+		AND
+			room_type = (SELECT rec_id FROM hostel_room_type WHERE hostel_room_type_code = #{hostelCode} AND is_active = true)
+		AND
+			is_active = true;
+	</update>
+	
+	<!-- ranita.sur 24062017 -->
+	
+	<update id="deAllocateStudentFromHostel" parameterType="com.qts.icam.model.common.Resource">
+		UPDATE student_hostel_room_mapping
+		SET
+			is_active = false,
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now()))
+		WHERE
+			student_roll_number = (SELECT rec_id FROM resource WHERE user_id = #{userId} AND is_active = true);
+		
+		UPDATE resource
+		SET
+			opting_hostel = false
+		WHERE
+			user_id = #{userId}
+		AND
+			is_active = true;
+	</update>
+	
+	<select id="getAllCommodityListForHostelExpense" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT 
+			c.commodity_code as commodityCode,
+			c.commodity_name as commodityName
+		FROM 
+			commodity c
+		WHERE 
+			c.commodity_type='STOCK'
+		AND
+			c.is_active = true;	
+	</select>
+	
+	<insert id="saveHostelExpense" parameterType="com.qts.icam.model.common.HostelExpense">
+		INSERT INTO hostel_expense(
+	            rec_id,
+	            obj_id,
+	            updated_by,
+	            updated_on,
+	            date_of_creation,
+	            commodity,
+	            morning,
+	            noon,
+	            evening,
+	            night,
+	            total)
+	    VALUES (
+		    (SELECT uuid_generate_v4()), #{hostelExpenseObjectId},
+		    (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+		    (SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+		    (SELECT rec_id FROM commodity WHERE commodity_code = #{commodityCode} AND is_active = true),
+		    #{morning}, #{noon}, #{evening}, #{night}, #{total});
+	</insert>
+	
+	<update id="consumeFromStock" parameterType="com.qts.icam.model.common.HostelExpense">
+		UPDATE
+			commodity
+		SET
+			commodity_instock = commodity_instock - #{total}
+		WHERE
+			commodity_code = #{commodityCode}
+		AND
+			is_active = true;
+	</update>
+	
+	<select id="getCommodityStock" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			(commodity_instock-commodity_threshold)::VARCHAR 
+		FROM 
+			commodity 	
+		WHERE
+			commodity_code = #{commodityName}
+		AND
+			is_active = true;
+	</select>
+	
+	<!-- ranita.sur 24062017 -->
+	
+	<select id="getHostelType"  resultType="com.qts.icam.model.hostel.Hostel">
+		SELECT
+	  		 ht.hostel_type_name as hostelTypeName
+		FROM 
+			hostel_type ht	
+		WHERE
+			is_active = true;
+	</select>
+	
+	<!-- ranita.sur 24062017 -->
+	
+	<insert id="insertIntoHostelType" parameterType="com.qts.icam.model.hostel.Hostel">
+		INSERT INTO 
+			hostel_type
+				(
+		            rec_id,
+		            obj_id,
+		            updated_by,
+		            updated_on,
+		            date_of_creation,
+		            hostel_type_code,
+		            hostel_type_name
+	            )
+	    VALUES (
+		    		(SELECT uuid_generate_v4()),
+		    		 #{objectId},
+		    		(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+		    		(SELECT extract(epoch FROM now())),
+		    		(SELECT extract(epoch FROM now())),
+		    		(SELECT ('HOSTELTYPE-' ||(select COALESCE((SELECT MAX(hostel_type_id) FROM hostel_type), 0 )+1))),
+		    		#{hostelTypeName}
+	    		);
+	</insert>
+	
+	<select id="getAllHouseTypeList" resultType="com.qts.icam.model.hostel.HouseType">
+		SELECT
+			house_type_code as houseTypeCode,
+			house_type_name as houseTypeName
+		FROM
+			house_type 
+		WHERE
+			is_active = true;		
+	</select>
+	
+	<insert id="addNewHouseWithoutType" parameterType="com.qts.icam.model.hostel.House">
+		INSERT INTO house
+			(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation, house_code, house_name
+			)
+		VALUES
+			(
+				(SELECT uuid_generate_v4()), #{houseObjectId}, 
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())), 
+				(SELECT ('HOUSE-' ||(select COALESCE((SELECT MAX(house_id) FROM house), 0 )+1))),
+				#{houseName}
+			)	
+	</insert>
+	
+	<insert id="addNewHouse" parameterType="com.qts.icam.model.hostel.House">
+		INSERT INTO house
+			(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation, house_code, house_name, house_type
+			)
+		VALUES
+			(
+				(SELECT uuid_generate_v4()), #{houseObjectId}, 
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())), 
+				(SELECT ('HOUSE-' ||(select COALESCE((SELECT MAX(house_id) FROM house), 0 )+1))),
+				#{houseName}, (SELECT rec_id FROM house_type WHERE house_type_code = #{houseType.houseTypeCode} AND is_active = true)
+			)
+	</insert>
+	
+	<select id="getAllHouseList" resultType="com.qts.icam.model.hostel.House">
+		SELECT
+			house_type_name as "houseType.houseTypeName",
+			house_code as houseCode,
+			house_name as houseName
+		FROM
+			house h 
+		LEFT JOIN
+			house_type ht ON (h.house_type = ht.rec_id AND ht.is_active = true)
+		AND
+			h.is_active = true			
+	</select>
+	
+	<insert id="submitHouseResidenceMapping" parameterType = "com.qts.icam.model.hostel.HouseResidenceMapping">
+		INSERT INTO house_hostel_mapping
+			(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation, house_hostel_mapping_code,
+				hostel, house
+			)
+		VALUES
+			(
+				(SELECT uuid_generate_v4()), #{houseResidenceMappingObjectId}, 
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())), 
+				(SELECT ('HOUSERESIDENCEMAP-' ||(select COALESCE((SELECT MAX(house_hostel_mapping_id) FROM house_hostel_mapping), 0 )+1))),
+				(SELECT rec_id FROM hostel WHERE hostel_code = #{residenceName} AND is_active = true),
+				(SELECT rec_id FROM house WHERE house_code = #{houseName} AND is_active = true)
+			)
+	</insert>
+	
+	<select id="getAllHouseResidenceMapping" resultType="com.qts.icam.model.hostel.HouseResidenceMapping">
+		SELECT
+			house_name as houseName,
+			hostel_name as residenceName
+		FROM
+			house_hostel_mapping hhm 
+		JOIN
+			hostel htl ON (hhm.hostel = htl.rec_id AND htl.is_active = true)
+		JOIN
+			house h ON (hhm.house = h.rec_id AND h.is_active = true)
+		AND 
+			hhm.is_active = true;			
+	</select>
+	
+	<select id="getHouseMasterData" resultType="com.qts.icam.model.hostel.HouseMaster" parameterType = "java.lang.String">
+		SELECT
+			house_code as "house.houseCode",
+			house_name as "house.houseName",
+			r1.user_id as "houseMasterName",
+			r2.user_id as "asstHouseMasterName"
+		FROM 
+			house_master_house_mapping hmhm	
+		JOIN
+			house h ON (hmhm.house = h.rec_id AND h.is_active = true)
+		JOIN
+			resource r1 ON (hmhm.house_master = r1.rec_id AND r1.is_active = true)
+		JOIN
+			resource r2 ON (hmhm.asst_house_master = r2.rec_id AND r2.is_active = true)
+		WHERE
+			hmhm.academic_year = (SELECT rec_id FROM academic_year WHERE academic_year_code = #{academicYear} AND is_active = true)
+		AND 
+			hmhm.is_active = true;			
+	</select>
+	
+	<update id="submitUpdateOfHouseForCadet" parameterType = "com.qts.icam.model.common.Resource">
+		UPDATE
+			resource r 
+		SET
+			house = (SELECT rec_id FROM house h WHERE h.house_code = #{house.houseName} AND h.is_active = true)
+		WHERE
+			user_id = #{userId}
+		AND
+			is_active = true
+	</update>
+	
+	<!-- anup.roy // for fetching cadet info and house -->
+	
+	<select id="getHouseAndInfoOfCadet" parameterType="java.lang.String" resultType = "com.qts.icam.model.common.Resource">
+		SELECT
+			r.user_id as userId,
+			r.first_name || ' ' || COALESCE(r.middle_name ,'') || ' ' || COALESCE(r.last_name ,' ') as resourceName,
+			h.house_name as "house.houseName"
+		FROM
+			resource r
+		JOIN 
+			house h ON (r.house = h.rec_id AND h.is_active = true)
+		WHERE
+			user_id = #{userId}
+		AND	
+			r.is_active = true
+	</select>
+</mapper>

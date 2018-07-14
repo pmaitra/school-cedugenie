@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+ <configuration>
+ 	<!-- <properties url="file:///C:/icam/conf/configuration.properties"></properties> 	 -->
+	 <mappers>
+	 	 	<mapper resource="com/qts/icam/mapper/admission/AdmissionMapper.xml"/>
+	 	 	<mapper resource="com/qts/icam/mapper/library/LibraryMapper.xml"/>
+	 	 	<mapper resource="com/qts/icam/mapper/academics/AcademicsMapper.xml"/>
+	 	 	<mapper resource="com/qts/icam/mapper/inventory/InventoryMapper.xml"/>
+	 	 	<mapper resource="com/qts/icam/mapper/login/LoginMapper.xml"/>
+	 	 	<mapper resource="com/qts/icam/mapper/administrator/AdministratorMapper.xml"/>
+	 	 	<mapper resource="com/qts/icam/mapper/common/CommonMapper.xml"/>
+	 	 	<mapper resource="com/qts/icam/mapper/finance/FinanceMapper.xml"/>	 	
+	 	 	<mapper resource="com/qts/icam/mapper/mess/MessMapper.xml"/>
+	 	 	<mapper resource="com/qts/icam/mapper/backoffice/BackOfficeMapper.xml"/>
+	 		<mapper resource="com/qts/icam/mapper/report/ReportMapper.xml"/>
+	 		<mapper resource="com/qts/icam/mapper/hostel/HostelMapper.xml"/>	
+	 		<mapper resource="com/qts/icam/mapper/erp/ERPMapper.xml"/>
+			<mapper resource="com/qts/icam/mapper/ticket/TicketMapper.xml"/>
+	 		<mapper resource="com/qts/icam/mapper/grade/GradeMapper.xml"/>	 			 		
+			<mapper resource="com/qts/icam/mapper/venue/VenueMapper.xml"/>
+			<mapper resource="com/qts/icam/mapper/facility/FacilityMapper.xml"/>
+			<mapper resource="com/qts/icam/mapper/survey/SurveyMapper.xml"/>
+			<mapper resource="com/qts/icam/mapper/tender/TenderMapper.xml"/>
+<!-- 	 	<mapper url="file:///${report.mybatisPath}" />  	 	 -->
+	</mappers> 
+</configuration>

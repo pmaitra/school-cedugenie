@@ -1,0 +1,117 @@
+
+
+.textfield{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:100%;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+.midsec {
+	margin:0 auto 15px;
+	border:1px solid orange;
+	background-color:#99FF66;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	overflow:hidden;
+	overflow-x:scroll;
+	min-height:20px;
+	margin-top: 20px;
+	align: center;
+	white-space: nowrap;
+}
+.midsec tr{
+	padding:0 2%;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+	text-align:left;
+	border-bottom: 1px solid #C4C4C4;
+	text-transform:capitalize;
+}
+.midsec tr td{
+	padding:0 10px;
+	color: black;
+}
+.midsec tr th{
+	padding:0 10px;
+	color: #000080;
+}
+
+.midsec1 {
+	margin:0 auto 15px;
+	border:1px solid #c4c4c4;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	min-height:20px;
+	margin-top: 20px;
+	align: center;
+	white-space: nowrap;
+}
+.midsec1 tr{
+	padding:0 2%;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+	color: #000080;
+	text-align:left;
+	border-bottom: 1px solid #C4C4C4;
+	text-transform:capitalize;
+}
+.midsec1 tr td{
+	padding:0 10px;
+	border-bottom: 1px solid #C4C4C4;
+}
+.midsec1 tr th{
+	color:black;
+	font:normal 16px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+	text-align: center;
+	padding:0 10px;
+	border-bottom: thick;
+	border-bottom-style: double;
+	border-bottom-color: black;
+}
+.midsec1 tr:nth-child(odd){
+	background-color: #99FF66;
+}
+
+.midsec1 tr:nth-child(even){
+	background-color: #66CC33;
+}
+
+.classEmailDetails{		
+	font:normal 16px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+	color: black;
+}
+.classEmailDetailsUnread{	
+	font:bold 18px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+	color: #000080;
+}
+
+a.button {
+    background: url("/icam/images/capsule_right.png") no-repeat scroll right top transparent;
+    display: block;
+    float: left;
+    font-size: 18px;
+    font-weight: bold;
+    height: 36px;
+    line-height: 36px;
+    padding-right: 20px;
+    text-decoration: none;
+    text-shadow: 1px 1px 0 #ffffff;
+    color: #b71216;
+}
+a.button:hover {
+    color: black;
+}
+a.button span {
+    background: url("/icam/images/capsule_left.png") no-repeat scroll 0 0 transparent;
+    display: block;
+    font: bold 18px/36px bahamas "Helvetica Neue",Arial,Helvetica,Geneva,sans-serif;
+    padding-left: 40px;
+     padding-right: 40px;
+    white-space: nowrap;
+}

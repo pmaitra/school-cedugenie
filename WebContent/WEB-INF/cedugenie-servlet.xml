@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:p="http://www.springframework.org/schema/p" 
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc
+						http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+						http://www.springframework.org/schema/beans
+						http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+						http://www.springframework.org/schema/context
+						http://www.springframework.org/schema/context/spring-context-3.1.xsd
+						http://www.springframework.org/schema/task
+   						http://www.springframework.org/schema/task/spring-task-3.1.xsd">
+		
+
+	<mvc:annotation-driven />	
+	
+	<mvc:resources mapping="/assets/**" location="/assets/" />
+	<mvc:resources mapping="/Cal/**" location="/Cal/" />
+	<mvc:resources mapping="/codebase/**" location="/codebase/" />
+	<mvc:resources mapping="/css/**" location="/css/" />
+	<mvc:resources mapping="/file/**" location="/file/" />
+	<mvc:resources mapping="/fonts/**" location="/fonts/" />
+	<mvc:resources mapping="/images/**" location="/images/" />
+	<mvc:resources mapping="/include/**" location="/include/" />
+	<mvc:resources mapping="/js/**" location="/js/" />
+	<!-- loads property files --> 
+	
+	<context:property-placeholder
+			location="/WEB-INF/cedugenie.properties,
+          			 /WEB-INF/customexception.properties,
+          			  classpath:configuration.properties"
+			ignore-unresolvable="true"/>
+
+
+
+	<context:component-scan base-package="com.qts.icam.controller" />
+	
+	
+	
+	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/>
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/>
+	
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver" >
+	 <property name="order" value="2"/>
+	 <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix">
+            <value>/WEB-INF/jsp/</value>
+        </property>
+        <property name="suffix">
+            <value>.jsp</value>
+         </property>
+        </bean>
+        
+      <bean id="XSLTViewResolver" class="org.springframework.web.servlet.view.xslt.XsltViewResolver">
+       	 <property name="order" value="1"/>
+       	 <property name="sourceKey" value="xmlSource"/>
+       	  <property name="viewClass" value="org.springframework.web.servlet.view.xslt.XsltView"/>
+       	  <property name="viewNames">
+       	  	 <array>
+       	  	 	<value>SurveyForm</value>
+       	  	 </array>
+       	  </property> 
+       	  <property name="prefix">
+       	   	<value>/WEB-INF/xsl/</value> 
+       	   </property>
+       	 <property name="suffix">
+       	 	<value>.xsl</value>
+       	 </property>
+       </bean>   
+ 	<!--  access checkAlertScheduledTime() method randomly in CommonController  --> 
+<!-- 	<task:scheduled-tasks scheduler="taskScheduler"> -->
+<!-- 		    <task:scheduled ref="commonController" method="checkAlertScheduledTime" fixed-delay="${alert.scheduledTime}"/> -->
+<!-- 	</task:scheduled-tasks> -->
+<!--     <task:scheduler id="taskScheduler" pool-size="10"/> -->
+    
+   <!--  Configure the multipart resolver  --> 
+ 	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+	 	<!--  one of the properties available; the maximum file size in bytes --> 
+	 	<property name="maxUploadSize" value="8048576" />
+  	</bean>
+  	
+  	<!-- for processing requests with annotated controller methods and set Message Convertors from the list of convertors -->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="messageConverters">
+            <list>
+                <ref bean="jsonMessageConverter"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- To  convert JSON to Object and vice versa -->
+    <bean id="jsonMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+    </bean> 
+
+</beans>

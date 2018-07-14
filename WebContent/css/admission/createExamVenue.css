@@ -1,0 +1,80 @@
+.midsec {
+	margin:0 auto 15px;
+	border:1px solid orange;
+	background-color:#99FF66;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	overflow:hidden;
+	overflow-x:scroll;
+	min-height:20px;
+	margin-top: 20px;
+	align: center;
+	white-space: nowrap;
+}
+.midsec tr{
+	padding:0 2%;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+	text-align:left;
+	border-bottom: 1px solid #C4C4C4;
+	text-transform:capitalize;
+}
+.midsec tr td{
+	padding:0 10px;
+}
+.midsec tr th{
+	padding:0 10px;
+	color: #000080;
+}
+
+/* img{ */
+/* 	margin: auto; */
+/* 	left:0; right:0; */
+/* 	top:0; bottom:0; */
+/* 	position: absolute; */
+/* 	width: 200px; */
+/* 	height: 200px; */
+/* } */
+
+/*For Text Box */
+.textfield1{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:200px;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+	font-family: bahamas;
+	font-size: large;
+}
+.textfield2{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:555px;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+	font-family: bahamas;
+	font-size: large;
+}
+
+select{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+    height: 27px;
+    line-height: 22px;
+    padding: 3px 5px;
+    width: 200px;
+    font-family: bahamas;
+	font-size: smaller;	
+}
+option {
+    color: orange;
+    font-family: bahamas;
+    font-size: smaller;	
+}

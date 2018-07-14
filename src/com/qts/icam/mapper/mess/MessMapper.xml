@@ -1,0 +1,1198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.mapper.mess.MessMapper">
+
+	<select id="selectCommodityListForMess" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT 
+			commodity_code as commodityCode, 
+			commodity_name as commodityName
+		FROM 
+			commodity
+		WHERE 
+			commodity_sub_type='FOODING'
+		AND 
+			is_active=true;
+	</select>	
+	
+	<select id="selectMessDemandVoucherList" resultType="com.qts.icam.model.common.MessDemandVoucher">
+		SELECT 
+			mess_demand_voucher_id as demandVoucherId,
+			r.user_id as updatedBy,
+			(to_char((SELECT to_timestamp(demand_open_date)), 'DD/MM/YYYY')) as demandVoucherOpenDate,
+			(to_char((SELECT to_timestamp(demand_close_date)), 'DD/MM/YYYY')) as demandVoucherCloseDate,
+			operational_status_desc as demandVoucherStatus,
+			mciv.mess_commodity_issue_voucher_code as demandVoucherObjectId,
+			mcrv.mess_commodity_receive_voucher_code as "commodityReceiveVoucher.commodityReceiveVoucherCode"
+		FROM 
+			mess_demand_voucher mdv
+		LEFT JOIN
+			mess_commodity_issue_voucher mciv ON (mciv.mess_demand_voucher = mdv.rec_id AND mdv.is_active = true)
+		LEFT JOIN
+			mess_commodity_receive_voucher mcrv ON (mcrv.mess_commodity_issue_voucher = mciv.rec_id AND mcrv.is_active = true)
+		JOIN
+			resource r ON (mdv.updated_by = r.rec_id AND r.is_active = true)	
+		JOIN 
+			operational_status os ON (mdv.demand_voucher_status = os.rec_id AND os.is_active = true)	
+		WHERE
+			mdv.is_active=true;
+	</select>	
+	
+	<select id="getCommodityDetailsForIndentSheet" parameterType = "java.lang.String" resultType= "com.qts.icam.model.inventory.Commodity">
+		SELECT 
+			unit as commodityType,
+			commodity_instock as inStock,
+			commodity_price as purchaseRate
+		FROM
+			commodity c
+		JOIN
+			commodity_vendor_mapping cvm ON (cvm.commodity = c.rec_id AND cvm.is_active = true)
+		WHERE
+			commodity_code = #{commodity}	
+		AND
+			c.is_active = true;
+	</select>
+	
+	<select id="getLastDemandVoucherId" resultType="java.lang.String">
+		SELECT 
+			mess_demand_voucher_id
+		FROM 
+			mess_demand_voucher 
+		WHERE 
+			voucher_serial_no = (SELECT max(voucher_serial_no) FROM mess_demand_voucher WHERE is_active=true)
+		AND	
+			is_active = true;
+	</select>
+	
+	<insert id="insertIntoMessDemandVoucher" parameterType="com.qts.icam.model.common.MessDemandVoucher">
+		INSERT INTO 
+		mess_demand_voucher 
+			(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				demand_open_date, mess_demand_voucher_id, demand_voucher_status
+			)
+		VALUES
+			(
+				uuid_generate_v4(), #{demandVoucherObjectId}, 
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())), #{demandVoucherId},
+				(SELECT rec_id FROM operational_status WHERE operational_status_desc = 'OPEN' AND is_active = true)
+			);
+	</insert>
+	
+	<insert id="insertIntoMessDemandVoucherDetails" parameterType="com.qts.icam.model.common.MessDemandVoucherDetails">
+		INSERT INTO
+			mess_demand_voucher_details
+				(
+					rec_id, obj_id, updated_by, updated_on, date_of_creation,
+					mess_demand_voucher_details_code, mess_demand_voucher, commodity, 
+					qm_stock, demanded_quantity, commodity_unit
+				)
+			VALUES
+				(
+					uuid_generate_v4(), #{messDemandVoucherDetailsObjectId}, 
+					(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+					(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+					(SELECT ('MDVD-'||(select COALESCE((SELECT MAX(mess_demand_voucher_details_id) FROM mess_demand_voucher_details), 0 )+1))),
+					(SELECT rec_id FROM mess_demand_voucher WHERE mess_demand_voucher_id = #{indentSheetId} AND is_active = true),
+					(SELECT rec_id FROM commodity WHERE commodity_code = #{commodity} AND is_active = true),
+					#{commodityInQMStock}, #{demandedQuantity}, #{commodityUnit}
+				);
+	</insert>
+	
+	<select id="getAllUserIdOfQM" resultType="com.qts.icam.model.common.Resource">
+		SELECT 
+			r.user_id as userId
+		FROM
+			role_resource_mapping rrm
+		JOIN 
+			resource r ON (rrm.resource = r.rec_id AND r.is_active = true)
+		JOIN
+			role rl ON (rrm.role = rl.rec_id AND rl.is_active = true)
+		AND
+			rrm.is_active = true;
+	</select>
+	
+	<insert id="sendNotification" parameterType="com.qts.icam.model.common.Notification">
+		INSERT INTO 
+		notification
+			(
+	            rec_id,
+	            obj_id, 
+	            updated_by, 
+	            updated_on, 
+	            date_of_creation, 
+	            notification_code, 
+	            notification_desc, 
+	            notification_from, 
+	            notification_subject, 
+	            notification_to
+            )
+    VALUES
+			(
+				uuid_generate_v4(), 
+			    #{notificationObjectId}, 
+			    (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT extract(epoch FROM now())),
+			    (select('NOTI' ||(select COALESCE((SELECT MAX(notification_id) FROM notification), 0 )+1))),
+		        #{notificationDesc},
+		        (SELECT rec_id FROM resource WHERE user_id=#{notificationSender} AND is_active = true),
+		        #{notificationSubject},
+		        (SELECT rec_id FROM resource WHERE user_id = #{notificationReplyTo})
+	        );
+	</insert>
+	
+	<select id="getDetailsOfIndentSheet" parameterType="java.lang.String" resultType="com.qts.icam.model.common.MessDemandVoucher">
+		SELECT
+			mess_demand_voucher_id as demandVoucherId,
+			(to_char((SELECT to_timestamp(demand_open_date)), 'DD/MM/YYYY')) as demandVoucherOpenDate
+		FROM
+			mess_demand_voucher
+		WHERE
+			mess_demand_voucher_id = #{indentSheetId}
+		AND
+			is_active = true;
+	</select>
+	
+	<select id="getItemDetailsOfIndentSheet" parameterType="java.lang.String" resultType="com.qts.icam.model.common.MessDemandVoucherDetails">
+		SELECT
+			c.commodity_code as commodity,
+			c.commodity_name as commodityUnit,
+			qm_stock as commodityInQMStock,
+			demanded_quantity as demandedQuantity,
+			cph.price as commodityRate,
+			c.unit as updatedBy
+		FROM
+			mess_demand_voucher_details mdvd
+		JOIN 
+			mess_demand_voucher mdv ON (mdvd.mess_demand_voucher = mdv.rec_id AND mdv.is_active = true)
+		JOIN
+			commodity c ON (mdvd.commodity = c.rec_id AND c.is_active = true)
+		JOIN
+			commodity_price_history cph ON (cph.commodity = c.rec_id AND cph.is_active = true)	
+		WHERE
+			mdv.mess_demand_voucher_id = #{indentSheetId}
+		AND
+			mdvd.is_active = true;		
+	</select>
+	
+	<select id="getLastCommodityIssueVoucherId" resultType="java.lang.String">
+		SELECT 
+			mess_commodity_issue_voucher_code
+		FROM 
+			mess_commodity_issue_voucher 
+		WHERE 
+			mess_commodity_issue_voucher_id = (SELECT max(mess_commodity_issue_voucher_id) FROM mess_commodity_issue_voucher WHERE is_active=true)
+		AND	
+			is_active = true;
+	</select>
+	
+	<insert id="insertIntoMessCommodityIssueVoucher" parameterType="com.qts.icam.model.common.CommodityIssueVoucher">
+		INSERT INTO
+		mess_commodity_issue_voucher
+			(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				mess_commodity_issue_voucher_code, mess_demand_voucher
+			)
+		VALUES
+			(
+				uuid_generate_v4(),
+			    #{commodityIssueVoucherObjectId}, 
+			    (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT extract(epoch FROM now())),
+			    #{commodityIssueVoucherCode},
+			    (SELECT rec_id FROM mess_demand_voucher WHERE mess_demand_voucher_id = #{messDemanVoucher.demandVoucherId} AND is_active = true)
+			)
+	</insert>
+	
+	<insert id="insertIntoMessCommodityIssueVoucherDetails" parameterType="com.qts.icam.model.common.CommodityIssueVoucherDetails">
+		INSERT INTO
+		mess_commodity_issue_voucher_details
+			(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				mess_commodity_issue_voucher, commodity, issued_quantity, mess_commodity_issue_voucher_details_code
+			)
+		VALUES
+			(
+				uuid_generate_v4(),
+				#{commodityIssueVoucherDetailsObjectId},
+				(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT rec_id FROM mess_commodity_issue_voucher WHERE mess_commodity_issue_voucher_code = #{voucherCode} AND is_active = true),
+			    (SELECT rec_id FROM commodity WHERE commodity_code = #{commodityName} AND is_active = true), #{issuedQuantityToMess}, 
+			    (select('MCIVD-' ||(select COALESCE((SELECT MAX(mess_commodity_issue_voucher_details_id) FROM mess_commodity_issue_voucher_details), 0 )+1)))
+			)
+	</insert>
+	
+	<update id="updateQMStockForCommodity" parameterType="com.qts.icam.model.common.CommodityIssueVoucherDetails">
+		UPDATE
+			commodity
+		SET
+			commodity_instock = commodity_instock - #{issuedQuantityToMess}	
+		WHERE
+			commodity_code = #{commodityName}
+		AND
+			is_active = true		
+	</update>
+	
+	<select id="getDetailsOfIssueVoucher" parameterType = "java.lang.String" resultType="com.qts.icam.model.common.CommodityIssueVoucher">
+		SELECT 
+			mess_commodity_issue_voucher_code as commodityIssueVoucherCode,
+			(to_char((SELECT to_timestamp(mdv.demand_open_date)), 'DD/MM/YYYY')) as "messDemanVoucher.demandVoucherOpenDate",
+			mdv.mess_demand_voucher_id as "messDemanVoucher.demandVoucherId"			
+		FROM
+			mess_commodity_issue_voucher mciv
+		JOIN
+			mess_demand_voucher mdv ON (mciv.mess_demand_voucher = mdv.rec_id AND mdv.is_active = true)	
+		WHERE
+			mess_commodity_issue_voucher_code = #{civId}
+		AND
+			mciv.is_active = true;
+	</select>
+	
+	<select id="getItemDetailsOfIssueVoucher" parameterType = "java.lang.String" resultType="com.qts.icam.model.common.CommodityIssueVoucherDetails">
+		SELECT DISTINCT
+			c.commodity_name as commodityName,
+			c.unit as "messDemandVoucherDetails.commodityUnit",
+			cph.price as "messDemandVoucherDetails.commodityRate",
+			mdvd.demanded_quantity as "messDemandVoucherDetails.demandedQuantity",
+			mcivd.issued_quantity as issuedQuantityToMess
+		FROM 
+			commodity c
+		JOIN 
+			commodity_price_history cph ON (cph.commodity = c.rec_id AND cph.is_active = true)
+		JOIN
+			mess_commodity_issue_voucher_details mcivd ON (mcivd.commodity = c.rec_id AND mcivd.is_active = true)
+		JOIN
+			mess_commodity_issue_voucher mciv ON (mcivd.mess_commodity_issue_voucher = mciv.rec_id AND mciv.is_active = true)
+		LEFT JOIN
+			mess_demand_voucher mdv ON (mciv.mess_demand_voucher = mdv.rec_id AND mdv.is_active = true)
+		LEFT JOIN
+			mess_demand_voucher_details mdvd ON (mdvd.mess_demand_voucher = mdv.rec_id AND mdvd.is_active = true)
+		WHERE 
+			mciv.mess_commodity_issue_voucher_code = #{civId}
+		AND	
+			c.is_active = true;
+		<!-- SELECT 
+			c.commodity_name as commodityName,
+			mcivd.issued_quantity as issuedQuantityToMess
+		FROM 
+			mess_commodity_issue_voucher_details mcivd
+		JOIN 
+			commodity c ON (mcivd.commodity = c.rec_id AND c.is_active = true)
+		JOIN
+			mess_commodity_issue_voucher mciv ON (mcivd.mess_commodity_issue_voucher = mciv.rec_id AND mciv.is_active = true)	
+		WHERE 
+			mciv.mess_commodity_issue_voucher_code = #{civId}
+		AND	
+			mcivd.is_active = true; -->
+	</select>
+	
+	<insert id="insertIntoMessCommodityReceiveVoucher" parameterType="com.qts.icam.model.common.CommodityReceiveVoucher">
+		INSERT INTO
+		mess_commodity_receive_voucher
+			(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				mess_commodity_issue_voucher, mess_commodity_receive_voucher_code
+			)
+		VALUES
+			(
+				uuid_generate_v4(),
+			    #{commodityReceiveVoucherObjectId}, 
+			    (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT rec_id FROM mess_commodity_issue_voucher WHERE mess_commodity_issue_voucher_code=#{commodityIssueVoucherCode} AND is_active = true),
+			    #{commodityReceiveVoucherCode}
+			)
+	</insert>
+	
+	<insert id="insertIntoMessCommodityReceiveVoucherDetails" parameterType="com.qts.icam.model.common.CommodityReceiveVoucherDetails">
+		INSERT INTO 
+		mess_commodity_receive_voucher_details
+			(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				commodity, issued_quantity_to_mess, mess_commodity_receive_voucher_details_code, mess_commodity_receive_voucher, lp_no
+			)
+		VALUES
+			(
+				uuid_generate_v4(),
+				#{commodityReceiveVoucherDetailsObjectId},
+				(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT rec_id FROM commodity WHERE commodity_code = #{commodityName} AND is_active = true),
+			    #{issuedQuantityToMess},
+			    (select('MCRVD-' ||(select COALESCE((SELECT MAX(mess_commodity_receive_voucher_details_id) FROM mess_commodity_receive_voucher_details), 0 )+1))),
+			    (SELECT rec_id FROM mess_commodity_receive_voucher WHERE mess_commodity_receive_voucher_code = #{receiveVoucherCode} AND is_active = true),
+			    #{lpNo}
+			)	
+	</insert>
+	
+	<insert id="updateStatusAndCloseDate" parameterType="com.qts.icam.model.common.CommodityReceiveVoucher">
+		UPDATE 
+			mess_demand_voucher
+		SET 
+			demand_close_date = (SELECT extract(epoch FROM now())),
+			demand_voucher_status = (SELECT rec_id FROM operational_status WHERE operational_status_desc = 'CLOSE' AND is_active = true)
+		WHERE 
+			mess_demand_voucher_id = #{indentSheetId}
+		AND 
+			is_active = true;	
+	</insert>
+	
+	<select id="getStockInMessForCommodity" parameterType="com.qts.icam.model.common.CommodityReceiveVoucherDetails" resultType="java.lang.String">
+		SELECT 
+			mess_commodity_stock_code
+		FROM 
+			mess_commodity_stock
+		WHERE 
+			commodity = (SELECT rec_id FROM commodity WHERE commodity_code = #{commodityName} AND is_active = true)
+		AND 
+			is_active = true;		
+	</select>
+	
+	<update id="updateStockInMess" parameterType="com.qts.icam.model.common.CommodityReceiveVoucherDetails">
+		UPDATE
+			mess_commodity_stock
+		SET
+			updated_on = (SELECT extract(epoch FROM now())),
+			mess_stock = mess_stock + #{issuedQuantityToMess}
+		WHERE	
+			commodity = (SELECT rec_id FROM commodity WHERE commodity_code = #{commodityName} AND is_active = true)
+		AND 
+			is_active = true;		
+	</update>
+	
+	<insert id="insertStockInMess" parameterType="com.qts.icam.model.common.CommodityReceiveVoucherDetails">
+		INSERT INTO 
+		mess_commodity_stock
+			(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				mess_commodity_stock_code, commodity, mess_stock
+			)
+		VALUES
+			(
+				uuid_generate_v4(),
+				#{commodityReceiveVoucherDetailsObjectId},
+				(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT extract(epoch FROM now())),
+			    (select('MCS-' ||(select COALESCE((SELECT MAX(mess_commodity_stock_id) FROM mess_commodity_stock), 0 )+1))),
+			    (SELECT rec_id FROM commodity WHERE commodity_code = #{commodityName} AND is_active = true),
+			    #{issuedQuantityToMess}			    
+			)
+	</insert>
+	
+	<select id="getStockOfMess" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			c.commodity_code as commodityCode,
+			c.commodity_name as commodityName,
+			mess_stock as inStock,
+			c.unit as commodityDesc
+		FROM
+			mess_commodity_stock mcs
+		JOIN
+			commodity c ON (mcs.commodity = c.rec_id AND c.is_active = true)
+		WHERE 
+			mcs.is_active = true;			
+	</select>
+	
+	<select id="getCurrentSession" resultType="java.lang.String">
+		SELECT
+			academic_year_name
+		FROM
+			academic_year ay
+		JOIN 
+			status_flag sf ON (ay.year_status = sf.rec_id AND sf.is_active = true)
+		WHERE
+			sf.status_sym = 'C' 
+		AND
+			ay.is_active = true;					
+	</select>
+	
+	<select id="getAllVendors" resultType="com.qts.icam.model.common.Vendor">
+		SELECT
+			mess_daily_ration_vendor_code as vendorCode,
+			mess_daily_ration_vendor_name as vendorName
+		FROM
+			mess_daily_ration_vendor 
+		WHERE 
+			is_active = true;		
+	</select>
+	
+	<!-- modified by sourav.bhadra on 31-10-2017 -->
+	<select id="getMessDailyRationCommodities" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT 
+			mess_daily_ration_commodity_code as commodityCode,
+			mess_daily_ration_commodity_name as commodityName,
+			um.unit_name as modelNo
+		FROM
+			mess_daily_ration_commodity mdrc
+		JOIN
+			unit_matrix um ON(um.rec_id = mdrc.mess_daily_ration_commodity_unit AND um.is_active = true)
+		WHERE
+			mdrc.is_active = true;
+	</select>
+	
+	<insert id="insertIntoMessDailyRationVendor" parameterType="com.qts.icam.model.common.Vendor">
+		INSERT INTO mess_daily_ration_vendor (
+				rec_id, obj_id, updated_by, updated_on, date_of_creation, mess_daily_ration_vendor_code,
+				mess_daily_ration_vendor_name, 	mess_daily_ration_vendor_address, mess_daily_ration_vendor_contact_no
+		)VALUES(
+			uuid_generate_v4(),
+			#{vendorObjectId},
+			(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+		    (SELECT extract(epoch FROM now())),
+		    (SELECT extract(epoch FROM now())),
+		    (select('MDRV-' ||(select COALESCE((SELECT MAX(mess_daily_ration_vendor_id) FROM mess_daily_ration_vendor), 0 )+1))),
+		    #{vendorName}, #{vendorAddress}, #{vendorContactNumber}
+		);
+	</insert>
+	
+	<!-- modified by sourav.bhadra on 06-03-2018 -->
+	<!-- modified by sourav.bhadra on 08-03-2018 -->
+	<insert id="insertIntoMessDailyRationPO" parameterType="com.qts.icam.model.common.MessDailyRationPurchaseOrder">
+		INSERT INTO 
+		mess_daily_ration_po
+			(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				mess_daily_ration_po_code, mess_daily_ration_vendor, inventory_session, total_amount
+			)
+		VALUES
+			(
+				uuid_generate_v4(),
+				#{messDailyRationPurchaseOrderObjId},
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT extract(epoch FROM now())),
+			    #{messDailyRationPurchaseOrderCode},
+			    (SELECT rec_id FROM mess_daily_ration_vendor WHERE mess_daily_ration_vendor_code = #{vendor.vendorName} AND is_active = true),
+			    #{inventorySession},
+			    #{totalAmount}
+			);
+	</insert>
+	
+	<select id="getLastMessDailyRationPOCode" resultType="java.lang.String">
+		SELECT 
+			mess_daily_ration_po_code
+		FROM 
+			mess_daily_ration_po 
+		WHERE 
+			mess_daily_ration_po_id = (SELECT max(mess_daily_ration_po_id) FROM mess_daily_ration_po)
+		AND	
+			is_active = true;
+	</select>
+	
+	<!-- modified by sourav.bhadra on 24-10-2017 -->
+	<insert id="insertIntoMessDailyRationCommodity" parameterType="com.qts.icam.model.inventory.Commodity">
+		INSERT INTO
+		mess_daily_ration_commodity
+			(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				mess_daily_ration_commodity_code, mess_daily_ration_commodity_name,
+				mess_daily_ration_commodity_unit
+		)VALUES(
+				uuid_generate_v4(),
+				#{objectId},
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT('MDRC-' ||(SELECT COALESCE((SELECT MAX(mess_daily_ration_commodity_id) FROM mess_daily_ration_commodity), 0 )+1))),
+			    #{commodityCode},
+			    (SELECT rec_id FROM unit_matrix WHERE unit_name ilike #{commodityDesc} AND is_active = true)
+		)
+	</insert>
+	
+	<!-- modified by sourav.bhadra on 06-03-2018 -->
+	<insert id="insertIntoMessDailyRationPODetails" parameterType="com.qts.icam.model.common.MessDailyRationPurchaseOrderDetails">
+		INSERT INTO
+		mess_daily_ration_po_details
+			(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				mess_daily_ration_po_details_code, mess_daily_ration_commodity, 
+				commodity_unit, commodity_rate, commodity_quantity, mess_daily_ration_po, total_amount
+			)
+		VALUES
+			(
+				uuid_generate_v4(),
+				#{messDailyRationPoDetailsObjId},
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT('MDRPOD-' ||(SELECT COALESCE((SELECT MAX(mess_daily_ration_po_details_id) FROM mess_daily_ration_po_details), 0 )+1))),
+			    (SELECT rec_id FROM mess_daily_ration_commodity WHERE mess_daily_ration_commodity_name = #{commodity.commodityCode} AND is_active = true),
+			    #{unit}, #{rate}, #{quantity}, 
+			    (SELECT rec_id FROM mess_daily_ration_po WHERE mess_daily_ration_po_code = #{messDailyRationPoDetailsCode} AND is_active = true),
+			    #{totalPrice}
+			)	
+	</insert>
+	
+	<select id="selectMessDailyRationVendorDetails" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Vendor">
+		SELECT 
+			mess_daily_ration_vendor_address as vendorAddress, 
+			mess_daily_ration_vendor_contact_no as vendorContactNumber
+		FROM 
+			mess_daily_ration_vendor
+		WHERE 
+			mess_daily_ration_vendor_code = #{vendorCode}
+		AND
+			is_active = true;
+	</select>
+	
+	<select id="getLastMessDailyConsumptionCIVCode" resultType="java.lang.String">
+		SELECT 
+			issue_to_kitchen_civ
+		FROM 
+			issue_to_kitchen 
+		WHERE 
+			issue_to_kitchen_id = (SELECT max(issue_to_kitchen_id) FROM issue_to_kitchen)
+		AND	
+			is_active = true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 10-10-2017 -->
+	<select id="getDailyRationCommodities" resultType="java.lang.String">
+		SELECT 
+			mess_daily_ration_commodity_name
+		FROM 
+			mess_daily_ration_commodity
+		WHERE 
+			is_active = true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 10-10-2017 -->
+	<select id="getNonDailyRationCommodities" resultType="java.lang.String">
+		SELECT 
+			c.commodity_name
+		FROM 
+			mess_commodity_stock mcs
+		JOIN 
+			commodity c ON (mcs.commodity = c.rec_id AND c.is_active=true)
+		WHERE 
+			c.commodity_type = 'STOCK'
+		AND 
+			c.commodity_sub_type = 'FOODING'
+		AND 
+			mcs.is_active = true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 10-10-2017 -->
+	<select id="getMessStockOfADailyRationCommodity" parameterType="java.util.Map" resultType="com.qts.icam.model.common.MessDailyConsumptionDetails">
+		SELECT 
+			commodity_quantity as oldStockInForIssue,
+			commodity_rate as rate,
+			commodity_unit as commodityAU
+		FROM 
+			mess_daily_ration_po_details mdrpd
+		JOIN 
+			mess_daily_ration_commodity mdrc ON (mdrpd.mess_daily_ration_commodity = mdrc.rec_id AND mdrc.is_active = true)
+		WHERE 
+			mdrc.mess_daily_ration_commodity_name = #{commodity}
+		AND 
+			mdrpd.date_of_creation &lt;= (SELECT extract(epoch FROM (SELECT to_timestamp(#{issueDate}, 'DD/MM/YYYY HH24:MI:SS'))))
+		AND 
+			mdrpd.is_active=true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 10-10-2017 -->
+	<select id="getMessStockOfANonDailyRationCommodity" parameterType="java.util.Map" resultType="com.qts.icam.model.common.MessDailyConsumptionDetails">
+		SELECT 
+			mcs.mess_stock as oldStockInForIssue,
+			c.unit as commodityAU,
+			cph.price as rate
+		FROM 
+			mess_commodity_stock mcs
+		JOIN 
+			commodity c ON (mcs.commodity = c.rec_id AND c.is_active = true)
+		JOIN 
+			commodity_price_history cph ON (cph.commodity = c.rec_id AND cph.is_active = true)	
+		WHERE 
+			c.commodity_name = #{commodity}
+		AND 
+			mcs.date_of_creation &lt;= (SELECT extract(epoch FROM (SELECT to_timestamp(#{issueDate}, 'DD/MM/YYYY HH24:MI:SS'))))
+		AND 
+			mcs.is_active=true;
+	</select>
+	
+	<insert id="insertIntoMessDailyConsumption" parameterType="com.qts.icam.model.common.MessDailyConsumption">
+		INSERT INTO
+		issue_to_kitchen
+			(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				issue_to_kitchen_civ, inventory_session, issuance_date
+			)
+		VALUES
+			(
+				uuid_generate_v4(),
+				#{messDailyConsumptionObjectId},
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT extract(epoch FROM now())),
+			    #{issueToKitchenCiv},
+			    #{inventorySession},
+			    (SELECT extract(epoch FROM (SELECT to_timestamp(#{dateOfIssue}, 'DD/MM/YYYY HH24:MI:SS'))))
+			)
+	</insert>
+	
+	<insert id="insertIntoMessDailyConsumptionDetails" parameterType="com.qts.icam.model.common.MessDailyConsumptionDetails">
+		INSERT INTO
+		issue_to_kitchen_details
+			(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				lp_no, commodity_type, commodity_name, commodity_au, 
+				opening_balance, rate, issuing_qty, amount, issue_to_kitchen
+			)
+		VALUES
+			(
+				uuid_generate_v4(),
+				#{messDailyConsumptionObjectId},
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			    (SELECT extract(epoch FROM now())),
+			    (SELECT extract(epoch FROM now())),
+			    #{lpNo}, #{commodityType}, #{commodityName}, #{commodityAU},
+			    #{oldStockInForIssue}, #{rate}, #{issuingQuantity}, #{amount},
+			    (SELECT rec_id FROM issue_to_kitchen WHERE issue_to_kitchen_civ = #{messDailyConsumptionCode} AND is_active = true)
+			)
+	</insert>
+	
+	<update id="updateMessStatus" parameterType="com.qts.icam.model.common.MessDailyConsumptionDetails">
+		UPDATE 
+			mess_commodity_stock
+		SET 
+			mess_stock = mess_stock - #{issuingQuantity}
+		WHERE 
+			commodity = (SELECT rec_id FROM commodity WHERE commodity_name = #{commodityName})
+		AND 
+			is_active = true;
+	</update>
+	<select id="getMessMenuTimeList" resultType="com.qts.icam.model.common.MessMenuTime">
+		SELECT 
+       		mess_menu_time_code as messMenuTimeCode, 
+       		mess_menu_time_name as messMenuTimeName,
+       		mess_menu_time_desc as messMenuTimeDesc,
+       		divsion_order as messMenuTimeOrder
+  		FROM 
+  			mess_menu_time
+  		WHERE 
+  			is_active=true
+  		ORDER BY 
+  			divsion_order;
+	</select>
+	<!-- added by sourav.bhadra on 16-10-2017 -->
+	<select id="selectCommodityUnitForPerishableMaterialRequisition" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT 
+			um.unit_name
+		FROM 
+			mess_daily_ration_commodity mdrc
+		JOIN 
+			unit_matrix um ON(mdrc.mess_daily_ration_commodity_unit = um.rec_id AND um.is_active = true)
+		WHERE 
+			mess_daily_ration_commodity_name = #{commodityName}
+		AND
+			mdrc.is_active = true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 18-10-2017 -->
+	<select id="nextPerishableMaterialRequisitionCode" resultType="java.lang.String">
+		(SELECT ('PMR-' ||(select COALESCE((SELECT MAX(serial_id) FROM mess_perishable_material_requisition), 0 )+1)));
+	</select>
+	
+	<!-- added by sourav.bhadra on 18-10-2017 -->
+	<!-- modified by sourav.bhadra on 19-10-2017 -->
+	<insert id="insertPerishableMaterialRequisition" parameterType="com.qts.icam.model.common.PerishableMaterial">
+		INSERT INTO mess_perishable_material_requisition(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            mess_perishable_material_requisition_id, current_session, academic_year,
+            mess_perishable_material_requisition_number, mess_perishable_material_requisition_end_date)
+	    VALUES (
+			uuid_generate_v4(), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			#{orderId}, 
+			(SELECT rec_id FROM financial_year WHERE year_status =(SELECT rec_id FROM status_flag WHERE status_sym='C')),
+			(SELECT rec_id FROM academic_year WHERE year_status =(SELECT rec_id FROM status_flag WHERE status_sym='C')),
+			#{orderNumber},
+			(SELECT extract(epoch FROM (SELECT to_timestamp(#{closeDate}, 'DD/MM/YYYY'))))
+		);
+	</insert>
+	
+	<!-- added by sourav.bhadra on 18-10-2017 -->
+	<insert id="insertPerishableMaterialRequisitionDetails" parameterType="com.qts.icam.model.common.PerishableMaterial">
+		INSERT INTO mess_perishable_material_requisition_details(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            mess_perishable_material_requisition_id, 
+            mess_perishable_commodity, commodity_quantity, commodity_unit)
+	    VALUES (
+			uuid_generate_v4(), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM mess_perishable_material_requisition WHERE mess_perishable_material_requisition_id = #{orderId} AND is_active = true), 
+			(SELECT rec_id FROM mess_daily_ration_commodity WHERE mess_daily_ration_commodity_name = #{commodityName} AND is_active = true),
+			#{commodityQuantity}::double precision,
+			(SELECT rec_id FROM unit_matrix WHERE unit_name = #{commodityUnit} AND is_active = true)
+	    );
+	</insert>
+	
+	<!-- added by sourav.bhadra on 18-10-2017 -->
+	<select id="selectPerishableMaterialRequisitionList" resultType="com.qts.icam.model.common.PerishableMaterial">
+		SELECT 
+			to_char((SELECT to_timestamp(mpmr.date_of_creation)), 'DD/MM/YYYY') as openDate,
+			mess_perishable_material_requisition_id as orderId, 
+			to_char((SELECT to_timestamp(mess_perishable_material_requisition_end_date)), 'DD/MM/YYYY') as closeDate,
+			fy.financial_year_name as financialSession, 
+			ay.academic_year_name as academicsession, 
+			mess_perishable_material_requisition_number as orderNumber,
+			requisition_status as objectId			<!-- added by sourav.bhadra on 24-10-2017 -->
+		FROM 
+			mess_perishable_material_requisition mpmr
+		JOIN 
+			academic_year ay ON(mpmr.academic_year = ay.rec_id AND ay.is_active=true)
+		JOIN 
+			financial_year fy ON(mpmr.current_session = fy.rec_id AND fy.is_active=true)
+		WHERE 
+			mpmr.is_active=true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 18-10-2017 -->
+	<select id="selectIndividualPerishableMaterialRequisitionDetails" parameterType="java.lang.String" resultType="com.qts.icam.model.common.PerishableMaterial">
+		SELECT 
+			mdrc.mess_daily_ration_commodity_name as commodityName, 
+       		commodity_quantity as commodityQuantity, 
+       		um.unit_name as commodityUnit
+		FROM 
+			mess_perishable_material_requisition_details mpmrd
+		JOIN 
+			mess_daily_ration_commodity mdrc ON(mpmrd.mess_perishable_commodity = mdrc.rec_id AND mdrc.is_active=true)
+		JOIN 
+			unit_matrix um ON(mpmrd.commodity_unit = um.rec_id AND um.is_active = true)
+		WHERE 
+			mess_perishable_material_requisition_id = (SELECT rec_id FROM mess_perishable_material_requisition WHERE mess_perishable_material_requisition_id = #{orderId} AND is_active=true)
+		AND 
+			mpmrd.is_active=true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 19-10-2017 -->
+	<select id="nextPerishableMaterialRequisitionOrderNumber" resultType="java.lang.String">
+		(SELECT ('SSR/' ||(select COALESCE((SELECT MAX(serial_id) FROM mess_perishable_material_requisition), 0 )+1) || '/QM'));
+	</select>
+	
+	<!-- added by sourav.bhadra on 24-10-2017 -->
+	<select id="checkCommodityExistenceInMessDailyRationCommodities" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT 
+			mess_daily_ration_commodity_code
+		FROM 
+			mess_daily_ration_commodity
+		WHERE 
+			mess_daily_ration_commodity_name = #{com}
+		AND 
+			is_active = true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 24-10-2017 -->
+	<update id="updateStatusInPerishableMaterialRequisition" parameterType="java.lang.String">
+		UPDATE 
+			mess_perishable_material_requisition
+		SET 
+			requisition_status = 'RECEIVED',
+			billing_status = 'Pending Bill Processing'	<!-- modified by sourav.bhadra on 01-11-2017 -->
+		WHERE 
+			mess_perishable_material_requisition_id = #{reqId}
+		AND 
+			is_active = true;
+	</update>
+	
+	<!-- added by sourav.bhadra on 24-10-2017 -->
+	<select id="checkVendorExistenceInMessDailyRationVendors" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT 
+			mess_daily_ration_vendor_name
+		FROM 
+			mess_daily_ration_vendor 
+		WHERE 
+			mess_daily_ration_vendor_code = #{ven} 
+		AND 
+			is_active = true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 24-10-2017 -->
+	<update id="updateMessDailyRationCommodityStock" parameterType="com.qts.icam.model.inventory.Commodity">
+		UPDATE 
+			mess_daily_ration_commodity
+		SET 
+			mess_daily_ration_commodity_stock = mess_daily_ration_commodity_stock + #{inStock}
+		WHERE 
+			mess_daily_ration_commodity_name = #{commodityCode}
+		AND 
+			is_active = true;
+	</update>
+	
+	<!-- added by sourav.bhadra on 26-10-2017 -->
+	<select id="getDailyRationCommoditiesPriceDetailsForAVendor" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT 
+			mdrc.mess_daily_ration_commodity_name as commodityName,
+			commodity_price as purchaseRate
+		FROM 
+			mess_daily_ration_commodity_vendor_mapping mdrcvm
+		JOIN 
+			mess_daily_ration_vendor mdrv ON (mdrcvm.vendor = mdrv.rec_id AND mdrv.is_active = true)
+		JOIN 
+			mess_daily_ration_commodity mdrc ON (mdrcvm.commodity = mdrc.rec_id AND mdrc.is_active = true)
+		WHERE 
+			mdrv.mess_daily_ration_vendor_code = #{vendorCode}
+		AND 
+			mdrcvm.is_active = true;
+	</select>
+
+	<insert id="insertMessMenuRoutine" parameterType="com.qts.icam.model.common.MessMenuRoutine">
+    	INSERT INTO mess_menu_routine(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation,
+            mess_menu_routine_code, mess_menu_routine_name, menu_from_date, 
+            menu_to_date)
+    	VALUES (
+			uuid_generate_v4(),
+			#{objectId},
+	      	(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+	      	extract(epoch FROM now()),
+	      	extract(epoch FROM now()),
+	      	(SELECT ('MM-' ||(select COALESCE((SELECT MAX(mess_menu_routine_id) FROM mess_menu_routine), 0 )+1))),
+	      	#{messMenuRoutineName},
+	      	(SELECT extract(epoch from (SELECT to_timestamp(#{startDate},'DD-MM-YYYY')))),
+	      	(SELECT extract(epoch from (SELECT to_timestamp(#{endDate},'DD-MM-YYYY')))));
+	   </insert>
+	   
+	   <select id="selectCodeOfMessMenuRoutine" resultType="java.lang.String">
+	  		SELECT 
+	  			mess_menu_routine_code as messMenuCode
+	  		FROM 
+	  			mess_menu_routine 
+	  		WHERE 
+	  			mess_menu_routine_id = (SELECT max(mess_menu_routine_id) FROM mess_menu_routine WHERE is_active = true);
+	   </select>
+    
+    <insert id="insertMessMenuDetails" parameterType="com.qts.icam.model.common.MessMenuTime"> 	
+	     INSERT INTO mess_menu_routine_details(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, mess_menu_routine_details_code, mess_menu_routine_details_name, 
+            day_name, mess_menu_time, mess_menu_food_item, mess_menu_routine)
+   		VALUES (
+			uuid_generate_v4(),
+			#{objectId},
+	      	(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+	      	extract(epoch FROM now()),
+	      	extract(epoch FROM now()),	 
+	      	(SELECT 'MMD-' ||COALESCE((SELECT MAX(mess_menu_routine_details_id) FROM mess_menu_routine_details), 0 )+1),    	      	
+	      	#{messMenuTimeName},
+	      	#{daysName},
+	      	(SELECT rec_id FROM mess_menu_time WHERE mess_menu_time_desc = #{messMenuTimeCode} AND is_active = true) ,
+	      	#{messMenuValue},
+			(SELECT rec_id FROM mess_menu_routine WHERE mess_menu_routine_code = #{status} AND is_active = true));      
+    </insert>
+    
+    <select id ="selectMessMenuList" resultType="com.qts.icam.model.common.MessMenuRoutine">
+    	SELECT	
+       		mess_menu_routine_code as messMenuRoutineCode, 
+       		mess_menu_routine_name as messMenuRoutineName,
+       		(SELECT to_char((SELECT to_timestamp(menu_from_date)), 'DD/MM/YYYY')) as startDate,
+       		(SELECT to_char((SELECT to_timestamp(menu_to_date)), 'DD/MM/YYYY')) as endDate       		
+  		FROM 
+  			mess_menu_routine
+  		WHERE
+  			is_active=true  			
+  		ORDER BY 
+  			mess_menu_routine_id desc;    	
+    </select>
+    
+    <resultMap id="selectMessMenuDetailsResultMap" type="com.qts.icam.model.common.MessMenuRoutine">
+		<id property="messMenuRoutineCode" column="mess_menu_routine_code" jdbcType="VARCHAR" />
+		<result property="messMenuRoutineName" column="mess_menu_routine_name" jdbcType="VARCHAR" />
+		<result property="startDate" column="startDate" jdbcType="VARCHAR" />
+		<result property="endDate" column="endDate" jdbcType="VARCHAR" />
+			<collection property="routineSlabList" ofType="com.qts.icam.model.common.RoutineSlab">
+				<id property="routineSlabName" column="day_name" jdbcType="DOUBLE" />
+					<collection property="messMenuTimeList" ofType="com.qts.icam.model.common.MessMenuTime">
+					    <id property="messMenuTimeCode" column="mess_menu_time_code" jdbcType="VARCHAR" />
+						<result property="messMenuTimeName" column="mess_menu_time_name" jdbcType="VARCHAR" />
+						<result property="messMenuTimeDesc" column="mess_menu_time_desc" jdbcType="VARCHAR" />
+						<result property="messMenuValue" column="mess_menu_food_item" jdbcType="VARCHAR" />						
+				</collection>
+			</collection>
+	</resultMap>		
+    <select id ="selectMessMenuDetails" parameterType="com.qts.icam.model.common.MessMenuRoutine"  resultMap="selectMessMenuDetailsResultMap">
+    	SELECT
+    		mess_menu_routine_code, 
+    		mess_menu_routine_name, 
+			to_char((SELECT to_timestamp(menu_from_date)),'DD/MM/YYYY') as startDate, 
+			to_char((SELECT to_timestamp(menu_to_date)),'DD/MM/YYYY') as endDate, 
+			mmrd.day_name, 
+			mmt.mess_menu_time_code, 
+			mmt.mess_menu_time_name, 
+			mmt.mess_menu_time_desc,
+			mess_menu_food_item
+		FROM 
+			mess_menu_routine mmr
+		JOIN mess_menu_routine_details mmrd ON (mmr.rec_id=mmrd.mess_menu_routine AND mmrd.is_active=true)
+		JOIN mess_menu_time mmt ON (mmrd.mess_menu_time=mmt.rec_id AND mmt.is_active=true)
+		WHERE 
+			mmr.is_active =true
+		AND
+			mmr.mess_menu_routine_code = #{messMenuRoutineCode};
+    </select>
+    
+    <update id="updateMessMenuRoutine" parameterType="com.qts.icam.model.common.MessMenuRoutine">
+    	UPDATE mess_menu_routine
+	   	SET	   	
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			updated_on = extract(epoch FROM now()),           
+	       	mess_menu_routine_name=	#{messMenuRoutineName}, 
+	       	menu_from_date=(SELECT extract(epoch from (SELECT to_timestamp(#{startDate},'DD-MM-YYYY')))), 
+	       	menu_to_date=(SELECT extract(epoch from (SELECT to_timestamp(#{endDate},'DD-MM-YYYY'))))      	
+	 	WHERE is_active=true
+	 	AND mess_menu_routine_code=#{messMenuRoutineCode};
+    </update>
+    
+    <delete id="deletemessMenuRoutine" parameterType="com.qts.icam.model.common.MessMenuRoutine">
+    	DELETE FROM mess_menu_routine_details WHERE mess_menu_routine = (SELECT rec_id FROM mess_menu_routine WHERE mess_menu_routine_code = #{messMenuRoutineCode});
+    </delete>
+    
+    
+	<!-- added by sourav.bhadra on 31-10-2017 -->
+	<select id="vendorCommodityListForPerishableMaterial" parameterType="java.lang.String" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			c.mess_daily_ration_commodity_name as commodityName,
+			um.unit_name as modelNo,
+			commodity_price as sellingRate,
+			v.mess_daily_ration_vendor_code as vendor
+		FROM
+			mess_daily_ration_commodity_vendor_mapping mdrcvm
+		JOIN 
+			mess_daily_ration_vendor v ON(v.rec_id=mdrcvm.vendor AND v.is_active=true)
+		JOIN 
+			mess_daily_ration_commodity c ON(c.rec_id=mdrcvm.commodity AND c.is_active=true)
+		JOIN 
+			unit_matrix um ON(um.rec_id = c.mess_daily_ration_commodity_unit AND um.is_active = true)
+		WHERE
+			v.mess_daily_ration_vendor_code=#{vendorCode}
+			AND
+			mdrcvm.is_active=true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 31-10-2017 -->
+	<delete id="deleteMapCommodityVendorForPerishableMaterial" parameterType="com.qts.icam.model.inventory.Commodity">
+		DELETE FROM 
+			mess_daily_ration_commodity_vendor_mapping
+		WHERE 
+			vendor=(SELECT rec_id FROM mess_daily_ration_vendor WHERE mess_daily_ration_vendor_code = #{vendor} AND is_active = true);
+	</delete>
+	
+	<!-- added by sourav.bhadra on 31-10-2017 -->
+	<insert id="mapCommodityVendorForPerishableMaterial" parameterType="com.qts.icam.model.inventory.Commodity">
+		INSERT INTO mess_daily_ration_commodity_vendor_mapping(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            vendor, commodity, commodity_price
+        )VALUES (
+			uuid_generate_v4(), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM mess_daily_ration_vendor WHERE mess_daily_ration_vendor_code = #{vendor} AND is_active = true),
+			(SELECT rec_id FROM mess_daily_ration_commodity WHERE mess_daily_ration_commodity_name ilike #{commodityCode} AND is_active = true),
+			#{sellingRate}
+	    );
+	</insert>
+	
+	<!-- added by sourav.bhadra on 31-10-2017 -->
+	<insert id="mapCommodityVendorPriceHistoryForPerishableMaterial" parameterType="com.qts.icam.model.inventory.Commodity">
+		INSERT INTO mess_daily_ration_commodity_price_history(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            vendor, commodity, price
+       	)VALUES (
+			uuid_generate_v4(), #{objectId},
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM mess_daily_ration_vendor WHERE mess_daily_ration_vendor_code = #{vendor} AND is_active = true),
+			(SELECT rec_id FROM mess_daily_ration_commodity WHERE mess_daily_ration_commodity_name ilike #{commodityCode} AND is_active = true),
+			#{sellingRate}
+	    );
+	</insert>
+	
+	<!-- added by sourav.bhadra on 31-10-2017 -->
+	<select id="vendorCommodityPriceHistoryForPerishableMaterial" parameterType="com.qts.icam.model.inventory.Commodity" resultType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			price as sellingRate,
+			to_char((SELECT to_timestamp(mdrcph.date_of_creation)),'DD/MM/YYYY') as date
+		FROM
+			mess_daily_ration_commodity_price_history mdrcph
+		JOIN mess_daily_ration_commodity c ON(mdrcph.commodity=c.rec_id AND c.is_active=true)
+		JOIN mess_daily_ration_vendor v ON(mdrcph.vendor=v.rec_id AND v.is_active=true)
+		WHERE
+			c.mess_daily_ration_commodity_code = #{commodityCode}
+		AND
+			v.mess_daily_ration_vendor_code = #{vendor}
+		AND
+			mdrcph.is_active=true
+		ORDER BY
+			date DESC;	
+	</select>
+	
+	<!-- added by sourav.bhadra on 14-11-2017 -->
+	<select id="selectAllMessDaqilyRationVendorsList" resultType="com.qts.icam.model.common.Vendor">
+		SELECT 
+			mess_daily_ration_vendor_code as vendorCode, 
+			mess_daily_ration_vendor_name as vendorName, 
+			mess_daily_ration_vendor_address as address, 
+			mess_daily_ration_vendor_contact_no as vendorContactNo1
+		FROM 
+			mess_daily_ration_vendor
+		WHERE 
+			is_active = true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 16-11-2017 -->
+	<insert id="insertMessDailyRationVendorLedger" parameterType="com.qts.icam.model.common.Ledger">
+		INSERT INTO ledger(
+			rec_id,
+			obj_id, 
+			updated_by,
+			updated_on,
+			date_of_creation, 
+			is_active,
+			ledger_code,
+			ledger_name,
+			parent_group,
+			subgroup,
+			ledger_holder
+		)VALUES(
+			(uuid_generate_v4()), 
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			true,
+			#{ledgerName},
+			#{ledgerName},
+			(SELECT rec_id FROM group_for_ledger WHERE group_code ='CURRENT LIABILITIES' AND is_active =true),
+			(SELECT rec_id FROM group_for_ledger WHERE group_code='TRADE PAYABLES' AND is_active=true),
+			(SELECT rec_id FROM mess_daily_ration_vendor WHERE mess_daily_ration_vendor_name = #{ledgerName} AND is_active = true)
+		);
+	</insert>
+	
+	<!-- added by sourav.bhadra on 16-11-2017 -->
+	<insert id="insertMessDailyRationVendorLedgerBalance" parameterType="com.qts.icam.model.common.Ledger">
+		INSERT INTO ledger_balance(
+			rec_id, 
+			obj_id, 
+			updated_by, 
+			updated_on,
+			date_of_creation, 
+			is_active,
+			ledger, 
+			month, 
+			year, 
+			opening_balance, 
+			current_balance, 
+			is_current
+		)VALUES(
+			(select uuid_generate_v4()), 
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+			(SELECT extract(epoch FROM now())), 
+			(SELECT extract(epoch FROM now())), 
+			true,
+			(SELECT rec_id FROM ledger WHERE ledger_code ilike #{ledgerName} AND is_active =true),
+			(SELECT EXTRACT(MONTH FROM (SELECT now()))), 
+			(SELECT EXTRACT(YEAR FROM (SELECT now()))),
+			#{openingBal}, 
+			#{openingBal}, 
+			true
+		);
+	</insert>
+	
+	<!-- added by sourav.bhadra on 17-11-2017 -->
+	<update id="updateMessDailyRationVendorsDetails" parameterType="com.qts.icam.model.common.Vendor">
+		UPDATE 
+			mess_daily_ration_vendor
+		SET 
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true), 
+			updated_on=(SELECT extract(epoch FROM now())), 
+			mess_daily_ration_vendor_name=#{vendorName}, 
+			mess_daily_ration_vendor_address=#{vendorAddress}, 
+			mess_daily_ration_vendor_contact_no=#{vendorContactNo1}
+		WHERE 	
+			mess_daily_ration_vendor_code = #{vendorCode}
+		AND 
+			is_active=true;
+	</update>
+	
+	<!-- added by sourav.bhadra on 17-11-2017 -->
+	<update id="updateMessDailyRationVendorsLedger" parameterType="com.qts.icam.model.common.Vendor">
+		UPDATE 
+			ledger
+		SET 
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active =true), 
+			updated_on = (SELECT extract(epoch FROM now())), 
+			ledger_code = #{vendorName}, 
+			ledger_name = #{vendorName}
+		WHERE 
+			ledger_holder = (SELECT rec_id FROM mess_daily_ration_vendor WHERE  mess_daily_ration_vendor_code = #{vendorCode} AND is_active=true)
+		AND 
+			is_active = true;
+	</update>
+	
+	<!-- added by sourav.bhadra on 09-03-2018 -->
+	<!-- modified by sourav.bhadra on 12-03-2018 -->
+	<insert id="insertPMPOInTransactionalWorkingArea" parameterType="com.qts.icam.model.finance.TransactionalWorkingArea">
+		INSERT INTO transactional_working_area(
+					rec_id,
+					obj_id,
+					updated_by,
+					updated_on, 
+					date_of_creation,
+					transactional_working_area_code,
+					transactional_working_area_name, 
+					transactional_working_area_desc,
+					resource,
+					transaction_date,	
+					transaction_year,
+					transaction_month,
+					gross_amount,
+					net_amount,
+					reason_of_transaction,
+					desc_of_transaction,
+					paid_against,
+					transaction_status,
+					academic_year,
+					resource_type,
+					income_expense,
+					ledger,
+					department
+		)VALUES(
+					uuid_generate_v4(),
+					#{objectId},
+					(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+					extract(epoch FROM now()), 
+					extract(epoch FROM now()),
+					(SELECT('TWA' ||(SELECT COALESCE((SELECT MAX(transactional_working_area_id) FROM transactional_working_area), 0)+1))),
+					#{transactionalWorkingAreaName}, 
+					#{transactionalWorkingAreaDesc},
+					(SELECT mess_daily_ration_vendor_name FROM mess_daily_ration_vendor WHERE mess_daily_ration_vendor_code=#{resource}),
+					extract(epoch FROM now()),			
+					to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'YYYY'),
+					to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'MM'),
+					#{netAmount},
+					#{netAmount}, 
+					'COMMODITY PO',
+					#{descOfTransaction},
+					#{paidAgainst},
+					'PENDING',
+					(SELECT academic_year_name FROM academic_year WHERE year_status=(SELECT rec_id FROM status_flag WHERE status_sym='C')),
+					'MESS VENDOR',
+					#{incomeExpense},
+					(SELECT rec_id FROM ledger WHERE ledger_code = (SELECT mess_daily_ration_vendor_name FROM mess_daily_ration_vendor WHERE mess_daily_ration_vendor_code=#{resource}) AND is_active = true),
+					#{department}
+				);
+	</insert>
+</mapper>

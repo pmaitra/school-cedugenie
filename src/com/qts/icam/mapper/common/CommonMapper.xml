@@ -1,0 +1,5149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.mapper.common.CommonMapper">
+
+	<!-- modified by kaustav.sen
+	chnages taken on 18042017 -->
+	
+	<select id="selectCurrentAcademicYear" resultType="com.qts.icam.model.common.AcademicYear">
+		SELECT
+			academic_year_code as academicYearCode,
+			academic_year_name as academicYearName,
+			(to_char((SELECT to_timestamp(session_start_date)), 'DD/MM/YYYY')) as sessionStartDate ,
+			(to_char((SELECT to_timestamp(session_end_date)), 'DD/MM/YYYY')) as sessionEndDate
+		FROM
+			academic_year
+		WHERE
+			is_active = true
+		AND
+			year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C');
+	</select>
+	
+	<select id="selectEmailDetails" parameterType="String" resultType="com.qts.icam.model.common.EmailDetails">
+		SELECT 
+			r1.user_id as emailDetailsSender,
+			sf.status_sym as status,
+			a.receive_time as time,
+			a.alert_id as emailDetailsCode,
+			a.alert_subject as emailDetailsSubject,
+			a.alert_desc as emailDetailsDesc
+		FROM
+			alert a
+		JOIN
+			resource r ON (r.rec_id = a.alert_to) AND (r.is_active = true)
+		JOIN
+			resource r1 ON (r1.rec_id = a.alert_from)
+		JOIN
+			status_flag sf ON (sf.rec_id = a.alert_read_status)
+		JOIN
+			notification_medium nm ON (a.notification_medium = nm.rec_id)
+		WHERE
+			r.user_id ilike #{userId}
+		AND
+			nm.notification_medium_name LIKE 'E-MAIL'
+		AND
+			a.is_active = true
+		ORDER BY
+			sf.status_sym,a.alert_id desc;
+	</select>
+	
+	
+	
+	
+	 <select id="getAllActiveModules" resultType="com.qts.icam.model.administrator.Module">
+	    SELECT 
+	    	module_name as moduleName
+		FROM 
+			module
+		WHERE
+			is_active = true;
+    </select>
+    
+	
+	<select id= "selectNotificationSenderListForAlert" parameterType="String" resultType="com.qts.icam.model.common.Notification">
+		SELECT 
+			r1.user_id as notificationSender,
+			sf.status_sym as status,
+			(SELECT to_char((SELECT to_timestamp(a.date_of_creation)), 'DD/MM/YYYY HH12:MI:SS AM')) as notificationDate,
+			a.alert_id as notificationId,
+			a.alert_subject as notificationSubject,
+			a.alert_desc as notificationDesc
+		FROM
+			alert a
+		JOIN
+			resource r ON (r.rec_id = a.alert_to) AND (r.is_active = true)
+		JOIN
+			resource r1 ON (r1.rec_id = a.alert_from)
+		JOIN
+			status_flag sf ON (sf.rec_id = a.alert_read_status)
+		JOIN
+			notification_medium nm ON (a.notification_medium = nm.rec_id)
+		WHERE
+			r.user_id ilike #{userId}
+		AND
+			nm.notification_medium_name LIKE 'ALERT'
+		AND
+			a.is_active = true
+		ORDER BY
+			sf.status_sym,a.alert_id desc;
+	</select>
+	
+		
+	<select id="selectCountNewMessageForEmail" parameterType="String" resultType="Integer">
+		SELECT 
+			COUNT(a.new_alert_status) as countNewMessage 
+		FROM 
+			alert a
+		JOIN 
+			status_flag sf ON (a.new_alert_status = sf.rec_id)
+		JOIN 
+			resource rs ON (rs.is_active = true) AND (a.alert_to = rs.rec_id)
+		JOIN
+			notification_medium nm ON (a.notification_medium = nm.rec_id) AND (nm.is_active = true)
+		WHERE
+			sf.status_sym = 'N'
+		AND
+			nm.notification_medium_name = 'E-MAIL'
+		AND
+			rs.user_id ilike #{userId}
+	</select>
+	
+	<select id="getTimeFromDB" resultType="String">
+		SELECT to_char((SELECT now()), 'HH24:MI:SS:DD:MM:YYYY') as getTimeFromDB;
+	</select>
+	
+	<select id="selectAllRoleList" resultType="com.qts.icam.model.administrator.Role">		
+		SELECT
+			r.role_name as roleName,
+			r.role_code as roleCode
+		FROM
+			role r
+		JOIN
+			module m ON (m.rec_id= r.module) AND (m.is_active='true')
+		WHERE
+			r.is_active=true;
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<!-- <select id="selectCountryList" resultType="com.qts.icam.model.common.Country">
+		SELECT
+			c.country_name as countryName,
+			c.country_code as countryCode
+		FROM
+			country c
+		WHERE
+			c.is_active = true
+		ORDER BY 
+        	c.country_name,c.country_code;
+	</select> -->
+	<select id="selectStateListForCountry" resultType="com.qts.icam.model.common.State" parameterType="String">
+		SELECT
+			st.state_name as stateName,
+			st.state_code as stateCode
+		FROM
+			state st
+		JOIN
+			country ct ON (st.country = ct.rec_id) AND (ct.is_active  = true )
+		WHERE
+			ct.country_code = #{countryCode}
+		AND
+			st.is_active = true
+		ORDER BY 
+        	st.state_name,st.state_code;
+	</select>
+	<!-- <select id="selectSocialCategoryList" resultType="com.qts.icam.model.common.SocialCategory">
+		SELECT
+			social_category_code as socialCategoryCode,
+			social_category_name as socialCategoryName,
+			social_category_desc as desc,
+			social_category_id as socialCategoryId
+		FROM 
+			social_category
+		WHERE 
+			is_active=true
+		ORDER BY 
+			social_category_id;
+	</select> -->
+	<!-- <select id="selectStandardList" resultType="com.qts.icam.model.common.Standard">
+		SELECT
+			s.standard_name as standardName,
+			s.standard_code as standardCode
+		FROM
+			standard s
+		WHERE
+			s.is_active = true
+		ORDER BY
+		     s.standard_id;
+	</select> -->
+	<!-- <select id="selectAcademicYearList" resultType="com.qts.icam.model.common.AcademicYear">
+		SELECT
+			ay.academic_year_code as academicYearCode,
+			ay.academic_year_name as academicYearName,
+			ay.academic_year_desc as academicYearDesc,
+			sf.status_desc as yearStatus,
+			(SELECT to_char((SELECT to_timestamp(ay.session_start_date)), 'DD-MM-YYYY')) as sessionStartDate,
+			(SELECT to_char((SELECT to_timestamp(ay.session_end_date)), 'DD-MM-YYYY')) as sessionEndDate
+		FROM
+			academic_year ay
+		JOIN 
+			status_flag sf ON(sf.rec_id=ay.year_status)
+		WHERE 
+			sf.status_sym IN('C', 'NE');
+	</select> -->
+	
+	
+	<select id="getActiveLoggedInUser" resultType="com.qts.icam.model.common.Resource">
+		SELECT
+			r.user_id as userId,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as name
+		FROM
+			resource r		
+		JOIN
+			login_details ld ON (ld.is_active=true) AND (ld.resource = r.rec_id)			
+		WHERE
+			ld.login_status=true
+		AND 
+			user_id NOT IN (#{userid});
+	</select>
+	
+	
+	<select id="getUserNameForId" resultType="com.qts.icam.model.common.Resource" parameterType="String">
+		SELECT
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as name
+		FROM
+			resource r
+		WHERE
+			user_id ilike #{userId}
+		AND
+			is_active=true;	
+	</select>
+	
+	<select id="selectAllUserGroupListForUrgentOrNormalNotification"  parameterType="com.qts.icam.model.common.LoggingAspect" resultType="com.qts.icam.model.common.Resource" >
+		SELECT 
+			ug.approver_group_code as code
+		FROM
+			approver_group ug				
+		JOIN 
+			logging_notification_user_group_mapping lnugm ON (lnugm.is_active=true) AND (lnugm.user_group = ug.rec_id)
+		JOIN 	
+			module_functionality_method_mapping mfmm ON (lnugm.module_functionality_method_mapping = mfmm.rec_id) AND (mfmm.is_active=true)
+		LEFT JOIN
+			notification_level nl ON (lnugm.notification_level = nl.rec_id) AND (nl.is_active=true)
+		JOIN 
+			module_functionality mf ON (mfmm.module_functionality = mf.rec_id) AND ( mf.is_active=true)
+		JOIN
+			module m ON (mf.module = m.rec_id) AND (m.is_active=true)
+		WHERE 
+			m.module_name = #{module.moduleName}
+		AND
+			mf.functionality_name=#{functionality.functionalityName}
+		AND
+			mfmm.method_name=#{methodName}			
+		<if test="notificationLevel == 'URGENT'">
+		AND nl.notification_level_name='URGENT'
+		</if>
+		<if test="notificationLevel == 'NORMAL'">
+  			AND nl.notification_level_name='NORMAL'
+ 		</if>
+ 		GROUP BY ug.approver_group_code; 				
+	</select>
+
+	
+	
+	<select id = "getAllTicketStatus" resultType="com.qts.icam.model.ticket.TicketStatus">
+			SELECT  
+	       		ticket_status_code as ticketStatusCode, 
+	       		ticket_status_name as ticketStatusName
+			FROM 
+				ticket_status
+			WHERE
+				is_active=true
+			ORDER By 
+				ticket_status_id;
+	</select>
+	
+	<select id="getAllResourceType" resultType="com.qts.icam.model.common.ResourceType">
+		SELECT 
+      		resource_type_name as resourceTypeName,
+      		resource_type_code as resourceTypeCode
+		FROM 
+			resource_type rt  		
+  		WHERE 
+  			is_active=true
+  		AND
+  			resource_type_code!='SUPERADMIN';
+	</select>
+	
+	<select id="selectSectionAgainstStandard" resultType="com.qts.icam.model.common.Section" parameterType="java.lang.String">
+		SELECT
+			section_code as sectionCode,
+			section_name as sectionName
+		FROM
+			section sec
+		JOIN standard std ON(sec.standard=std.rec_id AND std.is_active=true)
+		WHERE
+			standard_code=#{standard}
+			AND
+			sec.is_active=true
+			AND
+			sec.section_code NOT IN('NA')
+		ORDER BY section_name;
+	</select>
+	
+	
+	<select id="getUserIdForResourceType" parameterType="com.qts.icam.model.common.ResourceType"
+		resultType="java.lang.String">
+		SELECT
+			user_id as userIdFromResource
+		FROM
+			resource
+		WHERE
+			<!-- user_id ilike (#{updatedBy}||'%') 
+		AND -->	
+			is_active ='true'
+		AND
+			resource_type = (SELECT rec_id FROM resource_type where resource_type_code=#{resourceTypeCode} AND is_active='true' )
+		AND
+			user_id !='superadmin';
+	</select>
+	
+	
+	<select id="selectVendorTypes" resultType="com.qts.icam.model.common.VendorType">
+		SELECT
+			vendor_type_name as vendorTypeName,
+			vendor_type_code as vendorTypeCode
+		FROM
+			vendor_type
+		WHERE
+			is_active =true;
+	</select>
+	
+	<!-- ranita.sur 28062017 -->
+	
+	<insert id="insertVendor" parameterType="com.qts.icam.model.common.Vendor">
+		INSERT INTO 
+				vendor
+					(
+						rec_id,	obj_id,updated_by,updated_on,date_of_creation,
+						vendor_code,vendor_name,vendor_desc,vendor_address,
+						vendor_contact_number,vendor_type,vendor_contact_number2,
+						bank_name,bank_account_no,bank_ifsc_code,bank_location,
+						email_id,bank_code
+					)
+		VALUES 
+					(
+						uuid_generate_v4(),#{vendorObjectId},
+						(SELECT rec_id FROM resource WHERE user_id ilike #{updatedBy} AND is_active =true),
+						extract(epoch FROM now()),
+						extract(epoch FROM now()),
+					    (select (#{vendorType})|| '_' ||COALESCE((SELECT MAX(vendor_id) FROM vendor), 0)+1),
+						trim(#{vendorName}),
+						trim(#{vendorName}),
+						#{address},
+						#{vendorContactNo1},
+						(SELECT rec_id FROM vendor_type WHERE vendor_type_code=#{vendorType}),
+						#{vendorContactNo2},
+						#{bankName},
+						#{accountNo},
+						#{bankCode},
+						#{bankLocation},
+						#{emailId},
+						#{branchCode}
+					);
+	</insert>
+	
+	<!-- ranita.sur 17062017 -->
+	
+	<select id="selectVendors" resultType="com.qts.icam.model.common.Vendor" parameterType="com.qts.icam.model.common.Vendor">
+		SELECT
+			v.vendor_code as vendorCode,
+			v.vendor_name as vendorName,
+			v.vendor_address as address,
+			v.vendor_contact_number as vendorContactNo1,
+			v.vendor_contact_number2 as vendorContactNo2,
+			vt.vendor_type_name as vendorType,
+			v.bank_name as bankName,
+			v.bank_account_no as accountNo,
+			v.bank_ifsc_code as bankCode,
+			v.bank_location as bankLocation,
+			v.email_id as emailId,
+			v.bank_code as branchCode
+		FROM
+			vendor v
+		JOIN
+			vendor_type vt ON (v.vendor_type=vt.rec_id )
+		WHERE
+			v.is_active =true
+		<if test="vendorCode != null and vendorCode.length()!=0">
+           AND  v.vendor_code LIKE #{vendorCode}
+        </if>;
+	</select>
+	
+	<update id="updateVendor" parameterType="com.qts.icam.model.common.Vendor">
+		UPDATE
+			vendor
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id ilike #{updatedBy} AND is_active =true),
+			updated_on=extract(epoch FROM now()),
+			vendor_name=#{vendorName},
+			vendor_address=#{address},
+			vendor_contact_number=#{vendorContactNo1},
+			vendor_contact_number2=#{vendorContactNo2}
+		WHERE
+			vendor_code=#{vendorCode};
+	</update>
+	
+	<delete id="deleteVendor" parameterType="com.qts.icam.model.common.Vendor">
+		UPDATE
+			vendor
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active =true),
+			updated_on=extract(epoch FROM now()),
+			is_active =false
+		WHERE
+			vendor_code=#{vendorCode};
+	</delete>
+	
+	
+<select id="selectInventorySession" resultType="com.qts.icam.model.common.AcademicYear">
+		SELECT
+			inventory_session_code as academicYearCode,
+			inventory_session_name as academicYearName,
+			(to_char((SELECT to_timestamp(session_start_date)), 'DD/MM/YYYY')) as sessionStartDate ,
+			(to_char((SELECT to_timestamp(session_end_date)), 'DD/MM/YYYY')) as sessionEndDate
+		FROM
+			inventory_session
+		WHERE
+			is_active = true
+		AND
+			session_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C');
+	</select>
+	
+	
+<resultMap id="selectStaffUserIdListResultMap" type="com.qts.icam.model.common.Resource">
+		<id property="userId" column="user_id" jdbcType="VARCHAR" />
+		<id property="firstName" column="firstName" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectStaffUserIdList" resultMap="selectStaffUserIdListResultMap">
+		SELECT
+		r.user_id,
+		r.first_name || COALESCE(r.middle_name,'') || COALESCE(r.last_name,'  ')  as firstName
+		FROM
+		resource r		
+		JOIN resource_type rt ON (r.resource_type= rt.rec_id)
+		JOIN employee_details ed ON (ed.resource= r.rec_id)		
+		WHERE
+		rt.resource_type_name !='SUPERADMIN'
+		AND
+		rt.resource_type_name !='STUDENT'
+		AND
+		ed.is_retired=false;		
+	</select>
+	
+	<resultMap id="selectAllDepartmentResultMap" type="com.qts.icam.model.common.Department">
+		<id property="departmentCode" column="department_code" jdbcType="VARCHAR" />
+		<result property="departmentName" column="department_name" jdbcType="VARCHAR" />
+		<result property="objectId" column="obj_id" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectAllDepartment" resultMap="selectAllDepartmentResultMap">
+		SELECT 
+			department_code, 
+			department_name,
+			obj_id 
+		FROM 
+			department
+		WHERE		
+			is_active = true;
+	</select>
+	
+	<select id="getDepartmentWiseUserList" parameterType="String" resultType="com.qts.icam.model.common.Resource">
+		SELECT user_id as userId
+		FROM resource r		
+		JOIN employee_details ed ON (ed.resource= r.rec_id AND r.is_active = true AND ed.is_active = true)
+		JOIN department d ON (d.rec_id = ed.department AND d.is_active = true)
+		WHERE		 
+			d.department_code = #{departmentCode};
+	</select>
+	
+	<select id="selectSchoolDetails" resultType="com.qts.icam.model.common.SchoolDetails">
+		SELECT 
+			school_start_time as schoolStartTime, 
+        	school_end_time as schoolEndTime
+  		FROM 
+  			school;
+	</select>
+	
+	
+	<select id="selectSubjectsStudiedByStudent" resultType="com.qts.icam.model.academics.Subject" parameterType="java.lang.Integer">
+		SELECT
+			sub.subject_code as subjectCode,
+			sub.subject_name as subjectName
+		FROM student_subject_mapping ssm
+		JOIN subject sub ON(ssm.subject=sub.rec_id AND sub.is_active=true)
+		JOIN resource r ON(ssm.student=r.rec_id AND r.is_active=true)
+		WHERE
+			ssm.is_active=true
+			AND
+			r.roll_number=#{rollNumber};
+	</select>
+	
+		<select id="selectStudentsAgainstStandardAndSection" resultType="com.qts.icam.model.common.Student" parameterType="com.qts.icam.model.common.Student">
+		SELECT
+			r.roll_number as rollNumber,
+			r.first_name || ' ' || COALESCE(r.middle_name ,'') || ' ' || COALESCE(r.last_name,'  ')  as studentName
+		FROM
+			resource r
+			LEFT JOIN section sec ON(r.section=sec.rec_id AND sec.is_active=true)
+			LEFT JOIN standard std ON(sec.standard=std.rec_id AND std.is_active=true)
+		WHERE
+			r.is_active=true
+			AND
+			sec.section_code=#{section}
+			AND
+			std.standard_code=#{standard}
+		ORDER BY r.roll_number asc;
+	</select>
+	
+	
+	<update id="updateUserPasswordStatus" parameterType="com.qts.icam.model.login.LoginForm" >	
+		UPDATE 
+			user_password_status
+		   SET updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active=true), 
+		       updated_on=(SELECT extract(epoch FROM now())), 
+		       password_status=(SELECT rec_id FROM status_flag WHERE status_desc='INACTIVE')
+		        <if test="status == 'ByAdmin'">
+		       ,is_active=false
+		        </if>
+		 WHERE  
+			resource=(SELECT rec_id FROM resource WHERE user_id ilike #{userId} AND is_active=true)
+		 AND
+			 is_active=true;
+	</update>
+	
+	<insert id="insertUserPasswordStatus" parameterType="com.qts.icam.model.login.LoginForm" >
+		INSERT INTO user_password_status(
+	            rec_id, 
+	            obj_id, 
+	            updated_by, 
+	            updated_on,		    
+	            user_password_status_code,  
+	            is_active, 
+	            resource, 
+	            password_status,
+	            date_of_creation)
+	    VALUES (
+			uuid_generate_v4(),
+			#{objId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())),
+		    (SELECT ('UPS-'||(select COALESCE((SELECT MAX(user_password_status_id) FROM user_password_status), 0 )+1))), 
+			true, 
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{userId} AND is_active=true),
+			(SELECT rec_id FROM status_flag WHERE status_desc='ACTIVE'), 
+			(SELECT extract(epoch FROM now()))
+	    );
+	</insert>
+	
+	
+	<select id="selectResourceDetails" parameterType="String" resultType="com.qts.icam.model.common.Resource">
+		SELECT 
+			r.mobile_no as mobile,
+			r.email_address as emailId
+		FROM 
+			resource r		
+		WHERE
+			r.is_active=true
+		AND
+			r.user_id ilike #{userId}
+	</select>
+	
+	<select id="selectAllTeacherList" resultType="com.qts.icam.model.common.Resource">
+		Select
+			user_id as userId,
+			first_name || ' ' || COALESCE(middle_name,' ') || ' ' || last_name as name
+		From
+			resource
+		Where
+			resource_type=(Select rec_id From resource_type Where resource_type_code ='TEACHING_STAFF' And is_active=true)
+		And
+			is_active = true
+		ORDER BY 
+			name;
+	</select>
+	
+	<resultMap id="selectLoggingNotificationActivityRulesRM" type="com.qts.icam.model.common.LoggingAspect">			
+			<id property="activityLog" column="activity_log" jdbcType="BOOLEAN"/>
+			<result property="notification" column="notification" jdbcType="BOOLEAN"/>
+	</resultMap>
+	<select id="selectLoggingNotificationActivityRules" parameterType ="com.qts.icam.model.common.LoggingAspect" resultMap="selectLoggingNotificationActivityRulesRM">	
+			SELECT 
+				mfmm.notification,
+				mfmm.activity_log
+			FROM
+				module_functionality_method_mapping mfmm 
+			LEFT JOIN
+				notification_level nl ON (mfmm.notification_level = nl.rec_id) AND (nl.is_active = true)
+			JOIN 
+				module_functionality mf ON (mfmm.module_functionality = mf.rec_id) AND (mf.is_active = true)
+			JOIN
+				module m ON (mf.module = m.rec_id)AND (m.is_active = true)
+			WHERE 
+				m.module_name = #{module.moduleName}
+			AND
+				mf.functionality_name = #{functionality.functionalityName}
+			AND
+				mfmm.method_name = #{methodName}
+			AND
+				mfmm.is_active = true;
+	</select>
+	
+	<insert id="insertIntoLoggingDetails" parameterType="com.qts.icam.model.common.LoggingAspect" statementType="CALLABLE">
+		select insert_logging_details(
+									#{loggingObjectId, mode=IN, jdbcType=VARCHAR},
+									#{updatedBy, mode=IN, jdbcType=VARCHAR},
+									#{methodName, mode=IN, jdbcType=VARCHAR},
+									#{loggingDesc, mode=IN, jdbcType=DOUBLE},
+									#{module.moduleName, mode=IN, jdbcType=VARCHAR},
+									#{recId, mode=IN, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<select id="getActiveNotificationMediumsForNotificationLevel" parameterType="java.lang.String" resultType="com.qts.icam.model.common.NotificationMedium" >
+		SELECT 
+			nm.notification_medium_name  as notificationMediumName
+		FROM 
+			notification_level_medium_mapping nlmm
+		JOIN
+			notification_level nl ON (nlmm.notification_level= nl.rec_id) AND (nl.is_active = true)
+		JOIN
+			notification_medium nm ON (nlmm.notification_medium = nm.rec_id) AND (nm.is_active = true)
+		WHERE
+			nlmm.is_active = true
+		AND 
+			nl.notification_level_name=#{notificatinLevel};
+	</select>
+		
+	<select id= "selectResourceListForUserGroup" parameterType="com.qts.icam.model.common.Resource" resultType="com.qts.icam.model.common.Resource">
+<!-- 		SELECT 
+			r.user_id as userId,
+			r.mobile_no as mobile,
+			r.email_address as emailId
+		FROM
+			resource r
+		JOIN
+			user_group_resource_mapping ugrm ON (ugrm.resource = r.rec_id) AND (ugrm.is_active = true)
+		JOIN
+			user_group ug ON (ug.rec_id = ugrm.user_group) AND (ug.is_active = true)
+		WHERE
+			ug.user_group_code = #{code}
+		AND
+			r.is_active = true; -->
+			
+		SELECT 
+			r.user_id as userId,
+			r.mobile_no as mobile,
+			r.email_address as emailId
+		FROM
+			resource r
+		JOIN
+			approver_group_resource_mapping agrm ON (agrm.resource = r.rec_id) AND (agrm.is_active = true)
+		JOIN
+			approver_group ag ON (ag.rec_id = agrm.approver_group) AND (ag.is_active = true)
+		WHERE
+			ag.approver_group_code = #{code}
+		AND
+			r.is_active = true;
+	</select>
+	
+	<!-- <insert id="insertAlert" parameterType="com.qts.icam.model.common.Notification">		
+		INSERT INTO alert(
+	            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+	            alert_code, alert_subject, alert_desc, alert_from, notification_medium, 
+	            alert_read_status, new_alert_status, alert_to,approval_status,deligation_code,receive_time
+   		)VALUES (
+	     		uuid_generate_v4(), 
+		    	#{notificationObjectId},
+		    	(SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active=true),
+		    	extract(epoch FROM now()),
+		    	extract(epoch FROM now()), 
+	            (select('ALERTCODE-' ||(select COALESCE((SELECT MAX(alert_id) FROM alert), 0 )+1))), 
+	            #{notificationSubject}, 
+	            #{notificationDesc},
+	            (SELECT rec_id FROM resource WHERE user_id  ilike  #{notificationSender} AND is_active=true),
+	            (SELECT rec_id FROM notification_medium WHERE notification_medium_name = #{notificationMedium.notificationMediumName} AND is_active=true), 
+	            (SELECT rec_id FROM status_flag WHERE status_desc='ACTIVE'),
+	            (SELECT rec_id FROM status_flag WHERE status_desc='NEW'),
+	            (SELECT rec_id FROM resource WHERE user_id  ilike  #{notificationReplyTo} AND is_active=true),
+	             #{approvalStatus},
+	             #{notificationCode},
+	             #{receiveTime}
+	     )
+	</insert> -->
+	
+	
+	<resultMap id="getCityListResultMap" type="java.lang.String">
+		<id property="cityList" column="city_name" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getCityList" parameterType="java.lang.String" resultMap="getCityListResultMap">
+		SELECT city_name
+		FROM city
+		WHERE city_name ilike
+		(#{strQuery}||'%')
+		AND is_active = true;
+	</select>
+
+	<resultMap id="getDistrictListResultMap" type="java.lang.String">
+		<id property="presentDistrict" column="district_name" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getDistrictList" parameterType="java.lang.String" resultMap="getDistrictListResultMap">
+		SELECT district_name
+		FROM district
+		WHERE district_name ilike
+		(#{strQuery}||'%')
+		AND is_active = true;
+	</select>
+	
+	<select id = "selectRecIdForVenue" resultType="String" parameterType="String">
+		SELECT
+			rec_id as recId
+		FROM 
+			exam_venue
+		 WHERE
+			is_active=true
+		AND
+			exam_venue_name=#{venueName};
+	</select>
+	
+	<update id="updateNotificationDetailsForViewNotification" parameterType="com.qts.icam.model.common.Notification">			
+		UPDATE alert
+		SET 
+		    updated_by = (SELECT rec_id FROM resource WHERE user_id ilike #{updatedBy} AND is_active =true),
+		    updated_on= extract(epoch FROM now()),
+		    alert_read_status = (SELECT rec_id FROM status_flag WHERE status_desc ='INACTIVE'),
+		    new_alert_status = (SELECT rec_id FROM status_flag WHERE status_desc='OLD')
+		WHERE 
+		    alert_to = (SELECT rec_id FROM resource WHERE user_id ilike #{updatedBy}  AND is_active =true)
+		AND
+		     alert_id = #{notificationId};
+	</update>
+	
+	<update id="changeMailReadStatus" parameterType="String">
+		UPDATE alert
+		SET 
+		    updated_on= extract(epoch FROM now()),
+		    alert_read_status = (SELECT rec_id FROM status_flag WHERE status_desc ='INACTIVE'),
+		    new_alert_status = (SELECT rec_id FROM status_flag WHERE status_desc='OLD')
+		WHERE 
+		     alert_id = #{emailAlertCode}::Integer;	
+	</update>
+	
+	
+	<select id= "selectAllGroupList" resultType="com.qts.icam.model.common.Resource">		
+			SELECT 
+       			user_group_code  as code,
+       			user_group_name  as userId
+			FROM 
+				user_group
+			WHERE
+				is_active = true;
+	</select>
+	
+	<select id= "selectUserIdForEmail" resultType="String" parameterType="String">		
+			SELECT 
+				user_id as senderUserId 
+			FROM
+				 resource
+			WHERE
+				 email_address = #{emailDetailsSender} 
+			AND 
+				is_active=true;
+	</select>
+	
+	<!-- anup.roy//for fetch basic student details for report -->
+	
+	<select id="selectBasicStudentDetailsForReport" parameterType="String" resultType="com.qts.icam.model.common.Student">
+		SELECT 
+			scm.roll_number as rollNumber,
+			std.standard_name as standard,
+			sec.section_name as section,
+			host.hostel_name as house,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,' ') as studentName,
+			r.father_first_name || ' ' || COALESCE(r.father_middle_name,' ') || ' ' || COALESCE(r.father_last_name,' ') as "resource.fatherFirstName",
+			r.mother_first_name || ' ' || COALESCE(r.mother_middle_name,' ') || ' ' || COALESCE(r.mother_last_name,' ') as "resource.motherFirstName",
+			to_char((SELECT to_timestamp(r.date_of_birth)), 'DD/MM/YYYY') as "resource.dateOfBirth"
+		FROM 
+			resource r 
+		JOIN 
+			student_course_mapping scm ON (r.user_id = scm.user_id AND scm.is_active = true)
+		JOIN 
+			section sec ON (scm.section = sec.rec_id AND sec.is_active = true)
+		JOIN 
+			standard std ON (sec.standard = std.rec_id AND std.is_active = true)
+		LEFT JOIN 
+			hostel host ON (r.hostel = host.rec_id AND host.is_active = true)
+		WHERE
+			r.user_id = #{rollNumber}
+		AND
+			r.is_active = true;
+	</select>
+	
+	<select id= "selectPreviousAndCurrentAcademicYear" resultType="com.qts.icam.model.common.AcademicYear" >		
+		SELECT
+			academic_year_code as academicYearCode,
+			academic_year_name as academicYearName,
+			(to_char((SELECT to_timestamp(session_start_date)), 'DD/MM/YYYY')) as sessionStartDate ,
+			(to_char((SELECT to_timestamp(session_end_date)), 'DD/MM/YYYY')) as sessionEndDate
+		FROM
+			academic_year
+		WHERE
+			is_active = true
+		AND
+			year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C')
+		OR
+			year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'P');
+	</select>
+	
+	<select id="selectUserIdToCreateNotification" parameterType="String" resultType="String">
+		SELECT
+			r.user_id as staffUserIds
+		FROM
+			resource r
+		JOIN
+			resource_type rt ON (rt.rec_id  = r.resource_type) AND (rt.is_active=true)
+		WHERE
+			user_id ilike (#{strQuery}||'%') 
+		AND	
+			r.is_active ='true'
+		AND
+			rt.resource_type_name IN ('ADMIN STAFF','GENERAL DUTY STAFF','TEACHING STAFF' )
+		AND
+			user_id !='superadmin';
+	</select>
+	
+	<!-- Modified by Saif.Ali -->
+	<select id="selectAssetsForDepartment" resultType="com.qts.icam.model.common.AnnualStock">
+		SELECT 
+			com.serial_id as "commodity.commodityId", 
+			com.commodity_name as "commodity.commodityName", 
+			com.commodity_code as "commodity.commodityCode", 
+			com.commodity_instock as "commodity.inStock",
+			com.commodity_type as "commodity.commodityType"
+		FROM 
+			commodity com
+		WHERE
+			com.is_active = true
+		AND 
+			com.commodity_type='ASSET'
+	</select>
+	
+	<!-- Modified by Saif.Ali -->
+	<insert id="insertAnnualStock" parameterType="com.qts.icam.model.common.AnnualStock">		
+		INSERT INTO astv(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            commodity, ground_balance, surplus, deficient, serviceable, 
+            repairable, condemnation, remarks, inventory_session)
+   		VALUES (
+	     		uuid_generate_v4(), 
+		    	#{objectId},
+		    	(SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+		    	extract(epoch FROM now()),
+		    	extract(epoch FROM now()), 
+	            (SELECT rec_id FROM commodity WHERE commodity_name = #{commodity.commodityName} AND is_active = true), 
+	            #{groundBalance},
+	            #{surplus},
+	            #{deficient},
+	            #{serviceable},
+	            #{repairable},
+	            #{condemnation},
+	            #{remarks},
+	            (SELECT rec_id FROM financial_year WHERE year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C') AND is_active = TRUE))
+	</insert>
+	
+	<select id="selectAnnualStockListForDepartment" resultType="com.qts.icam.model.common.AnnualStock" parameterType="java.lang.String">
+		SELECT
+			asst.asset_id as "asset.assetId",
+			ast.astv_id as annualStockId,
+			asst.asset_name as "asset.assetName",
+			asst.ledger_number as "asset.ledgerNumber",
+			asst.page_number as "asset.pageNumber",
+			asst.ledger_balance as "asset.ledgerBalance",
+			dept.department_name as "asset.department.departmentName", 
+			asst.asset_price as "asset.assetPrice",
+			(SELECT to_char((SELECT to_timestamp(asst.purchase_date)), 'DD/MM/YYYY')) as "asset.purchaseDate",
+			ast.ground_balance as groundBalance,
+			ast.surplus as surplus,
+			ast.deficient as deficient,
+			ast.serviceable as serviceable,
+			ast.repairable as repairable,
+			ast.condemnation as condemnation,
+			ast.remarks as remarks
+		FROM
+			astv ast
+		JOIN asset asst ON (ast.asset = asst.rec_id) AND (asst.is_active = true)
+		JOIN department dept ON (dept.rec_id = asst.department) AND (dept.is_active = true)
+		WHERE
+			dept.department_name = #{department}
+		AND
+			ast.is_active = true
+		AND
+			ast.inventory_session = (SELECT rec_id FROM inventory_session WHERE session_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C') AND is_active = TRUE);
+	</select>
+		
+	<update id="updateAnnualStock"  parameterType="com.qts.icam.model.common.AnnualStock">
+		UPDATE
+			astv
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+			updated_on = extract(epoch FROM now()),
+			ground_balance = #{groundBalance},
+			surplus = #{surplus},
+			deficient = #{deficient},
+			serviceable = #{serviceable},
+			repairable = #{repairable},
+			condemnation = #{condemnation},
+			remarks = #{remarks}
+		WHERE
+			astv_id = #{annualStockId};
+	</update>
+	
+	<!-- Modified by saif.Ali    Date- 20/07/2017 -->
+	<select id="selectASTVListForDepartment" resultType="com.qts.icam.model.common.Condemnation">
+		SELECT
+			ast.astv_id as "annualStock.annualStockId",
+			com.commodity_name as "annualStock.commodity.commodityName",
+			com.commodity_instock as "annualStock.commodity.inStock",
+			vcm.commodity_price as "annualStock.commodity.sellingRate",
+			ast.serviceable as "annualStock.serviceable",
+			ast.repairable as "annualStock.repairable",
+			ast.condemnation as "annualStock.condemnation"
+		FROM
+			astv ast
+		JOIN commodity com ON (ast.commodity = com.rec_id) AND (com.is_active = true)
+		JOIN commodity_vendor_mapping vcm ON(vcm.commodity = com.rec_id) AND (vcm.is_active = true)
+		WHERE
+			ast.is_active = true
+		AND
+			ast.condemnation = true
+		AND
+			ast.inventory_session = (SELECT rec_id FROM financial_year WHERE year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C') AND is_active = TRUE);
+	</select>
+	
+	<!-- Modified by saif.Ali  date-20/07/2017 -->
+	<insert id="insertCondemnation" parameterType="com.qts.icam.model.common.Condemnation">		
+		INSERT INTO condemnation(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            astv, ac_unit, qtyproducedforcb, qtysentencedtouns, 
+            cost_amount, inventory_session, remarks)
+   		VALUES (
+	     		uuid_generate_v4(), 
+		    	#{objectId},
+		    	(SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+		    	extract(epoch FROM now()),
+		    	extract(epoch FROM now()), 
+	            (SELECT rec_id FROM astv WHERE astv_id = #{annualStock.annualStockId} AND is_active = true), 
+	            #{unit},
+	            #{qtyProducedForCB},
+	            #{qtySentencedToUNS},
+	            #{costAmount},
+	            (SELECT rec_id FROM financial_year WHERE year_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C') AND is_active = TRUE),
+	            #{remarks})
+	</insert>
+	
+	<update id="updateCondemnation"  parameterType="com.qts.icam.model.common.Condemnation">
+		UPDATE
+			condemnation
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+			updated_on = extract(epoch FROM now()),
+			ac_unit = #{unit},
+			qtyproducedforcb = qtyproducedforcb+#{qtyProducedForCB},
+			qtysentencedtouns = #{qtySentencedToUNS},
+			cost_amount = #{costAmount},
+			remarks = #{remarks}
+		WHERE
+			condemnation_id = #{condemnationId};
+	</update>
+	
+	<select id="selectCondemnationStockListForDepartment" resultType="com.qts.icam.model.common.Condemnation" parameterType="java.lang.String">
+		SELECT
+			asst.asset_id as "annualStock.asset.assetId",
+			ast.astv_id as "annualStock.annualStockId",
+			cond.condemnation_id as condemnationId,
+			asst.asset_name as "annualStock.asset.assetName",
+			asst.ledger_number as "annualStock.asset.ledgerNumber",
+			asst.page_number as "annualStock.asset.pageNumber",
+			asst.ledger_balance as "annualStock.asset.ledgerBalance",
+			dept.department_name as "annualStock.asset.department.departmentName", 
+			asst.asset_price as "annualStock.asset.assetPrice",
+			(SELECT to_char((SELECT to_timestamp(asst.purchase_date)), 'DD/MM/YYYY')) as "annualStock.asset.purchaseDate",
+			ast.serviceable as "annualStock.serviceable",
+			ast.repairable as "annualStock.repairable",
+			ast.condemnation as "annualStock.condemnation",
+			cond.ac_unit as unit,
+			cond.qtyproducedforcb as qtyProducedForCB,
+			cond.qtysentencedtouns as qtySentencedToUNS,
+			cond.cost_amount as costAmount,
+			cond.remarks as remarks
+		FROM
+			astv ast
+		JOIN asset asst ON (ast.asset = asst.rec_id) AND (asst.is_active = true)
+		JOIN department dept ON (dept.rec_id = asst.department) AND (dept.is_active = true)
+		JOIN condemnation cond ON (ast.rec_id = cond.astv) AND (cond.is_active = true)
+		WHERE
+			dept.department_name = #{department}
+		AND
+			ast.is_active = true
+		AND
+			ast.condemnation = true
+		AND
+			cond.inventory_session = (SELECT rec_id FROM inventory_session WHERE session_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'C') AND is_active = TRUE);
+	</select>
+	
+	<update id="updateCondemnedStock"  parameterType="com.qts.icam.model.common.Condemnation">
+		UPDATE
+			commodity
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+			updated_on = extract(epoch FROM now()),
+			commodity_instock = commodity_instock-#{qtyProducedForCB}
+		WHERE
+			commodity_name = #{annualStock.commodity.commodityName};
+	</update>
+	
+	<select id="selectLicenseDetails" resultType="com.qts.icam.model.common.LicenseInfo">	
+		SELECT
+			end_date as installationTimeStamp
+		FROM
+			license_tenure
+		WHERE
+			is_active = true
+		AND
+			 (SELECT extract(epoch FROM now()::date)) BETWEEN start_date::INTEGER AND end_date::INTEGER
+	</select>
+	
+	<!-- In place of module_name first was inserting character but now rec_id is inserting updated by Saif.Ali 12/03/2018 -->
+	<insert id="insertIntoActivityLog" parameterType="com.qts.icam.model.common.UpdateLog">
+		INSERT INTO activity_log(description, updated_by_user_id, updated_by_name, 
+	            updated_on, updated_for, action, functionality, module_name)
+	    VALUES (#{description}, #{updatedByUserId},
+		(SELECT (first_name || ' ' || COALESCE(middle_name,' ') || ' ' || COALESCE(last_name,'  ')) FROM resource WHERE user_id=#{updatedByUserId}),
+	    (SELECT extract(epoch FROM now())), #{updatedFor}, #{insertUpdate}, #{functionality}, (SELECT rec_id from module WHERE module_name = #{module}));
+    </insert>
+	<select id="getActivityLog" resultType="com.qts.icam.model.common.UpdateLog" parameterType="com.qts.icam.model.common.UpdateLog">
+		SELECT
+			activity_log_id as serialId,
+			description as description,
+			updated_by_user_id as updatedByUserId,
+			updated_by_name as updatedByName,
+			(to_char((SELECT to_timestamp(updated_on)), 'DD/MM/YYYY HH12:MI:SS AM')) as updatedOn,			
+			updated_for as updatedFor,
+			action as insertUpdate,
+			functionality as functionality,
+			module_name as module
+		FROM
+			activity_log
+		WHERE
+			functionality=#{functionality}
+			AND
+			module_name=#{module};
+	</select>
+	
+	<insert id="insertNewAssetDetails" parameterType="com.qts.icam.model.common.Asset">
+    	INSERT INTO asset(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            asset_name, asset_code, department, asset_property, asset_price, 
+            purchase_date, ledger_number, page_number, ledger_balance, asset_sub_type, asset_unit)
+    	VALUES ( 
+    		uuid_generate_v4(), 
+    		#{objectId}, 
+    		(SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+	      	extract(epoch FROM now()),
+	      	extract(epoch FROM now()),
+	      	UPPER(#{assetName}),
+	      	(SELECT 'AST-' ||COALESCE((SELECT MAX(asset_id) FROM asset), 0 )+1), 
+            (SELECT rec_id FROM department WHERE department_code = #{department.departmentCode} AND is_active = true), 
+            #{assetProperty}, 
+            #{assetPrice}, 
+            (SELECT extract(epoch from (SELECT to_timestamp(#{purchaseDate},'DD-MM-YYYY')))),
+            #{ledgerNumber},
+            #{pageNumber},
+            #{ledgerBalance},
+            (SELECT rec_id FROM asset_sub_type WHERE asset_sub_type_code = #{assetSubType} AND asset_type = (SELECT rec_id FROM asset_type WHERE asset_type_code = #{assetType} AND is_active = true) AND is_active = true),
+            #{assetUnit});
+    </insert>
+    
+    
+    <select id="serverSideValidationOfAssetName" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			asset_name as asset
+		FROM
+			asset
+		WHERE		
+			UPPER(asset_name) = UPPER(#{assetName});			
+	</select>
+	
+	
+	<select id="selectAllAssets" resultType="com.qts.icam.model.common.Asset" parameterType="java.util.Map">
+		SELECT 
+			a.asset_id as assetId, 
+			a.asset_name as assetName, 
+			a.asset_code as assetCode,
+			dep.department_name as "department.departmentName", 
+			a.asset_price as assetPrice, 
+			(SELECT to_char((SELECT to_timestamp(a.purchase_date)), 'DD/MM/YYYY')) as purchaseDate,
+			at.asset_type_name as assetType,
+			ast.asset_sub_type_name as assetSubType
+		FROM 
+			asset a
+		LEFT JOIN department dep ON (dep.rec_id = a.department) AND (dep.is_active = true)	
+		LEFT JOIN asset_sub_type ast ON (ast.rec_id = a.asset_sub_type) AND (ast.is_active = true)
+		LEFT JOIN asset_type at ON (at.rec_id = ast.asset_type) AND (at.is_active = true)
+		WHERE
+			a.is_active = true
+		<!-- ORDER BY 
+			a.date_of_creation DESC; -->	
+		 <if test="AssetName != null">
+			AND a.asset_name ilike ('%'||#{AssetName}||'%')
+		</if>
+		<if test="Department != null">
+			AND dep.department_name ilike ('%'||#{Department}||'%')
+		</if>
+		<if test="PurchaseDate != null">
+			AND (SELECT to_char((SELECT to_timestamp(a.purchase_date)), 'DD/MM/YYYY')) ilike ('%'||#{PurchaseDate}||'%')
+		</if>
+		<if test="AssetType != null">
+			AND at.asset_type_name ilike ('%'||#{AssetType}||'%')
+		</if>
+		<if test="AssetSubType != null">
+			AND ast.asset_sub_type_name ilike ('%'||#{AssetSubType}||'%')
+		</if>
+	</select>
+	
+	
+	<select id="selectAssetDetails" parameterType="java.lang.Integer" resultType="com.qts.icam.model.common.Asset">
+		SELECT 
+			a.asset_id as assetId, 
+			a.asset_name as assetName,
+			a.asset_property as assetProperty,
+			dep.department_name as "department.departmentName",
+			dep.department_code as "department.departmentCode", 
+			a.asset_price as assetPrice, 
+			(SELECT to_char((SELECT to_timestamp(a.purchase_date)), 'DD/MM/YYYY')) as purchaseDate,
+			a.ledger_number as ledgerNumber,
+			a.page_number as pageNumber,
+			a.ledger_balance as ledgerBalance,
+			a.asset_unit as assetUnit,
+			at.asset_type_code as assetType,
+			ast.asset_sub_type_code as assetSubType
+		FROM 
+			asset a
+		JOIN department dep ON (dep.rec_id = a.department) AND (dep.is_active = true)	
+		JOIN asset_sub_type ast ON (ast.rec_id = a.asset_sub_type) AND (ast.is_active = true)
+		JOIN asset_type at ON (at.rec_id = ast.asset_type) AND (at.is_active = true)
+		WHERE
+			a.is_active = true
+		AND
+			a.asset_id = #{assetId};
+	</select>
+	
+	
+	<update id="updateAssetDetails" parameterType="com.qts.icam.model.common.Asset">
+		UPDATE
+			asset
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+			updated_on = extract(epoch FROM now()),
+			department = (SELECT rec_id FROM department WHERE department_code = #{department.departmentCode} AND is_active = true),
+			asset_property = #{assetProperty},
+			asset_price = #{assetPrice},
+			purchase_date = (SELECT extract(epoch from (SELECT to_timestamp(#{purchaseDate},'DD-MM-YYYY')))),
+			ledger_number = #{ledgerNumber},
+			page_number = #{pageNumber},
+			ledger_balance = #{ledgerBalance},
+			asset_unit = #{assetUnit},
+			asset_sub_type = (SELECT rec_id FROM asset_sub_type WHERE asset_sub_type_code = #{assetSubType} AND asset_type = (SELECT rec_id FROM asset_type WHERE asset_type_code = #{assetType} AND is_active = true) AND is_active = true)
+		WHERE
+			asset_id = #{assetId};
+	</update>
+	
+	<!-- Modied by saif.Ali    21/07/2017 -->
+	<select id="selectASTVForAsset" resultType="com.qts.icam.model.common.AnnualStock" parameterType="com.qts.icam.model.inventory.Commodity">
+		SELECT
+			com.serial_id as "commodity.commodityId",
+			ast.astv_id as annualStockId,
+			com.commodity_name as "commodity.commodityName",
+			com.commodity_instock as "commodity.inStock",
+			ast.ground_balance as groundBalance,
+			ast.surplus as surplus,
+			ast.deficient as deficient,
+			ast.serviceable as serviceable,
+			ast.repairable as repairable,
+			ast.condemnation as condemnation,
+			ast.remarks as remarks
+		FROM
+			astv ast
+		JOIN commodity com ON (ast.commodity = com.rec_id) AND (com.is_active = true)
+		JOIN financial_year fy ON (ast.inventory_session = fy.rec_id) AND (fy.is_active = true)
+		JOIN status_flag sf ON (fy.year_status = sf.rec_id) AND (sf.is_active = true)
+		WHERE
+			ast.is_active = true
+		AND
+			com.commodity_code = #{commodityCode}
+		AND
+			sf.status_sym = 'C';
+	</select>
+	
+	<!-- Modified by saif.Ali     date-20/07/2017 -->
+	<select id="selectCondemnationForAstv" resultType="com.qts.icam.model.common.Condemnation" parameterType="com.qts.icam.model.common.AnnualStock">
+		SELECT
+			<!-- asst.asset_id as "annualStock.asset.assetId", -->
+			ast.astv_id as "annualStock.annualStockId",
+			cond.condemnation_id as condemnationId,
+			com.commodity_name as "annualStock.commodity.commodityName",
+			<!-- asst.ledger_number as "annualStock.asset.ledgerNumber",
+			asst.page_number as "annualStock.asset.pageNumber",-->
+			com.commodity_instock  as "annualStock.commodity.inStock",
+			<!--dept.department_name as "annualStock.asset.department.departmentName",--> 
+			cvm.commodity_price as "annualStock.commodity.sellingRate",
+			<!--(SELECT to_char((SELECT to_timestamp(asst.purchase_date)), 'DD/MM/YYYY')) as "annualStock.asset.purchaseDate", -->
+			ast.serviceable as "annualStock.serviceable",
+			ast.repairable as "annualStock.repairable",
+			ast.condemnation as "annualStock.condemnation",
+			cond.ac_unit as unit,
+			cond.qtyproducedforcb as qtyProducedForCB,
+			cond.qtysentencedtouns as qtySentencedToUNS,
+			cond.cost_amount as costAmount,
+			cond.remarks as remarks
+		FROM
+			astv ast
+		JOIN commodity com ON (ast.commodity = com.rec_id) AND (com.is_active = true)
+		<!-- JOIN department dept ON (dept.rec_id = asst.department) AND (dept.is_active = true) -->
+		JOIN condemnation cond ON (ast.rec_id = cond.astv) AND (cond.is_active = true)
+		JOIN financial_year fy ON (ast.inventory_session = fy.rec_id) AND (fy.is_active = true)
+		JOIN status_flag sf ON (fy.year_status = sf.rec_id) AND (sf.is_active = true)
+		JOIN commodity_vendor_mapping cvm ON(cvm.commodity = com.rec_id) AND (cvm.is_active = true)
+		WHERE
+			<!-- dept.department_name = #{asset.department.departmentName}
+		AND -->
+			ast.is_active = true
+		AND
+			ast.condemnation = true
+		AND
+			sf.status_sym = 'C'
+		AND
+			ast.astv_id = #{annualStockId};
+	</select>
+	
+	
+	<update id="updateGrondBalanceStock"  parameterType="com.qts.icam.model.common.Condemnation">
+		UPDATE
+			astv
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+			updated_on = extract(epoch FROM now()),
+			ground_balance = ground_balance-#{qtyProducedForCB}
+		WHERE
+			astv_id = #{annualStock.annualStockId};
+	</update>
+	
+	
+	<select id="selectAllAssetType" resultType="com.qts.icam.model.common.AssetType">
+		SELECT
+			asset_type_id as assetTypeId,
+			asset_type_name as assetTypeName,
+			asset_type_code as assetTypeCode
+		FROM
+			asset_type
+		WHERE
+			is_active = true;
+	</select>
+
+	<select id="selectAllAssetSubType" resultType="com.qts.icam.model.common.AssetSubType" parameterType="com.qts.icam.model.common.AssetType">
+		SELECT
+			comtp.asset_type_name as assetType,
+			cmsbtp.asset_sub_type_id as assetSubTypeId,
+			cmsbtp.asset_sub_type_name as assetSubTypeName,
+			cmsbtp.asset_sub_type_code as assetSubTypeCode
+		FROM
+			asset_sub_type cmsbtp
+		JOIN asset_type comtp ON (comtp.rec_id = cmsbtp.asset_type) AND (comtp.is_active = true)
+		WHERE
+			cmsbtp.is_active = true
+		<if test="assetTypeCode != null">
+			AND comtp.asset_type_code ilike #{assetTypeCode}
+		</if>;
+	</select>
+	
+	<insert id="insertNewAssetType" parameterType="com.qts.icam.model.common.AssetType">
+		INSERT INTO asset_type(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            asset_type_code, asset_type_name, asset_type_desc)
+    	VALUES (
+    			uuid_generate_v4(), 
+    			#{objectId}, 
+    			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+		      	extract(epoch FROM now()),
+		      	extract(epoch FROM now()),
+		      	(SELECT 'ASSETTYPE-' ||COALESCE((SELECT MAX(asset_type_id) FROM asset_type), 0 )+1),
+		      	UPPER(#{assetTypeName}), 
+            	UPPER(#{assetTypeName}));
+    </insert>
+    
+	<update id="updateAssetType" parameterType="com.qts.icam.model.common.AssetType">
+		UPDATE
+			asset_type
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = extract(epoch FROM now()),
+			asset_type_name = UPPER(#{assetTypeName}),
+			asset_type_desc = UPPER(#{assetTypeName})
+		WHERE
+			asset_type_id = #{assetTypeId};
+	</update>
+	
+	<insert id="insertNewAssetSubType" parameterType="com.qts.icam.model.common.AssetSubType">
+		INSERT INTO asset_sub_type(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            asset_type, asset_sub_type_code, asset_sub_type_name, asset_sub_type_desc)
+    	VALUES (
+    			uuid_generate_v4(), 
+    			#{objectId}, 
+    			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+		      	extract(epoch FROM now()),
+		      	extract(epoch FROM now()),
+		      	(SELECT rec_id FROM asset_type WHERE asset_type_code = #{assetType} AND is_active = true),
+		      	(SELECT 'ASSETSUBTYP-' ||COALESCE((SELECT MAX(asset_sub_type_id) FROM asset_sub_type), 0 )+1),
+		      	UPPER(#{assetSubTypeName}), 
+            	UPPER(#{assetSubTypeName}));
+    </insert>
+	
+	<update id="updateAssetSubType" parameterType="com.qts.icam.model.common.AssetSubType">
+		UPDATE
+			asset_sub_type
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = extract(epoch FROM now()),
+			asset_sub_type_name = UPPER(#{assetSubTypeName}),
+			asset_sub_type_desc = UPPER(#{assetSubTypeName})
+		WHERE
+			asset_sub_type_id = #{assetSubTypeId};
+	</update>
+	
+	<update id="deleteAssetSubType" parameterType="com.qts.icam.model.common.AssetSubType">
+		UPDATE
+			asset_sub_type
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = extract(epoch FROM now()),
+			is_active = false
+		WHERE
+			asset_sub_type_id = #{assetSubTypeId};
+	</update>
+	
+	<update id="updateLibraryAssets" parameterType="com.qts.icam.model.common.Asset">
+		
+		UPDATE 
+			asset
+  		SET 
+  			updated_by = (SELECT rec_id FROM resource WHERE user_id ilike #{updatedBy} AND is_active =true), 
+  			updated_on = extract(epoch FROM now()),
+       		asset_price = #{assetPrice},
+       		ledger_number = #{ledgerNumber}, 
+       		page_number = #{pageNumber}, 
+       		ledger_balance = #{ledgerBalance}, 
+       		asset_sub_type = (SELECT rec_id FROM asset_sub_type WHERE asset_sub_type_code = #{assetSubType} AND is_active =true), 
+       		asset_unit = #{assetUnit},
+       		asset_property = #{assetProperty}
+ 		WHERE
+ 			asset_id = #{assetId};
+	</update>
+	
+	<!-- anup 28062017 -->
+	
+	<select id="getBookVendorList" parameterType="java.util.Map" resultType="com.qts.icam.model.common.Vendor">
+		SELECT
+			v.vendor_code as vendorCode, 
+			v.vendor_name as vendorName, 
+			v.vendor_contact_number as vendorContactNo1, 
+			v.vendor_contact_number2 as vendorContactNo2,
+			v.vendor_address as address
+		FROM
+			vendor v
+		JOIN 
+			vendor_type vt ON (v.vendor_type = vt.rec_id AND vt.is_active = true)
+		WHERE
+			v.is_active = true
+	</select>
+
+	<select id="getLeaveHistoryListforMyService" resultType="com.qts.icam.model.erp.Leave" parameterType="java.lang.String">
+		<!-- SELECT	
+				r.user_id as updatedBy,
+				r1.first_name ||''|| COALESCE(r1.middle_name,' ') ||''|| COALESCE(r1.last_name,' ') as userId,
+				jd.job_name as title,
+				lt.leave_type_name as leaveType, 
+				(SELECT to_char((SELECT to_timestamp(l.from_date)), 'DD/MM/YYYY'))as startDate,
+				(SELECT to_char((SELECT to_timestamp(l.to_date)), 'DD/MM/YYYY'))as endDate,
+				s.status_desc as status
+				
+				
+		FROM 
+				task_notification tf
+		JOIN	resource r ON(tf.approved_by = r.rec_id)
+		JOIN 	resource r1 ON(tf.applied_by = r1.rec_id and r1.is_active = true)
+		JOIN    job_details jd ON (tf.job = jd.rec_id and jd.is_active = true)
+		JOIN    leave l ON (tf.leave = l.rec_id and l.is_active =  'true')
+		JOIN    leave_type lt ON (l.leave_type = lt.rec_id and lt.is_active = true)
+		JOIN 	approval a ON(tf.approve = a.rec_id AND a.is_active = true)
+		JOIN 	status_flag s ON(a.status = s.rec_id AND s.is_active = true)
+		
+		WHERE
+				r1.user_id = #{userId}
+		AND  tf.is_active = true; -->
+		
+			SELECT
+			no_of_days as usedLeave,
+			leave_type_name as leaveType,
+			(SELECT to_char((SELECT to_timestamp(ld.from_date)), 'DD/MM/YYYY'))as startDate,
+			(SELECT to_char((SELECT to_timestamp(ld.to_date)), 'DD/MM/YYYY'))as endDate
+		FROM 
+			staff_leave_history slh
+		JOIN
+			leave_details ld ON (ld.rec_id = slh.leave_details )
+		JOIN
+			leave_type lt ON (lt.rec_id = slh.leave_type AND lt.is_active = true)
+		JOIN
+			resource r ON(ld.leave_requested_by = r.rec_id)
+		WHERE 
+			r.user_id = #{userId};
+		
+			
+	</select>
+      
+      <select id="getLeaveDetails" resultType="com.qts.icam.model.erp.Leave" >
+		SELECT 
+			leave_type_code as title,
+			leave_type_name as leaveType  
+		FROM 
+			leave_type
+	</select>
+	
+	 <select id="selectApproverGroupName" parameterType="java.lang.String" resultType="java.lang.String" >
+		SELECT 
+			ag.approver_group_name ,
+			r.user_id
+		FROM 
+			approver_group ag
+		JOIN  approver_group_resource_mapping agrm ON(ag.rec_id = agrm.approver_group and agrm.is_active = true)
+		JOIN  resource r  ON(r.rec_id = agrm.resource and r.is_active = true)
+		WHERE r.user_id = #{user_id}
+	</select>
+	
+	 <insert id="insertIntoApproval" parameterType="com.qts.icam.model.erp.Leave">
+		INSERT INTO
+		approval(
+             rec_id, 
+             obj_id,
+             updated_by,
+             updated_on, 
+             date_of_creation, 
+             is_active,
+             jobs, 
+             approved_by_group,
+             requested_by, 
+             status)
+		VALUES (uuid_generate_v4(),
+		#{objId},
+		(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+		(SELECT extract(epoch FROM now())),
+		(SELECT extract(epoch FROM now())),	
+		true,
+		(SELECT rec_id FROM job_details  WHERE job_name = #{title}),
+		(SELECT rec_id FROM approver_group WHERE approver_group_name=#{desc} AND is_active = true),
+		(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),	
+		(SELECT rec_id FROM status_flag WHERE status_desc=#{status} AND is_active = true));
+	</insert>
+	
+	<parameterMap id="countNoWorkingDaysBetweenTwoDatesPM" type="com.qts.icam.model.erp.Leave">
+		<parameter property="startDate" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="endDate" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="canApplyOnStretch" jdbcType="INTEGER" mode="OUT" />
+	</parameterMap>
+
+	<select id="countNoWorkingDaysBetweenTwoDates" parameterMap="countNoWorkingDaysBetweenTwoDatesPM" statementType="CALLABLE">
+		{? = call count_working_days_between_two_dates(?,?)}
+	</select>
+		<insert id="insertIntoLeave" parameterType="com.qts.icam.model.erp.Leave">
+			INSERT INTO leave(
+					            rec_id,
+						        obj_id, 
+						        updated_by, 
+						        date_of_creation, 
+						        updated_on, 
+								leave_type, 
+								from_date, 
+								to_date, 
+								leave_details_desc, 
+								approve, 
+								number_of_days,
+								is_active,
+								leave_code)
+			VALUES (
+								uuid_generate_v4(),
+								#{objId},
+								(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+								(SELECT extract(epoch FROM now())),
+								(SELECT extract(epoch FROM now())),	
+								(SELECT rec_id FROM  leave_type WHERE leave_type_name = #{leaveType}),
+								extract(epoch from (SELECT to_timestamp(#{startDate}, 'DD/MM/YYYY'))),
+								extract(epoch from (SELECT to_timestamp(#{endDate}, 'DD/MM/YYYY'))),
+								#{remarks},
+								(SELECT rec_id FROM approval WHERE serial_id = (SELECT Max(serial_id) FROM approval)),
+								#{canApplyOnStretch},
+								true,
+								(SELECT ('LR' ||(select COALESCE((SELECT MAX(leave_id) FROM leave), 0 )+1))));
+	</insert>
+	
+	
+	<select id="getUserIDFromApproverGroup"  parameterType="java.lang.String" resultType="com.qts.icam.model.common.Resource" >
+		SELECT 
+				r.user_id as userId
+			FROM
+				approver_group_resource_mapping agrm
+			JOIN 
+				approval_order ao ON(agrm.approver_group = ao.approved_by_group and ao.is_active = true)
+			JOIN 
+				approver_group ag ON(ag.rec_id = ao.applicant_group and ao.is_active = true)
+			JOIN 
+				resource r ON(r.rec_id = agrm.resource and r.is_active=true)
+			AND
+				ag.approver_group_name = #{approverGroupName};
+
+	</select>
+	
+	<insert id="insertIntoMyEventForLeave" parameterType="com.qts.icam.model.erp.Leave">
+		INSERT INTO my_events( 
+            my_events_usrid, 
+            my_events_start_date, 
+            my_events_end_date, 
+            my_events_desc)
+   		 VALUES (#{decision},
+		    #{startDate}, 
+		    #{startDate},
+            #{title});
+	</insert>
+	
+	<insert id="insertIntoTaskNotification" parameterType="com.qts.icam.model.erp.Leave">
+		INSERT INTO task_notification( 
+            rec_id, 
+            obj_id, 
+            date_of_creation, 
+            updated_on, 
+            updated_by, 
+            approved_by, 
+            approve, 
+            job, 
+            applied_by, 
+            leave, 
+            is_active,
+            notification_code,
+            notification_description)
+    VALUES (uuid_generate_v4(), 
+		    #{objId}, 
+		    (SELECT extract(epoch FROM now())), 
+		    (SELECT extract(epoch FROM now())), 
+		    (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+		    (SELECT rec_id FROM resource WHERE user_id=#{decision} AND is_active = true), 
+            (SELECT rec_id FROM approval WHERE serial_id = (SELECT Max(serial_id) FROM approval)), 
+            (SELECT rec_id FROM job_details  WHERE job_name = #{title}), 
+            (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+            (SELECT rec_id FROM leave WHERE approve =(SELECT rec_id FROM approval WHERE serial_id = (SELECT Max(serial_id) FROM approval))), 
+            true,
+            (select('NOTI' ||(select COALESCE((SELECT MAX(task_notification_id) FROM task_notification), 0 )+1))),
+            #{desc});
+	</insert>
+	
+	<select id="selectResourceLeaveDetails" resultType="com.qts.icam.model.erp.Leave" parameterType="String">			
+		SELECT 
+			lt.leave_type_name as leaveType, 
+			sld.used_leave as totalAvailLeave,
+			available_leave as usedLeave,
+			(used_leave-available_leave) as remainingLeave,
+			r.user_id
+			
+		FROM 
+			staff_leave_details sld
+		JOIN 	leave_type lt ON (sld.leave_type = lt.rec_id) AND (lt.is_active = true)		
+		JOIN 	resource r ON (r.rec_id = sld.resource) AND (r.is_active = true)		
+		JOIN 	employee_details ed ON (ed.resource = r.rec_id) AND (ed.is_active = true)
+		JOIN 	job_type jt ON (jt.rec_id = ed.job_type) AND (jt.is_active = true)		
+		WHERE 
+			r.user_id = #{userId}; 
+
+	<!-- 	SELECT 
+			lt.leave_type_name as leaveType, 
+			ls.duration  as totalAvailLeave, 
+			encashment as encashable,
+			ls.duration as remainingLeave 
+			
+			
+		FROM leave_structure ls
+			
+		JOIN 	leave_type lt ON (ls.leave_type = lt.rec_id) AND (lt.is_active = true)		
+		
+		JOIN 	resource_type rt ON (rt.rec_id = ls.resource_type) AND (rt.is_active = true)
+		JOIN 	resource r ON (rt.rec_id = r.resource_type) AND (r.is_active = true)
+		
+		WHERE 
+			r.user_id = #{userId}
+		AND
+			ls.is_active = true -->
+	</select>
+	
+	<select id="selectResourceTypeofUser" resultType="com.qts.icam.model.common.ResourceType" parameterType="java.lang.String">
+		SELECT
+			rt.resource_type_name as resourceTypeName
+		FROM
+			resource_type rt
+		JOIN resource r ON (r.is_active = true) AND (r.resource_type = rt.rec_id)
+		WHERE
+			rt.is_active = true
+		AND
+			r.user_id = #{userId}
+	</select>	
+	
+	
+	<resultMap id="getServiceTypeListRM" type="com.qts.icam.model.ticket.ServiceType">
+		<id property="ticketServiceName" column="ticket_service_name" jdbcType="VARCHAR" />
+		<result property="ticketServiceOner.userId" column="user_id" jdbcType="VARCHAR" />
+		<result property="department.departmentCode" column="department_code" jdbcType="VARCHAR" />
+		<result property="department.departmentName" column="department_name" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getServiceTypeList" resultMap="getServiceTypeListRM">
+		SELECT
+			ts.ticket_service_name,
+			r.user_id,
+			d.department_code,
+			d.department_name
+		FROM
+			ticket_service ts		
+		LEFT JOIN 
+			resource r ON (r.rec_id = ts.service_owner AND r.is_active = true)
+		JOIN 
+			department d ON (d.rec_id = ts.department AND d.is_active = true)
+		WHERE
+		ts.is_active = true;		
+	</select>
+	
+	<!-- //mODIFIED BY NAIMISHA 28082017 -->
+	
+		<!-- //MODIFIED BY NAIMISHA 23102017 -->
+		
+		<!-- //MODIFIED BY NAIMISHA 05042018 -->
+		
+	<insert id="insertTicket" parameterType="com.qts.icam.model.ticket.Ticket">
+		INSERT INTO ticket(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation,
+            ticket_code, reported_by, ticket_status, ticket_desc, 
+            ticket_open_date, ticket_summary,  ticket_recepient, 
+            category,department)
+    VALUES (
+		uuid_generate_v4(),
+		#{ticketObjectId},
+		(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+		(SELECT extract(epoch FROM now())),
+		(SELECT extract(epoch FROM now())),		
+		(select('TKT' ||(select COALESCE((SELECT MAX(ticket_id) FROM ticket), 0 )+1))),
+		(SELECT rec_id FROM resource WHERE user_id=#{reportedBy} AND is_active = true),
+		(SELECT rec_id FROM ticket_status WHERE ticket_status_code=#{status} AND is_active=true),
+		#{description},
+		(SELECT extract(epoch FROM now())),
+		#{ticketSummary},
+		(SELECT rec_id FROM resource WHERE user_id=#{affectedUser} AND is_active = true),
+		(SELECT rec_id FROM category WHERE category_code = #{ticketService.ticketServiceCode} AND is_active = true),
+		(SELECT rec_id FROM department WHERE department_code = #{department} AND is_active = true));
+		
+		<selectKey keyProperty="ticketRecId" resultType="String" order="AFTER">   			
+   			(select('TKET' ||(select COALESCE((SELECT MAX(ticket_id) FROM ticket), 0)+0)));
+  		</selectKey> 
+	</insert>
+	
+	<insert id="submitTicketAttachmentDoc" parameterType="com.qts.icam.model.ticket.Ticket">
+		 <foreach item="attachment" collection="attachmentList"  open="" close="" separator=";">
+	        	INSERT INTO attachment(
+							            rec_id, obj_id, updated_by, updated_on, 
+							            date_of_creation,attachment_code, 
+							            attachment_type, attachment_location, attachment_size, 
+							            attached_file_name, resource)
+		    	VALUES (
+		    			uuid_generate_v4(),
+			   			#{ticketObjectId}, 
+			  			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			  			extract(epoch FROM now()),
+		          		extract(epoch FROM now()), 
+		          		(SELECT 'ATTCH-' ||COALESCE((SELECT MAX(attachment_id) FROM attachment), 0 )+1),
+		          		(SELECT rec_id FROM attachment_type WHERE attachment_type_name = #{attachment.attachmentType} AND is_active = true), 
+		          		#{attachment.storageRootPath}, 
+		          		#{attachment.attachmentSize},
+		          		#{attachment.attachmentName},
+		          		(SELECT rec_id FROM resource WHERE user_id = #{affectedUser} AND is_active = true)
+		  		 )
+        	</foreach>
+      </insert>	
+      
+      <resultMap id="getTicketListRM" type="com.qts.icam.model.ticket.Ticket">
+		<id property="ticketCode" column="ticket_code" jdbcType="VARCHAR" />
+		<result property="ticketOpenDate" column="ticket_open_date"	jdbcType="VARCHAR" />
+		<result property="affectedUser" column="user_id" jdbcType="VARCHAR" />
+		<result property="reportedBy" column="reportedBy" jdbcType="VARCHAR" />
+		<result property="ticketService.ticketServiceName" column="category_name"	jdbcType="VARCHAR" />
+		<result property="ticketSummary" column="ticket_summary" jdbcType="VARCHAR" />
+		<result property="status" column="ticket_status_code" jdbcType="VARCHAR" />
+		<result property="taskStatus" column="ticket_status_name" jdbcType="VARCHAR" />
+		<collection property="commentList" ofType="com.qts.icam.model.ticket.TicketComment">
+			<id property="comment" column="ticket_comment" jdbcType="VARCHAR" />
+			<result property="ticketCommentDate" column="date_of_comment" jdbcType="INTEGER" />
+		</collection>
+	</resultMap>
+     <!--  /*********Changed By Naimisha 23102017********/ -->
+      <select id="getTicketList" resultMap="getTicketListRM" parameterType="String">
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY HH12:MI:SS AM'))as
+			ticket_open_date,
+			t.ticket_code,
+			r.user_id , 
+			r1.user_id as reportedBy,
+			t.ticket_summary,
+			tss.ticket_status_code,
+			t.ticket_desc,
+			c.category_name,
+			tss.ticket_status_name
+		FROM
+			ticket t
+		JOIN resource r ON (t.ticket_recepient = r.rec_id AND r.is_active = true) 
+		JOIN category c ON (t.category = c.rec_id AND c.is_active = true)
+		JOIN resource r1 ON (r1.rec_id = t.reported_by AND r1.is_active = true)
+		JOIN ticket_status tss ON (tss.rec_id = t.ticket_status AND tss.is_active = true)
+		WHERE
+			tss.type NOT IN ('CLOSED','APPROVED','REJECTED')
+		AND
+			r1.user_id = #{updatedBy} 
+		AND
+			t.is_active = true;
+
+	</select>
+      
+      <!-- Modified By Naimisha 26102017 -->
+      
+      <select id="getTicketListForServiceOwner" resultMap="getTicketListRM" parameterType="String">
+		SELECT  
+			to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY HH12:MI:SS AM') as ticket_open_date,
+			t.ticket_code,
+			r.user_id,
+			r1.user_id as reportedBy,
+			c.category_name as ticket_service_name,
+			t.ticket_summary,
+			tss.ticket_status_code,
+			tss.ticket_status_name	
+		FROM
+			ticket t
+			JOIN category c ON (t.category = c.rec_id AND c.is_active = true)
+			JOIN resource r ON (r.rec_id = t.ticket_recepient AND r.is_active = true)
+			JOIN resource r1 ON (r1.rec_id=t.reported_by AND r1.is_active = true)
+			JOIN ticket_status tss ON (tss.rec_id=t.ticket_status AND tss.is_active = true)
+		WHERE			
+			tss.type NOT IN ('CLOSED','APPROVED','REJECTED')
+		AND 
+			r1.user_id = #{updatedBy} ;
+	</select>	
+	
+	<resultMap id="getClosedTicketListRM" type="com.qts.icam.model.ticket.Ticket">
+		<id property="ticketCode" column="ticket_code" jdbcType="VARCHAR" />
+		<result property="ticketOpenDate" column="ticket_open_date" jdbcType="VARCHAR" />
+		<result property="ticketCloseDate" column="ticket_close_date" jdbcType="VARCHAR" />
+		<result property="affectedUser" column="user_id" jdbcType="VARCHAR" />
+		<result property="reportedBy" column="reportedBy" jdbcType="VARCHAR" />
+		<result property="ticketService.ticketServiceName" column="ticket_service_name" jdbcType="VARCHAR" />
+		<result property="ticketSummary" column="ticket_summary" jdbcType="VARCHAR" />
+		<result property="status" column="ticket_status_code" jdbcType="VARCHAR" />
+		<result property="taskStatus" column="ticket_status_name" jdbcType="VARCHAR" />
+		<collection property="commentList" ofType="com.qts.icam.model.ticket.TicketComment">
+			<id property="comment" column="ticket_comment" jdbcType="VARCHAR" />
+			<result property="ticketCommentDate" column="date_of_comment" jdbcType="INTEGER" />
+		</collection>
+	</resultMap>
+	
+	<select id="getClosedTicketList" resultMap="getClosedTicketListRM" parameterType="String">
+		<!-- SELECT
+			(SELECT to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY HH12:MI:SS AM'))as ticket_open_date,
+			(SELECT to_char((SELECT to_timestamp(t.ticket_close_date)), 'DD/MM/YYYY HH12:MI:SS AM'))as ticket_close_date,
+			t.ticket_code,
+			r1.user_id as reportedBy,
+			r.user_id,
+			jd.job_name as ticket_service_name ,
+			t.ticket_summary,
+			tss.ticket_status_code
+		FROM
+			ticket t
+			JOIN category c ON (t.category = c.rec_id AND c.is_active = true)
+			JOIN resource r1 ON (r1.rec_id=t.reported_by AND r1.is_active = true)
+			JOIN resource r ON (r.rec_id = agrm.resource AND r.is_active = true)
+			JOIN ticket_status tss ON (tss.rec_id=t.ticket_status AND tss.is_active = true)
+		WHERE		
+			tss.ticket_status_code IN('CLOSED','APPROVE')
+		AND 
+		t.reported_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true); -->
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY HH12:MI:SS AM'))as ticket_open_date,
+			(SELECT to_char((SELECT to_timestamp(t.ticket_close_date)), 'DD/MM/YYYY HH12:MI:SS AM'))as ticket_close_date,
+			t.ticket_code,
+			r1.user_id as reportedBy,
+			
+			c.category_name as ticket_service_name ,
+			t.ticket_summary,
+			tss.ticket_status_code,
+			tss.ticket_status_name
+		FROM
+			ticket t
+			JOIN category c ON (t.category = c.rec_id AND c.is_active = true)
+			JOIN resource r1 ON (r1.rec_id=t.reported_by AND r1.is_active = true)
+			JOIN ticket_status tss ON (tss.rec_id=t.ticket_status AND tss.is_active = true)
+		WHERE		
+			tss.type IN ('CLOSED','APPROVED')
+		AND 
+		t.reported_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true);
+	</select>
+	<!--  Modified By Naimisha 28082017 -->
+	<select id="selectInwardClosedTicketList" resultMap="getClosedTicketListRM" parameterType="String">
+		<!-- SELECT
+			(SELECT to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY HH12:MI:SS AM'))as
+			ticket_open_date,
+			(SELECT to_char((SELECT to_timestamp(t.ticket_close_date)), 'DD/MM/YYYY HH12:MI:SS AM'))as
+			ticket_close_date,
+			t.ticket_code,
+			r.user_id,
+			r1.user_id as reportedBy,
+			ts.ticket_service_name,
+			t.ticket_summary,
+			tss.ticket_status_code,
+			(SELECT to_char((SELECT to_timestamp(tc.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM'))as
+			date_of_comment,
+			tc.ticket_comment			
+		FROM
+			ticket t			
+			JOIN ticket_service ts ON (ts.rec_id=t.service_type AND ts.is_active =  true )
+			JOIN resource r ON (r.rec_id=t.affected_user AND r.is_active = true)
+			JOIN resource r1 ON (r1.rec_id=t.reported_by AND r1.is_active = true)
+			JOIN resource r2 ON (r2.rec_id=ts.service_owner AND r2.is_active = true)
+			JOIN ticket_status tss ON (tss.rec_id=t.ticket_status AND tss.is_active = true)
+			LEFT JOIN ticket_comment tc ON (t.rec_id=tc.ticket AND tc.is_active = true)
+		WHERE			
+			tss.ticket_status_code = 'CLOSED'
+		AND 
+			r2.user_id = #{updatedBy}; -->
+		SELECT  
+			to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY HH12:MI:SS AM') as ticket_open_date,
+			(SELECT to_char((SELECT to_timestamp(t.ticket_close_date)), 'DD/MM/YYYY HH12:MI:SS AM'))as ticket_close_date,
+			t.ticket_code,
+			
+			r1.user_id as reportedBy,
+			c.category_name as ticket_service_name,
+			t.ticket_summary,
+			tss.ticket_status_code,
+			tss.ticket_status_name			
+		FROM
+			ticket t
+			JOIN category c ON (t.category = c.rec_id AND c.is_active = true)
+		
+			JOIN resource r1 ON (r1.rec_id=t.reported_by AND r1.is_active = true)
+			JOIN ticket_status tss ON (tss.rec_id=t.ticket_status AND tss.is_active = true)
+		WHERE			
+			tss.type IN ('CLOSED','APPROVED')
+		AND 
+			r1.user_id = #{updatedBy};
+	</select>
+	
+	<resultMap id="getTicketDetailsRM" type="com.qts.icam.model.ticket.Ticket">
+		<id property="ticketCode" column="ticket_code" jdbcType="VARCHAR" />
+		<result property="ticketOpenDate" column="ticket_open_date" jdbcType="VARCHAR" />
+		<result property="affectedUser" column="approver_group_name" jdbcType="VARCHAR" />
+		<result property="reportedBy" column="reportedBy" jdbcType="VARCHAR" />
+		<result property="ticketService.ticketServiceName" column="ticket_service_name"	jdbcType="VARCHAR" />
+		<result property="ticketService.ticketServiceCode" column="ticket_service_code"	jdbcType="VARCHAR" />
+		<result property="ticketSummary" column="ticket_summary" jdbcType="VARCHAR" />
+		<result property="ticketDesc" column="ticket_desc" jdbcType="VARCHAR" />
+		<result property="status" column="ticket_status_code" jdbcType="VARCHAR" />
+		<collection property="approverGroupList" ofType="com.qts.icam.model.administrator.Approver">
+			<result property="approverGroupCode" column="ticket_status_code" jdbcType="VARCHAR" />
+			<result property="approverGroupName" column="approver_group_name" jdbcType="VARCHAR" />
+			<result property="status" column="ticket_master_status" jdbcType="VARCHAR" />
+		</collection>
+		<collection property="commentList" ofType="com.qts.icam.model.ticket.TicketComment">
+			<id property="comment" column="ticket_comment" jdbcType="VARCHAR" />
+			<result property="updatedBy" column="commented_by" jdbcType="VARCHAR" />
+			<result property="ticketCommentDate" column="date_of_comment" jdbcType="INTEGER" />
+		</collection>
+		
+		<collection property="taskCommentList" ofType="com.qts.icam.model.ticket.TaskComment">
+			<id property="comment" column="task_comment" jdbcType="VARCHAR" />
+			<result property="updatedBy" column="task_commented_by" jdbcType="VARCHAR" />
+			<result property="taskCommentDate" column="date_of_comment_task" jdbcType="INTEGER" />
+		</collection>
+	</resultMap>
+	<!-- Modified By NAimisha29082017 -->
+	<select id="getTicketDetails" resultMap="getTicketDetailsRM" parameterType="com.qts.icam.model.ticket.Ticket">
+		<!-- SELECT
+			(SELECT to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY'))as ticket_open_date,
+			t.ticket_code,
+			r1.user_id as reportedBy,
+			t.ticket_summary,
+			t.ticket_desc,
+			tss.ticket_status_code,
+			ag.approver_group_name, 
+			ag.approver_group_code, 
+			jd.job_name as ticket_service_name,
+			jd.job_code as ticket_service_code,
+			tc.ticket_comment,
+			r2.user_id as commented_by,
+			(SELECT to_char((SELECT	to_timestamp(tc.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM'))as date_of_comment,
+			tss1.ticket_status_code as ticket_master_status
+			
+		FROM
+			ticket t			
+			JOIN job_details jd ON (t.service_type = jd.rec_id AND jd.is_active = true)
+			JOIN ticket_master_details tmd ON (tmd.ticket = t.rec_id AND tmd.is_active = true)
+			JOIN approver_group ag ON (tmd.approver_group = ag.rec_id AND ag.is_active = true)
+			JOIN resource r1 ON (r1.rec_id = t.reported_by AND r1.is_active = true)
+			JOIN ticket_status tss ON (tss.rec_id = t.ticket_status AND tss.is_active = true)
+			JOIN ticket_status tss1 ON (tss1.rec_id = tmd.ticket_master_details_status AND tss.is_active = true)
+			LEFT JOIN ticket_comment tc ON (t.rec_id=tc.ticket AND tc.is_active = true)
+			LEFT JOIN resource r2 ON (r2.rec_id = tc.updated_by AND r2.is_active = true)
+			
+		WHERE
+			t.ticket_code = #{ticketCode}
+		AND
+			t.is_active = true
+		ORDER BY 
+			tc.date_of_creation -->
+			
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY'))as ticket_open_date,
+			r1.user_id as reportedBy,
+			t.ticket_summary,
+			t.ticket_desc,
+			tss.ticket_status_code,
+			c.category_name as ticket_service_name,
+			c.category_code as ticket_service_code,
+			tc.ticket_comment,
+			r2.user_id as commented_by,
+			(SELECT to_char((SELECT	to_timestamp(tc.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM'))as date_of_comment,
+			t.ticket_code ,
+			tac.task_comment,
+			r3.user_id as task_commented_by,
+			(SELECT to_char((SELECT	to_timestamp(tc.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM'))as date_of_comment_task
+			
+		FROM
+			ticket t			
+			JOIN category c ON (t.category = c.rec_id AND c.is_active = true)
+			JOIN resource r1 ON (r1.rec_id = t.reported_by AND r1.is_active = true)
+			JOIN ticket_status tss ON (tss.rec_id = t.ticket_status AND tss.is_active = true)
+			LEFT JOIN ticket_comment tc ON (t.rec_id=tc.ticket AND tc.is_active = true)
+			LEFT JOIN resource r2 ON (r2.rec_id = tc.updated_by AND r2.is_active = true)
+			LEFT JOIN  task_details td ON (t.rec_id = td.ticket AND t.is_active = true)
+			LEFT JOIN task_comment tac ON (td.rec_id = tac.task_details AND tac.is_active = true)
+			LEFT JOIN resource r3 ON(r3.rec_id = tac.updated_by AND r3.is_active = true)
+			JOIN resource r4 ON (td.task_alocatted_by = r4.rec_id AND r4.is_active = true)
+			
+		WHERE
+			t.ticket_code = #{ticketCode}
+		AND
+			r1 .user_id =  #{updatedBy}
+		ORDER BY 
+			tc.date_of_creation;
+	</select>
+	<!-- Modified By Naimisha 25102014 -->
+	<update id="updateTicket" parameterType="com.qts.icam.model.ticket.Ticket">
+		UPDATE
+			ticket
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active =true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			ticket_status=(SELECT rec_id FROM ticket_status WHERE ticket_status_code=#{status} AND is_active=true),
+			ticket_desc=#{description}
+		<if test="taskStatus == 'CLOSED'">
+			,ticket_close_date=(SELECT extract(epoch FROM now()))
+		</if>
+		<if test="taskStatus == 'COMPLETED'">
+			,ticket_close_date=(SELECT extract(epoch FROM now()))
+		</if>
+		WHERE
+		ticket_code=#{ticketCode}  
+		AND
+		is_active=true;
+	</update>
+	<!-- Modified By Naimisha 25102014 -->
+	<insert id="updateTicketComment" parameterType="com.qts.icam.model.ticket.Ticket">
+		INSERT INTO
+		ticket_comment(
+		rec_id,
+		obj_id,
+		updated_by,
+		updated_on,
+		date_of_creation,
+		is_active,
+		ticket,
+		date_of_comment,
+		ticket_comment,
+		change_track)
+		VALUES (uuid_generate_v4(),
+		#{ticketObjectId},
+		(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+		(SELECT extract(epoch FROM now())),
+		(SELECT extract(epoch FROM now())),
+		true,
+		(SELECT rec_id FROM ticket WHERE ticket_code=#{ticketCode} AND
+		is_active=true),  
+		(SELECT extract(epoch FROM now())),
+		#{comment},
+		#{ticketDesc}
+		);
+	</insert>	
+	
+	
+	<!-- For select notice.@author singh -->
+	
+	<select id="selectNotice" resultType="com.qts.icam.model.common.NoticeBoard">
+		SELECT 
+			notice_board_code as noticeCode,
+			(SELECT to_char((SELECT to_timestamp(date_of_creation)), 'DD-MM-YYYY')) as time,
+			notice_board_subject as noticeName,
+			notice_board_desc as noticeDesc,
+			now()::date - to_char((SELECT to_timestamp(date_of_creation)), 'YYYY-MM-DD')::date as noOfDay
+		FROM 
+			notice_board
+		WHERE 
+			is_active = true
+		AND
+			notice_board_code IS NOT NULL
+		ORDER BY 
+			date_of_creation  desc LIMIT 10
+	</select>
+	
+	<!-- ADDDED FOR NEW BACKOFFICE -->
+	
+	<select id="selectAcademicYearList" resultType="com.qts.icam.model.common.AcademicYear">
+		SELECT
+			ay.academic_year_code as academicYearCode,
+			ay.academic_year_name as academicYearName,
+			ay.academic_year_desc as academicYearDesc,
+			sf.status_desc as yearStatus,
+			(SELECT to_char((SELECT to_timestamp(ay.session_start_date)), 'DD-MM-YYYY')) as sessionStartDate,
+			(SELECT to_char((SELECT to_timestamp(ay.session_end_date)), 'DD-MM-YYYY')) as sessionEndDate
+		FROM
+			academic_year ay
+		JOIN 
+			status_flag sf ON(sf.rec_id=ay.year_status)
+		WHERE 
+			ay.is_active = true;
+	</select>
+	
+	<select id="selectSocialCategoryList" resultType="com.qts.icam.model.common.SocialCategory">
+		SELECT
+			social_category_code as socialCategoryCode,
+			social_category_name as socialCategoryName,
+			social_category_desc as desc,
+			social_category_id as socialCategoryId
+		FROM 
+			social_category
+		WHERE 
+			is_active=true
+		ORDER BY 
+			social_category_id;
+	</select>
+		
+	<select id="selectStandardList" resultType="com.qts.icam.model.common.Standard">
+		SELECT
+			c.course_name as standardName,
+			c.course_code as standardCode
+		FROM
+			course c
+		WHERE
+			c.is_active = true
+		ORDER BY
+		     c.course_id;
+	</select>	
+	
+	<select id="selectCountryList" resultType="com.qts.icam.model.common.Country">
+		SELECT
+			c.country_name as countryName,
+			c.country_code as countryCode
+		FROM
+			country c
+		WHERE
+			c.is_active = true
+		ORDER BY 
+        	c.country_name,c.country_code;
+	</select>
+	
+	
+	<!-- from sms -->
+	
+	<select id="getFinancialYearList" resultType="com.qts.icam.model.common.FinancialYear">
+			SELECT 
+			       fy.financial_year_code as financialYearCode,
+			       fy.financial_year_name as financialYearName,
+			       fy.financial_year_desc as financialYearDesc,
+			       (SELECT to_char((SELECT	to_timestamp(fy.session_start_date)), 'DD-MM-YYYY')) as	sessionStartDate,
+			       (SELECT to_char((SELECT	to_timestamp(fy.session_end_date)), 'DD-MM-YYYY')) as	sessionEndDate,        
+			       sf.status_desc as yearStatus
+			FROM 
+				financial_year fy
+			JOIN
+				status_flag sf ON(sf.rec_id = fy.year_status)
+			WHERE
+				fy.is_active = true
+	</select>
+	
+	<select id="getAllClass" resultType="com.qts.icam.model.common.Standard">
+		SELECT
+			standard_name as standardName,
+			standard_code as standardCode
+		FROM
+			standard st
+		WHERE
+			st.is_active = 'true';		
+	</select>
+	
+	<select id="getIncomeAgeList" resultType="com.qts.icam.model.common.IncomeAge">
+		SELECT 
+			income_age_name as incomeAgeName, 
+			income_age_code as incomeAgeCode
+		FROM income_age ia		
+		JOIN financial_year fy ON (fy.is_active=true)
+		JOIN status_flag sf_cs ON (fy.year_status = sf_cs.rec_id)
+		WHERE 
+			ia.is_active = true
+		AND 
+			sf_cs.status_sym = 'C'
+			
+		ORDER BY income_age_id;
+	</select>
+	
+	<resultMap id ="selectTeachingLevelResultMap" type="com.qts.icam.model.common.TeachingLevel">	
+		<id property="teachingLevelName" column="teaching_level_desc" jdbcType="VARCHAR"/>		
+	</resultMap>
+	<select id="selectTeachingLevel" resultMap="selectTeachingLevelResultMap">
+	     SELECT
+			teaching_level_desc  
+		 FROM
+			teaching_level		
+		 WHERE
+			is_active=true
+		 GROUP BY 
+			teaching_level_desc;
+	</select>
+	
+	<resultMap id="getTeachingLevelListResultMap" type="com.qts.icam.model.common.TeachingLevel">
+		<id property="teachingLevelName" column="teaching_level_desc" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getTeachingLevelList" resultMap="getTeachingLevelListResultMap">
+		SELECT
+			teaching_level_desc 
+		FROM 
+			teaching_level		
+		WHERE
+			is_active=true;
+	</select>
+	
+		<resultMap id="selectDesignationTypeListResultMap" type="com.qts.icam.model.erp.DesignationType">
+		<id property="designationTypeCode" column="designation_type_code" jdbcType="VARCHAR" />
+		<result property="designationTypeName" column="designation_type_name" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectDesignationTypeList" parameterType="String" resultMap="selectDesignationTypeListResultMap">				
+		SELECT
+			designation_type_code,
+			designation_type_name
+		FROM
+			designation_type 
+		WHERE
+			is_active = true;
+	</select>
+	
+	
+	<!-- ********************************FOR ADMISSION************************************ -->
+	
+	<select id="getExistingSocialCategory" resultType="com.qts.icam.model.common.SocialCategory">
+		SELECT 
+			social_category_id as socialCategoryId,
+			social_category_name as socialCategoryName
+		FROM
+			social_category sc
+		WHERE
+			sc.is_active = true
+			
+		ORDER BY social_category_name;
+	</select>	
+	
+	<!-- <resultMap id="selectCurrenntAdmissionDriveListResultMap"
+		type="com.qts.icam.model.admission.AdmissionDrive">
+		<id property="admissionDriveName" column="admission_drive_name"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectCurrenntAdmissionDriveList" parameterType="com.qts.icam.model.common.Resource"
+		resultMap="selectCurrenntAdmissionDriveListResultMap">
+		SELECT
+		ad.admission_drive_name
+		FROM
+		"Admission_Drive" ad ,
+		"Course" co, "Course_Type" ct, "Class" cl,
+		"Admission_Drive_Status"
+		ads, "Status_Flag" sf
+		WHERE
+		ad.course = co.rec_id AND
+		ad.active=sf.rec_id
+		AND
+		co.course_type = ct.rec_id AND
+		co.active=sf.rec_id AND ct.active=sf.rec_id
+		AND
+		co.course_class =
+		cl.rec_id AND cl.active=sf.rec_id
+		AND
+		ad.status_of_admission =
+		ads.rec_id AND ads.active=sf.rec_id
+		AND
+		ads.admission_drive_status_name
+		IN ('ONGOING' )
+		AND
+		sf.status_sym='A'
+		AND
+		cl.class_name=#{klass}
+		AND
+		ad.admission_drive_year=#{code}
+	</select> -->
+	
+	<select id="selectMeritListTypes"  resultType="com.qts.icam.model.common.MeritListType">
+		SELECT  
+			merit_list_type_code as meritListTypeCode, 
+			merit_list_type_name as meritListTypeName
+		FROM
+			merit_list_type
+ 		WHERE
+			is_active = true;
+	</select>
+	
+	<select id="selectExamVenues" resultType="com.qts.icam.model.venue.Venue" parameterType="java.util.Map">
+		SELECT 
+			exam_venue_id as venueId,
+			exam_venue_name as venueName,
+			capacity as capacity,
+			contact_no as contactNo, 
+        	email_id as email,
+        	start_seat_roll_no as startSeatRollNo,
+	        end_seat_roll_no as endSeatRollNo
+		FROM
+			exam_venue 
+		WHERE
+			is_active = true
+		<if test="Venue != null">
+		AND exam_venue_name ilike ('%'||#{Venue}||'%')
+		</if>
+		<if test="EmailId != null">
+		AND email_id ilike ('%'||#{EmailId}||'%')
+		</if>;
+	</select>
+	
+	<select id="selectTotalAllotedSeat" resultType="Integer" parameterType="com.qts.icam.model.venue.Venue">
+		SELECT 
+			count(admission_form) as numberOfAdmissionFormId
+		FROM 
+			admission_seat_allotment
+		WHERE
+			is_active = true
+		AND
+			exam_venue = (SELECT rec_id FROM exam_venue WHERE exam_venue_id=#{venueId} AND is_active = true);
+	</select>
+	
+	<select id="selectExamVenueDetails" parameterType="com.qts.icam.model.venue.Venue" resultType="com.qts.icam.model.venue.Venue">
+		SELECT 
+			ev.exam_venue_id as venueId,
+			ev.exam_venue_name as venueName,
+			ev.capacity as capacity,
+			ev.contact_no as contactNo, 
+	        ev.mobile_no as mobileNo,
+	        ev.email_id as email,
+	        ev.start_seat_roll_no as startSeatRollNo,
+	        ev.end_seat_roll_no as endSeatRollNo,
+	        ad.address_name as "address.presentAddressLine",
+	        ad.land_mark as "address.presentAddressLandmark",
+	        ad.post_office as "address.presentAddressPostOffice",
+	        ad.police_station as "address.presentAddressPoliceStation", 
+	        ad.police_station as "address.presentAddressPoliceStation",
+	        ad.postal_code as "address.presentAddressPinCode",
+	        cty.city_name as "address.presentAddressCityVillage",
+	        dis.district_name as "address.presentAddressDistrict",
+	        st.state_name as "address.presentAddressState",
+	        cntry.country_code as "address.presentAddressCountry"
+		FROM
+			exam_venue ev
+		LEFT JOIN
+			address ad ON (ev.address = ad.rec_id) AND (ad.is_active = true)
+		LEFT JOIN
+			city cty ON (ad.city = cty.rec_id) AND (cty.is_active = true)
+		LEFT JOIN
+			district dis ON (ad.district = dis.rec_id) AND (dis.is_active = true)
+		LEFT JOIN
+			state st ON (ad.state = st.rec_id) AND (st.is_active = true)
+		LEFT JOIN
+			country cntry ON (ad.country = cntry.rec_id) AND (cntry.is_active = true)
+		WHERE
+			ev.is_active = true
+		AND
+			exam_venue_id=#{venueId};
+	</select>
+	
+	<!-- Modified By Naimisha 08052018 -->
+	<select id="selectInwardTaskList"  resultType="com.qts.icam.model.common.Task">
+		
+		SELECT 
+				td.task_details_id as taskId,
+				c.category_name as taskName,
+				to_char((SELECT to_timestamp(td.date_of_creation)), 'DD/MM/YYYY') as activationTime ,
+				td.task_description as taskDesc,
+				ts.task_status as status,
+				COALESCE(r1.first_name || ' ' || COALESCE(r1.middle_name,' ') || ' ' || r1.last_name) as createdById,
+				COALESCE(r2.first_name || ' ' || COALESCE(r2.middle_name,' ') || ' ' || r2.last_name) as taskOwnerName,
+				td.task_details_code  as taskCode,
+				ticket_code as taskObjectId,
+				ts.type as taskType
+		FROM
+				task_details td
+		JOIN
+				ticket t ON (td.ticket = t.rec_id AND t.is_active = true)
+		JOIN
+				category c ON (td.category = c.rec_id AND c.is_active = true)
+		
+		JOIN 
+				task_status ts On(td.task_status = ts.rec_id AND ts.is_active = true)
+		JOIN 
+				resource r1 ON(r1.rec_id = td.task_alocatted_by AND r1.is_active = true)
+		JOIN
+				resource r2 ON(r2.rec_id = td.actualowner_id AND r2.is_active = true) 
+		WHERE
+				r2.user_id = #{userId}
+		<!-- AND
+				ts.task_status NOT IN ('CLOSED','REJECTED') -->
+		AND
+				td.is_active = true
+		ORDER BY task_details_id desc;
+	</select>
+	
+	<select id="selectOutwardTaskList"  resultType="com.qts.icam.model.common.Task">
+	<!-- SELECT 
+			jd.job_name as taskName,
+			to_char((SELECT to_timestamp(td.date_of_creation)), 'DD/MM/YYYY') as activationTime ,
+			td.notification_description as taskDesc,
+			sf.status_desc status,
+			COALESCE(r1.first_name || ' ' || COALESCE(r1.middle_name,' ') || ' ' || r1.last_name) as createdById,
+			COALESCE(r2.first_name || ' ' || COALESCE(r2.middle_name,' ') || ' ' || r2.last_name) as taskOwnerName
+			
+	FROM
+			task_details td
+	JOIN
+			job_details jd ON (td.task_type = jd.rec_id AND jd.is_active = true)
+	JOIN 
+			status_flag sf On(td.status = sf.rec_id)
+	JOIN 
+			resource r1 ON(r1.rec_id = td.task_alocatted_by)
+	JOIN
+			resource r2 ON(r2.rec_id = td.actualowner_id)
+	WHERE
+			r1.user_id = #{userId}; -->
+		<!-- SELECT 
+				td.task_details_id as taskId,
+				jd.job_name as taskName,
+				to_char((SELECT to_timestamp(td.date_of_creation)), 'DD/MM/YYYY') as activationTime ,
+				td.notification_description as taskDesc,
+				ts.ticket_status_code as status,
+				COALESCE(r1.first_name || ' ' || COALESCE(r1.middle_name,' ') || ' ' || r1.last_name) as createdById,
+				COALESCE(r2.first_name || ' ' || COALESCE(r2.middle_name,' ') || ' ' || r2.last_name) as taskOwnerName,
+				t.ticket_master_details_code  as taskCode
+		FROM
+				task_details td
+		JOIN
+				job_details jd ON (td.task_type = jd.rec_id AND jd.is_active = true)
+		JOIN
+				ticket_master_details t ON (td.ticket_master_details = t.rec_id AND t.is_active = true)
+		JOIN 
+				ticket_status ts On(td.status = ts.rec_id AND ts.is_active = true)
+		JOIN 
+				resource r1 ON(r1.rec_id = td.task_alocatted_by AND r1.is_active = true)
+		JOIN
+				resource r2 ON(r2.rec_id = td.actualowner_id AND r2.is_active = true) 
+		WHERE
+				r1.user_id = #{userId} -->
+				
+					SELECT 
+				td.task_details_id as taskId,
+				c.category_name as taskName,
+				to_char((SELECT to_timestamp(td.date_of_creation)), 'DD/MM/YYYY') as activationTime ,
+				td.task_description as taskDesc,
+				ts.task_status as status,
+				COALESCE(r1.first_name || ' ' || COALESCE(r1.middle_name,' ') || ' ' || r1.last_name) as createdById,
+				COALESCE(r2.first_name || ' ' || COALESCE(r2.middle_name,' ') || ' ' || r2.last_name) as taskOwnerName,
+				td.task_details_code  as taskCode,
+				ticket_code as taskObjectId
+		FROM
+				task_details td
+		JOIN
+				ticket t ON (td.ticket = t.rec_id AND t.is_active = true)
+		JOIN
+				category c ON (td.category = c.rec_id AND c.is_active = true)
+		
+		JOIN 
+				task_status ts On(td.task_status = ts.rec_id AND ts.is_active = true)
+		JOIN 
+				resource r1 ON(r1.rec_id = td.task_alocatted_by AND r1.is_active = true)
+		JOIN
+				resource r2 ON(r2.rec_id = td.actualowner_id AND r2.is_active = true) 
+		WHERE
+				r1.user_id = #{userId}
+		AND
+				td.is_active = true;
+	</select>
+	
+	<select id="selectLeaveTypeNameForAUser" resultType="java.lang.String" parameterType="com.qts.icam.model.erp.Leave">
+		SELECT 
+			count(admission_form) as numberOfAdmissionFormId
+		FROM 
+			admission_seat_allotment
+		WHERE
+			is_active = true
+		AND
+			exam_venue = (SELECT rec_id FROM exam_venue WHERE exam_venue_id=#{venueId} AND is_active = true);
+	</select>
+		
+	<!-- ranita.sur 17062017 -->
+	
+	<update id="editVendorDetails" parameterType="com.qts.icam.model.common.Vendor">
+		UPDATE vendor SET
+			updated_by =(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active=true),
+			updated_on =(SELECT extract(epoch FROM now())),
+			vendor_code = #{vendorCode},
+			vendor_name = #{vendorName},
+			vendor_desc = #{vendorDesc},
+			vendor_contact_number = #{vendorContactNo1},
+			vendor_contact_number2 = #{vendorContactNo2},
+			email_id=#{emailId},
+			vendor_address = #{vendorAddress},
+			bank_name= #{bankName},
+			bank_account_no = #{accountNo},
+			bank_ifsc_code = #{bankCode},
+			bank_location = #{bankLocation},
+			bank_code = #{branchCode}
+		WHERE
+			vendor_code = #{vendorCode}
+		AND
+			is_active=true;
+	</update>
+	
+	<insert id="insertAlert" parameterType="com.qts.icam.model.common.Notification">		
+		INSERT INTO alert(
+	            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+	            alert_code, alert_subject, alert_desc, alert_from, alert_to, notification_medium,receive_time,alert_type)
+	    VALUES (
+	     		uuid_generate_v4(), 
+		    	#{notificationObjectId},
+		    	(SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active=true),
+		    	extract(epoch FROM now()),
+		    	extract(epoch FROM now()), 
+	            (select('ALERTCODE-' ||(select COALESCE((SELECT MAX(alert_id) FROM alert), 0 )+1))), 
+	            #{notificationSubject}, 
+	            #{notificationDesc},
+	            (SELECT rec_id FROM resource WHERE user_id  ilike  #{notificationSender} AND is_active=true),
+	            (SELECT rec_id FROM resource WHERE user_id  ilike  #{notificationReplyTo} AND is_active=true),
+	            (SELECT rec_id FROM notification_medium WHERE notification_medium_name = #{notificationMedium.notificationMediumName} AND is_active=true), 
+	            (SELECT to_char((SELECT to_timestamp((SELECT extract(epoch FROM now())))), 'DD/MM/YYYY HH24:MI:SS ')),
+	            'EMAILALERT'
+	     )
+	</insert>
+	
+	<delete id="deleteFromEmailAlert" parameterType="com.qts.icam.model.common.EmailDetails">
+		UPDATE 
+			email_alert
+   		SET 
+   			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+       		updated_on=extract(epoch FROM now()), 
+       		is_active=false
+ 		WHERE 
+ 			email_alert_code=#{emailDetailsCode};
+	</delete>
+	
+	<insert id="insertIntoEmailAlert" parameterType="com.qts.icam.model.common.EmailDetails">
+		INSERT INTO email_received(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, email_received_code, email_received_subject, email_received_desc, 
+            email_received_to, 
+            email_received_from)
+    	VALUES (uuid_generate_v4(),
+	   		    #{objId},
+	    		(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+	    		extract(epoch FROM now()),
+	    		extract(epoch FROM now()),
+            	(SELECT ('emailAlert-'||(select COALESCE((SELECT MAX(email_received_id) FROM email_received), 0 )+1))),
+            	#{emailDetailsSubject},
+            	#{emailDetailsDesc},
+            	(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true), 
+            	(SELECT rec_id FROM resource WHERE user_id = #{emailDetailsSender})
+           );
+	</insert>
+	
+	<select id ="selectCurrentFinancialYear" resultType="com.qts.icam.model.common.FinancialYear">
+		SELECT 
+			financial_year_code as financialYearCode, 
+			financial_year_name as financialYearName
+		FROM 
+			financial_year fy 
+		JOIN status_flag sf ON (fy.year_status = sf.rec_id) 		
+		WHERE sf.status_sym = 'C' 
+		AND fy.is_active;
+	</select>
+	
+	<select id="getStaffDetails" parameterType="com.qts.icam.model.common.Resource"  resultType="com.qts.icam.model.erp.Employee">
+		SELECT
+			r.user_id as "resource.userId",			
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || r.last_name as "resource.name",	
+			jt.job_type_name as "jobType.jobTypeName",
+			d.designation_name as "designation.designationName",
+			r.pan_no as "resource.panCardNo",
+			st.salary_template_code as "resource.salaryTemplateCode"
+		FROM
+			resource r		
+		LEFT JOIN
+			employee_details erp ON (r.rec_id = erp.resource) AND (erp.is_active = true)
+		LEFT JOIN 
+			job_type jt ON (jt.rec_id = erp.job_type) AND (jt.is_active = true)
+		LEFT JOIN 
+			designation_level_mapping dlm ON (dlm.is_active = true) AND (erp.designation_level_mapping = dlm.rec_id)	
+		LEFT JOIN 
+			designation d ON (d.is_active = true) AND (dlm.designation = d.rec_id)
+		LEFT JOIN 
+			designation_level lvl ON (lvl.is_active = true) AND (dlm.designation_level = lvl.rec_id)
+		LEFT JOIN
+			salary_template st ON (dlm.salary_template = st.rec_id) AND (st.is_active = true)	
+		WHERE
+			r.is_active = true
+		AND
+			r.user_id=#{userId};
+	</select>
+	
+	<!-- author naimisha for finance -->
+	
+	<select id="getAllAcademicYear" resultType="com.qts.icam.model.common.AcademicYear">
+			SELECT 
+				academic_year_name as academicYearName
+			FROM
+				academic_year
+			WHERE			
+				is_active = true
+			ORDER BY
+				academic_year_name;
+	</select>
+	
+	<!-- modified by anup 190117 -->
+	
+	<select id="getCourseForStandard" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Course">
+		<!-- SELECT
+			course_code as courseCode,
+			course_name as courseName,
+			course_desc as courseDesc,
+			standard_code as "standard.standardCode",
+			course_type_code as "courseType.courseTypeCode"
+		FROM course c
+		JOIN standard s on(s.rec_id=c.standard and s.is_active=true)
+		JOIN course_type ct on(ct.rec_id=c.course_type and ct.is_active=true)
+		WHERE
+			c.is_active=true
+			AND
+			s.standard_code=#{standard}; -->
+		SELECT 
+			s.subject_name as courseName, 
+			s.subject_code as courseCode
+		FROM
+			course_subject_mapping csm
+		JOIN 
+			subject s ON (csm.subject = s.rec_id AND s.is_active = true)
+		JOIN
+			course c on (csm.course = c.rec_id AND c.is_active = true)
+		WHERE
+			c.course_code = #{standard}
+		AND
+			csm.is_active = true;
+	</select>
+	
+	
+	<select id="selectSubjectList" resultType="com.qts.icam.model.academics.Subject">
+		SELECT
+			s.subject_id as subjectId,
+			s.subject_code as subjectCode,
+			s.subject_name as subjectName,
+			s.subject_desc as desc,
+			sg.subject_group_code as subjectGroup
+		FROM subject s
+		JOIN subject_group sg ON(s.subject_group=sg.rec_id AND sg.is_active=true)
+		WHERE s.is_active=true;
+	</select>
+	
+	<!-- 	/*******Added by naimisha23022017*********/ -->
+	<select id="selectStandardAgainstCourse" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT
+			standard_code
+		FROM
+			standard st
+		JOIN
+			course c ON (st.rec_id = c.standard AND c.is_active = true)
+		AND
+			course_code = #{course};
+	</select>
+	
+	<select id="selectStandardListForProgramDetails" resultType="com.qts.icam.model.common.Standard">
+		SELECT
+			s.standard_id as standardId,
+			s.standard_name as standardName,
+			s.standard_code as standardCode
+		FROM
+			standard s
+		WHERE
+			s.rec_id NOT IN (SELECT standard from course c WHERE c.is_active = true)
+		AND
+			s.is_active = true
+		ORDER BY
+		     s.standard_id;
+	</select>
+	
+	<select id="selectBatchAgainstCourse" resultType="com.qts.icam.model.common.Section" parameterType="java.lang.String">
+		SELECT
+			section_code as sectionCode,
+			section_name as sectionName
+		FROM
+			section sec
+		JOIN course c ON(sec.standard=c.standard AND c.is_active=true)
+		WHERE
+			course_code=#{course}
+			AND
+			sec.is_active=true
+			AND
+			sec.section_code NOT IN('NA')
+		ORDER BY section_name;
+	</select>
+	
+	<select id="getCourseList1" resultType="com.qts.icam.model.common.Course">
+		SELECT
+			course_code as courseCode,
+			course_name as courseName,
+			course_desc as courseDesc,
+			standard_code as "standard.standardCode",
+			course_type_code as "courseType.courseTypeCode"
+		FROM course c
+		JOIN standard s on(s.rec_id=c.standard and s.is_active=true)
+		JOIN course_type ct on(ct.rec_id=c.course_type and ct.is_active=true)
+		WHERE
+			c.is_active=true;
+	</select>
+	
+	<insert id="insertNotification" parameterType="com.qts.icam.model.ticket.Ticket">
+		INSERT INTO notification(
+						            rec_id,
+						            obj_id, 
+						            updated_by, 
+						            updated_on, 
+						            date_of_creation, 
+						            notification_code, 
+						            notification_desc, 
+						            notification_from, 
+						            notification_subject, 
+						            notification_to)
+    VALUES
+						    	 (uuid_generate_v4(), 
+							    #{ticketObjectId}, 
+							    (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+							    (SELECT extract(epoch FROM now())),
+							    (SELECT extract(epoch FROM now())),
+							    (select('NOTI' ||(select COALESCE((SELECT MAX(notification_id) FROM notification), 0 )+1))),
+						        #{comment},
+						        (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+						        #{ticketService.ticketServiceName}, 
+						        (SELECT rec_id FROM resource WHERE user_id=#{moduleName} AND is_active = true));
+	</insert>
+	
+<!-- 	<update id="updateTicketAndTaskStatusToClosed" parameterType="com.qts.icam.model.ticket.Ticket">
+			UPDATE task_details SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+			updated_on = (SELECT extract(epoch FROM now())),
+			status = (SELECT rec_id FROM ticket_status WHERE ticket_status_code = #{status})
+			WHERE
+				task_details_id = #{ticketId}
+			AND
+				is_active=true;
+	</update>
+	<update id="updateTicketAndTaskStatusToRejected" parameterType="com.qts.icam.model.ticket.Ticket">
+		UPDATE task_details SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+			updated_on = (SELECT extract(epoch FROM now())),
+			status = (SELECT rec_id FROM ticket_status WHERE ticket_status_code = #{status})
+		WHERE
+			task_details_id = #{ticketId}
+		AND
+			is_active=true;
+	</update>
+	<update id="updateTicketAndTaskStatusToWorkInProgress" parameterType="com.qts.icam.model.ticket.Ticket">
+		UPDATE task_details SET
+				status = (SELECT rec_id FROM ticket_status WHERE ticket_status_code = #{status}),
+				updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+				updated_on = (SELECT extract(epoch FROM now()))
+			WHERE
+				task_details_id = #{ticketId}
+			AND
+				is_active=true;	
+				
+			UPDATE ticket_master_details SET
+				ticket_master_details_status = (SELECT rec_id FROM ticket_status WHERE ticket_status_code = #{status}),
+				updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+				updated_on = (SELECT extract(epoch FROM now()))
+			WHERE
+				ticket_master_details_code = #{ticketCode}
+			AND
+				is_active=true;
+	</update> -->
+	
+	<insert id="insertIntoTaskComment" parameterType="com.qts.icam.model.ticket.Ticket">
+		INSERT INTO task_comment(
+			rec_id, 
+			obj_id, 
+			updated_by, 
+			updated_on, 
+			date_of_creation, 
+			task_details, 
+			date_of_comment, 
+			task_comment,
+			change_track)
+		VALUES (uuid_generate_v4(), 
+	       #{ticketObjectId}, 
+	       (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+	       (SELECT extract(epoch FROM now())),
+	       (SELECT extract(epoch FROM now())), 
+	       (SELECT rec_id FROM  task_details WHERE task_details_code = #{ticketCode}), 
+	       (SELECT extract(epoch FROM now())),
+			#{comment},
+			#{ticketDesc});
+
+	</insert>
+	
+	<!-- Modified By Naimisha 28082017 -->
+	<select id="selectApproverDetailsForATicket" resultType="com.qts.icam.model.administrator.Approver">
+		SELECT 
+			r.user_id  as updatedBy
+		FROM
+			approver_group ag
+		JOIN
+			ticket_master_details t ON (t.approver_group = ag.rec_id AND ag.is_active = true)
+		JOIN
+			approver_group_resource_mapping agrm ON (agrm.approver_group = ag.rec_id AND agrm.is_active = true)
+		JOIN
+			resource r ON (r.rec_id = agrm.resource AND r.is_active = true)
+		WHERE
+			t.ticket_master_details_code =  #{ticketCode}
+		AND
+			t.is_active=true;
+	</select>
+	
+	<select id="selectAllTaskCommentForATask" resultType="com.qts.icam.model.common.Task" parameterType="com.qts.icam.model.common.Task">
+		SELECT
+			 (SELECT to_char((SELECT to_timestamp(tc.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM')) as startDate,
+			  task_comment as taskComment
+		FROM
+			  task_comment tc
+	  	JOIN
+			  task_details td ON (tc.task = td.rec_id AND td.is_active = true)
+	  	WHERE
+				td.task_details_id = #{taskId}
+		AND
+			tc.is_active = true;
+	</select>
+	
+	<!-- Modified By Naimisha 28082017 -->
+	<select id="getJobTypeNameAgaianstJobCode" resultType="com.qts.icam.model.erp.JobType" parameterType="java.lang.String">
+		SELECT
+			job_name as jobTypeName,
+			is_parallel as parallelApproval,
+			is_serial as serialApproval
+		FROM
+			job_details jd 
+		WHERE
+			jd.job_code = #{jobType}
+		AND
+			jd.is_active = true;
+	</select>
+	
+	<!-- modified by kaustav.sen
+	changes taken on 18042017 -->
+	
+	<select id="selectSectionsAgainstStandard" resultType="com.qts.icam.model.common.Section" parameterType="java.lang.String">
+		SELECT distinct
+			section_code as sectionCode,
+			section_name as sectionName
+		FROM
+			section sec
+		JOIN standard std ON(sec.standard=std.rec_id AND std.is_active=true)
+		WHERE
+			standard_code=#{standard}
+			AND
+			sec.is_active=true
+			AND
+			sec.section_code NOT IN('NA')
+		ORDER BY section_name;
+	</select>
+	
+	
+	<!-- /***********Added By Naimisha 22042017**********/ -->
+	<select id="selectCourseListForAStudent" resultType="com.qts.icam.model.common.Course">
+		SELECT
+			c.course_code as courseCode,
+			c.course_name as courseName,
+			c.course_duration as desc
+		FROM
+			course c
+		JOIN
+			student_course_mapping scm ON (scm.course = c.rec_id AND c.is_active = true)
+		WHERE
+			scm.user_id = #{userId}
+		AND
+			scm.is_active = true
+		AND
+			course_duration>=(SELECT programme_duration FROM programme_policy)::integer;
+	</select>
+	
+	<select id="selectCourseAgainstCourseCode" resultType="com.qts.icam.model.common.Course" parameterType="com.qts.icam.model.common.Course">
+		<!-- SELECT
+			c.course_code as courseCode,
+			c.course_name as courseName
+		FROM
+			course c
+		WHERE
+			c.course_code = #{courseCode}; -->
+		SELECT
+			c.course_code as courseCode,
+			c.course_name as courseName,
+			s.section_name as desc
+		FROM
+			course c
+		JOIN
+			student_course_mapping scm ON (scm.course = c.rec_id ANd scm.is_active = true)
+		JOIN
+			section s ON (scm.section = s.rec_id AND s.is_active = true)
+		JOIN 
+			resource r ON (scm.user_id = r.user_id AND r.is_active = true)
+		WHERE
+			c.course_code = #{courseCode}
+		AND
+			r.user_id = #{updatedBy};
+	</select>
+	
+	<select id="selectResourceAgainstUserId" resultType="com.qts.icam.model.common.Resource" parameterType = "java.lang.String">
+		SELECT
+			r.user_id as userId,
+			sc.social_category_code as category
+		FROM
+			resource r
+		JOIN
+			social_category sc ON (r.social_category = sc.rec_id AND sc.is_active = true)
+		WHERE
+			r.user_id = #{userId};
+	</select>
+	
+		<select id="selectRollNumberAgainstProgramAndUserId" resultType="java.lang.String" parameterType="com.qts.icam.model.common.Course">
+	
+		SELECT
+			scm.roll_number
+		FROM
+			course c
+		JOIN
+			student_course_mapping scm ON (scm.course = c.rec_id ANd scm.is_active = true)
+
+		WHERE
+			c.course_code = #{courseCode}
+		AND
+			scm.user_id = #{updatedBy}
+		AND
+			c.is_active = true;
+	</select>
+	
+	<!-- sourav.bhadra 17062017 -->
+	
+	<insert id="insertVendorType" parameterType="com.qts.icam.model.common.VendorType">
+		INSERT INTO vendor_type(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			vendor_type_code, vendor_type_name, vendor_type_desc)
+		VALUES (
+			uuid_generate_v4(),
+			#{vendorObjectId},
+			(SELECT rec_id FROM resource WHERE user_id ilike #{updatedBy} AND is_active =true),
+			extract(epoch FROM now()),
+			extract(epoch FROM now()),
+			(select ('VENDOR-TYPE_' ||COALESCE((SELECT MAX(vendor_type_id) FROM vendor_type), 0)+1)),
+			#{vendorTypeName},
+			#{vendorTypeName}
+		);
+	
+	</insert>
+	
+	<update id="updateVendorType" parameterType="com.qts.icam.model.common.VendorType">
+		UPDATE 
+			vendor_type
+		SET 
+			updated_by=(SELECT rec_id FROM resource WHERE user_id ilike #{updatedBy} AND is_active =true),
+			updated_on=extract(epoch FROM now()),
+			vendor_type_name=#{vendorTypeName}, 
+			vendor_type_desc=#{vendorTypeName}
+		WHERE 
+			vendor_type_code=#{vendorTypeCode}
+		AND
+			is_active=true;
+	</update>
+	
+	<update id="inactiveVendorDetails" parameterType="com.qts.icam.model.common.Vendor">
+	 	
+		UPDATE 
+			vendor
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			is_active=false
+		WHERE
+			vendor_code = #{vendorCode}
+		AND
+			is_active=true;
+			
+	</update>
+	
+		<select id="selectResourceAllLeaveDetails" resultType="com.qts.icam.model.erp.Leave" parameterType="String">			
+		SELECT 
+			lt.leave_type_name as leaveType, 
+			ls.duration  as totalAvailLeave, 
+		<!-- 	encashment as encashable, -->
+			ls.duration as remainingLeave 
+			
+			
+		FROM leave_structure ls
+			
+		JOIN 	leave_type lt ON (ls.leave_type = lt.rec_id) AND (lt.is_active = true)		
+		
+		JOIN 	resource_type rt ON (rt.rec_id = ls.resource_type) AND (rt.is_active = true)
+		JOIN 	resource r ON (rt.rec_id = r.resource_type) AND (r.is_active = true)
+		
+		WHERE 
+			r.user_id = #{userId}
+		AND
+			ls.is_active = true 
+	</select>
+	
+	<insert id="insertIntoEmailNotification" parameterType="com.qts.icam.model.common.Notification">
+		INSERT INTO email_send(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+	            email_send_code, email_send_subject, email_send_desc, 
+	            email_send_to, email_send_from)
+	    VALUES (uuid_generate_v4(), #{notificationObjectId},
+	    (SELECT rec_id FROM resource WHERE user_id ilike #{updatedBy} AND is_active =true),
+	     extract(epoch FROM now()),
+	     extract(epoch FROM now()),
+	    (select ('EMAIL_ALERT_' ||COALESCE((SELECT MAX(email_send_id) FROM email_send), 0)+1)), 
+	     #{notificationSubject},
+	     #{notificationDesc},
+	     (SELECT rec_id FROM resource WHERE user_id = #{notificationReplyTo}),
+	     (SELECT rec_id FROM resource WHERE user_id = #{notificationSender})
+	     );
+	
+	</insert>
+	<select id="getSentEmailDetailsList" parameterType="String" resultType="com.qts.icam.model.common.EmailDetails">
+		SELECT 
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')as emailDetailsReceiver,
+			r1.first_name || ' ' || COALESCE(r1.middle_name,' ') || ' ' || COALESCE(r1.last_name,'  ')as emailDetailsSender,
+			email_send_code as emailDetailsCode,
+			email_send_subject as emailDetailsSubject,
+			email_send_desc as emailDetailsDesc,
+			(to_char((SELECT to_timestamp(es.date_of_creation)), 'DD/MM/YYYY hh:mm:ss')) as time ,
+			email_send_read_status as status
+		FROM
+			email_send es
+		JOIN
+			resource r ON (r.rec_id = es.email_send_from) AND (r.is_active = true)
+		JOIN
+			resource r1 ON (r1.rec_id = es.email_send_to) AND (r.is_active = true)
+
+		WHERE
+			r.user_id ilike #{userId}
+		AND
+			es.is_active = true
+		ORDER BY 
+			es.date_of_creation desc;
+	</select>
+	
+	<!-- anup.roy 12072017 -->
+	
+	<select id="selectEmailDetailsFromEmailReceived" parameterType="String" resultType="com.qts.icam.model.common.EmailDetails">
+		SELECT 
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')as emailDetailsSender,
+			r.user_id as senderUserId,
+			r1.first_name || ' ' || COALESCE(r1.middle_name,' ') || ' ' || COALESCE(r1.last_name,'  ')as emailDetailsReceiver ,
+			email_received_code as emailDetailsCode,
+			email_received_subject as emailDetailsSubject,
+			email_received_desc as emailDetailsDesc,
+			(to_char((SELECT to_timestamp(es.date_of_creation)), 'DD/MM/YYYY HH24:MI:SS')) as time ,
+			email_received_read_status as status
+		FROM
+			email_received es
+		JOIN
+			resource r ON (r.rec_id = es.email_received_from) AND (r.is_active = true)
+		JOIN
+			resource r1 ON (r1.rec_id = es.email_received_to) AND (r.is_active = true)
+		WHERE
+			r1.user_id ilike #{userId}	
+		AND
+			es.is_active = true
+		ORDER BY 
+			es.date_of_creation desc;
+	</select>
+	
+	<!-- anup.roy 12072017 -->
+	
+	<select id="selectCountNewMessageForReceivedEmail" parameterType="String" resultType="Integer">
+		SELECT 
+			COUNT(er.rec_id) as countNewMessage 
+		FROM 
+			email_received er
+		JOIN 
+			resource rs ON (rs.is_active = true) AND (er.email_received_to = rs.rec_id)
+		WHERE
+			rs.user_id ilike #{userId}
+		AND
+			email_received_read_status = false	
+		AND
+			er.is_active = true ;
+	</select>
+	
+		<!-- changes for ledgerParentGroup Delete ranita.sur 14082017 -->
+	<insert id="insertinLedgerForVendor" parameterType="com.qts.icam.model.common.Ledger">
+		INSERT INTO 
+				ledger
+					(
+						rec_id,
+						obj_id, 
+						updated_by,
+						updated_on,
+						date_of_creation, 
+						is_active,
+						ledger_code,
+						ledger_name,
+						parent_group,
+						subgroup,
+						ledger_holder
+						
+					)
+		VALUES
+					(
+						(uuid_generate_v4()), 
+					    #{objectId},
+						(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+						(SELECT extract(epoch FROM now())),
+						(SELECT extract(epoch FROM now())),
+						true,
+						#{ledgerName},
+						#{ledgerName},
+						(SELECT rec_id FROM group_for_ledger WHERE group_code ='CURRENT LIABILITIES' AND is_active =true),
+						(SELECT rec_id FROM group_for_ledger WHERE group_code='TRADE PAYABLES' AND is_active=true),
+						#{openingDrCr}::uuid
+					);
+			
+	 
+			INSERT INTO ledger_balance
+					(
+						rec_id, 
+						obj_id, 
+						updated_by, 
+						updated_on,
+					    date_of_creation, 
+						is_active,
+					    ledger, 
+					    month, 
+					    year, 
+					    opening_balance, 
+					    current_balance, 
+					    is_current
+				    )
+	VALUES 
+					(
+						(select uuid_generate_v4()), 
+					    #{objectId},
+						(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+						(SELECT extract(epoch FROM now())), 
+						(SELECT extract(epoch FROM now())), 
+						true,
+						(SELECT rec_id FROM ledger WHERE ledger_code ilike #{ledgerName} AND is_active =true),
+						(SELECT EXTRACT(MONTH FROM (SELECT now()))), 
+						(SELECT EXTRACT(YEAR FROM (SELECT now()))),
+						#{openingBal}, 
+						#{openingBal}, 
+						true
+					);
+	</insert>
+	
+	<update id="editinLedgerBalanceForVendor" parameterType="com.qts.icam.model.common.Ledger">
+	 	UPDATE 
+			ledger_balance
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			updated_on = extract(epoch FROM now()),
+			current_balance= current_balance + #{openingBal}
+		WHERE
+			ledger = (SELECT rec_id FROM ledger WHERE ledger_code='CREDITOR' AND is_active =true) 
+		AND
+			is_active=true;
+	</update>
+	
+	<select id="getEmailDetailsAgainstEmailCode" parameterType="java.lang.String" resultType="com.qts.icam.model.common.EmailDetails">
+		<!-- SELECT 
+			r.user_id as senderUserId,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')as emailDetailsSender,
+			r1.user_id as receiverUserId,
+			r1.first_name || ' ' || COALESCE(r1.middle_name,' ') || ' ' || COALESCE(r1.last_name,'  ')as emailDetailsReceiver ,
+			email_received_code as emailDetailsCode,
+			email_received_subject as emailDetailsSubject,
+			email_received_desc as emailDetailsDesc,
+			(to_char((SELECT to_timestamp(es.date_of_creation)), 'DD/MM/YYYY hh:mm:ss')) as time ,
+			email_received_read_status as status
+		FROM
+			email_received es
+		JOIN
+			resource r ON (r.rec_id = es.email_received_from) AND (r.is_active = true)
+		JOIN
+			resource r1 ON (r1.rec_id = es.email_received_to) AND (r.is_active = true)
+		WHERE
+			email_received_code = #{emailId}; -->
+			
+		SELECT 
+			r.user_id as senderUserId,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')as emailDetailsSender,
+			r1.user_id as receiverUserId,
+			r1.first_name || ' ' || COALESCE(r1.middle_name,' ') || ' ' || COALESCE(r1.last_name,'  ')as emailDetailsReceiver ,
+			email_received_code as emailDetailsCode,
+			email_received_subject as emailDetailsSubject,
+			email_received_desc as emailDetailsDesc,
+			(to_char((SELECT to_timestamp(es.date_of_creation)), 'DD/MM/YYYY hh:mm:ss')) as time ,
+			email_received_read_status as status,
+			email_received_attachment_location as filePath,
+			email_received_attachment_file_name as objId
+			
+		FROM
+			email_received es
+		JOIN
+			resource r ON (r.rec_id = es.email_received_from) AND (r.is_active = true)
+		JOIN
+			resource r1 ON (r1.rec_id = es.email_received_to) AND (r.is_active = true)
+		LEFT JOIN
+			email_received_attachment era ON(era.email_received = es.rec_id AND era.is_active = true)
+		WHERE
+			email_received_code = #{emailId};
+
+	</select>
+	
+	<select id="getEmailContentForSentItemsAgainstEmailCode" parameterType="java.lang.String" resultType="com.qts.icam.model.common.EmailDetails">
+		SELECT 
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')as emailDetailsSender,
+			r1.first_name || ' ' || COALESCE(r1.middle_name,' ') || ' ' || COALESCE(r1.last_name,'  ')as emailDetailsReceiver ,
+			email_send_code as emailDetailsCode,
+			email_send_subject as emailDetailsSubject,
+			email_send_desc as emailDetailsDesc,
+			(to_char((SELECT to_timestamp(es.date_of_creation)), 'DD/MM/YYYY hh:mm:ss')) as time ,
+			email_send_read_status as status,
+			email_attachment_location as filePath,
+			email_attachment_file_name as objId
+		FROM
+			email_send es
+		JOIN
+			resource r ON (r.rec_id = es.email_send_from) AND (r.is_active = true)
+		JOIN
+			resource r1 ON (r1.rec_id = es.email_send_to) AND (r.is_active = true)
+		LEFT JOIN
+			email_attachment era ON(era.email_send = es.rec_id AND era.is_active = true)
+		WHERE
+			email_send_code = #{emailId};
+
+	</select>
+	
+	<update id="inactiveEmailFromSentBox" parameterType="com.qts.icam.model.common.EmailDetails">
+		UPDATE
+			email_send
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id ilike #{updatedBy} AND is_active =true),
+			updated_on=extract(epoch FROM now()),
+			is_active = false
+		WHERE
+			email_send_code=#{emailDetailsCode}
+		AND
+			is_active = true;
+	</update>
+	
+	<update id="inactiveEmailFromInBox" parameterType="com.qts.icam.model.common.EmailDetails">
+		UPDATE
+			email_received
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id ilike #{updatedBy} AND is_active =true),
+			updated_on=extract(epoch FROM now()),
+			is_active = false
+		WHERE
+			email_received_code=#{emailDetailsCode}
+		AND
+			is_active = true;
+	</update>
+	
+	<!-- anup.roy 12072017 -->
+	
+	<update id="updateEmailReadStatus" parameterType="java.lang.String">
+		UPDATE
+			email_received 
+		SET
+			email_received_read_status = true
+		WHERE
+			email_received_code = #{emailId}	
+		AND
+			is_active = true		
+	</update>
+
+	<!-- Author Saif.Ali Date- 19/07/2017-->
+	<!-- <select id="selectAssetListForASTB" resultType="com.qts.icam.model.common.AnnualStock">
+		SELECT 
+			commodity_code as "commodity.commodityCode",
+			commodity_name as "commodity.commodityName",
+			commodity_instock as "commodity.inStock",
+			astv.ground_balance as groundBalance, 
+			astv.surplus as surplus,
+			astv.deficient as deficient,
+			astv.serviceable as serviceable,
+			astv.repairable as repairable			 
+		FROM 
+			commodity com
+		 JOIN 
+			astv astv ON(astv.commodity= com.rec_id AND astv.is_active= true)  
+		WHERE
+			com.is_active = true
+		AND 
+			com.commodity_type = 'ASSET';
+
+	</select> -->
+	
+	<!-- added by sourav.bhadra on 13-07-2017 -->
+	<select id="selectTotalAbsentDaysForAStudent" parameterType="com.qts.icam.model.common.StudentAttendance" 
+			resultType="com.qts.icam.model.common.StudentAttendance">
+		SELECT 
+			COUNT(date_of_absent) as absentDays
+		FROM 
+			teacher_attendance
+		WHERE 
+			month = #{month}
+		AND 
+			year = #{year}
+		AND 
+			resource=(SELECT rec_id FROM resource WHERE user_id = #{resourceId} AND is_active=true)
+		AND 
+			is_active=true;
+	</select>
+	<!-- ranita.sur 01082017 -->
+	<select id="selectVendorRecordForLedgerEntry" parameterType="com.qts.icam.model.common.Vendor" 
+			resultType="com.qts.icam.model.common.Vendor">
+		SELECT
+	        v.rec_id as vedorRecId
+		FROM
+			 vendor  v
+		WHERE
+		     v.email_id = #{emailId}
+		AND
+		     v.is_active=true;
+	
+	</select>
+	<!-- /*added by ranita.sur on 02082017 For Vendor emailId Validation */ -->
+	<select id="serverSideValidationOfVendorEmail" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			email_id as emailId
+		FROM
+			vendor
+		WHERE		
+			email_id = #{emailId};
+			
+	</select>
+	
+	<select id="selectTotalWorkingDaysForAMonth" parameterType="com.qts.icam.model.common.Resource" resultType="java.lang.String">
+		SELECT
+			total_workingdays
+		FROM
+			holiday_details
+		WHERE
+			year = #{startDate}
+		AND
+			month = #{endDate}
+		AND
+			is_active = true  ;
+			
+	</select>
+	
+	<select id="selectTotalAbsentDaysForAMonth" parameterType="com.qts.icam.model.common.Resource" resultType="java.lang.String">
+		SELECT
+			count(date_of_absent)
+		FROM
+			teacher_attendance ta
+		JOIN
+			resource r ON (ta.resource = r.rec_id AND r.is_active = true)
+		WHERE
+			year = #{startDate}
+		AND
+			month = #{endDate}
+		AND
+			user_id = #{userId}
+		AND
+			ta.is_active = true;
+			
+	</select>
+	
+	<resultMap id="getSalaryBreakUpListForGrossORNetForSalarySlipViewResultMap" type="com.qts.icam.model.erp.SalaryBreakUp">
+		<id property="salaryBreakUpCode" column="salarybreakup_code" jdbcType="VARCHAR" />
+		<result property="salaryBreakUpName" column="salarybreakup_name" jdbcType="VARCHAR" />
+		<result property="salaryBreakUpType" column="salarybreakup_type" jdbcType="VARCHAR" />
+		<result property="amount" column="amount" jdbcType="DOUBLE" />
+	</resultMap>
+	<select id="getSalaryBreakUpListForGrossForSalarySlipView" parameterType="com.qts.icam.model.erp.Employee" resultMap="getSalaryBreakUpListForGrossORNetForSalarySlipViewResultMap">
+		SELECT
+			sbu.salarybreakup_code,
+			sbu.salarybreakup_name,
+			sbu.salarybreakup_type,
+			dsbd.amount
+		FROM
+			salary_break_up sbu		
+		JOIN 
+			disburse_salary_breakup_details dsbd ON (dsbd.is_active = true) AND (sbu.rec_id = dsbd.salary_breakup)
+		JOIN
+			employee_details erp ON  (erp.is_active = true) AND (dsbd.user_id = erp.rec_id)
+		JOIN
+			resource r ON (r.is_active = true) AND (r.rec_id = erp.resource) 	
+		WHERE
+			sbu.is_active = true
+		AND
+			sbu.salarybreakup_code IS NOT NULL
+		AND
+			r.user_id = #{resource.userId}
+		AND
+			sbu.salarybreakup_type = 'EARNING'
+		AND
+			salary_year = #{resource.startDate}
+		AND
+			salary_month = #{resource.endDate}
+		ORDER BY
+			sbu.salarybreakup_id;
+		
+	
+	</select>
+	
+	<select id="getSalaryBreakUpListForNetForSalarySlipView" parameterType="com.qts.icam.model.erp.Employee" resultMap="getSalaryBreakUpListForGrossORNetForSalarySlipViewResultMap">
+		SELECT
+			sbu.salarybreakup_code,
+			sbu.salarybreakup_name,
+			sbu.salarybreakup_type,
+			dsbd.amount
+		FROM
+			salary_break_up sbu		
+		JOIN 
+			disburse_salary_breakup_details dsbd ON (dsbd.is_active = true) AND (sbu.rec_id = dsbd.salary_breakup)
+		JOIN
+			employee_details erp ON  (erp.is_active = true) AND (dsbd.user_id = erp.rec_id)
+		JOIN
+			resource r ON (r.is_active = true) AND (r.rec_id = erp.resource) 	
+		WHERE
+			sbu.is_active = true
+		AND
+			sbu.salarybreakup_code IS NOT NULL
+		AND
+			r.user_id = #{resource.userId}
+		AND
+			sbu.salarybreakup_type = 'DEDUCTION'
+		AND
+			salary_year = #{resource.startDate}
+		AND
+			salary_month = #{resource.endDate}
+		ORDER BY
+			sbu.salarybreakup_id;
+		
+	
+	</select>
+	
+	
+	<resultMap id="salaryBreakUpForSalarySlipResultMap" type="com.qts.icam.model.erp.SalaryBreakUp">
+		<id property="salaryBreakUpCode" column="salarybreakup_code" jdbcType="VARCHAR" />
+		<result property="salaryBreakUpName" column="salarybreakup_name" jdbcType="VARCHAR" />
+		<result property="salaryBreakUpType" column="salarybreakup_type" jdbcType="VARCHAR" />
+		<result property="slab" column="is_slab" jdbcType="BOOLEAN" />
+		<result property="salaryBreakUpDesc" column="formula_for_head" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<select id="getSalaryBreakUPDetailsForSalarySlipDetails" parameterType="com.qts.icam.model.erp.Employee" resultMap="salaryBreakUpForSalarySlipResultMap">
+		SELECT
+			sbu.salarybreakup_code,
+			sbu.salarybreakup_name,
+			sbu.salarybreakup_type,
+			dsbd.amount,
+			st.salary_template_name,
+			st.salary_template_code,
+			std.formula_for_head,
+			sbu.is_slab
+		FROM
+			salary_break_up sbu		
+		JOIN 
+			disburse_salary_breakup_details dsbd ON (dsbd.is_active = true) AND (sbu.rec_id = dsbd.salary_breakup)
+		JOIN
+			resource r ON (r.is_active = true)
+		JOIN
+			salary_template st ON (st.is_active = true) AND (dsbd.salary_template = st.rec_id)
+		JOIN
+			salary_template_details std ON (std.salary_template = st.rec_id) AND (std.salary_break_up = sbu.rec_id) AND (std.is_active=true)
+		JOIN
+			employee_details erp ON (r.rec_id = erp.resource) AND (erp.is_active = true) AND (dsbd.user_id = erp.rec_id)
+		WHERE
+			sbu.is_active = true
+		AND
+			is_slab = false
+		AND
+			sbu.salarybreakup_code IS NOT NULL
+		AND
+			r.user_id = #{resource.userId}
+		AND
+			salary_year = #{resource.startDate}
+		AND
+			salary_month = #{resource.endDate}
+		ORDER BY
+			sbu.salarybreakup_name ;
+	</select>
+	
+	
+	<!-- //Added By Naimisha 28082017 -->
+	<select id="approverGroupAndApprovalLevelListForAJobType" resultType="com.qts.icam.model.administrator.Approver" parameterType = "java.lang.String">
+		SELECT
+			approver_group_code as approverGroupCode,
+			job_code as approverGroupName,
+			approver_order as approverGroupDesc
+		FROM
+			approver_group ag
+		JOIN
+			approval_order ao ON (ao.approver_group = ag.rec_id AND ao.is_active = true) 
+		JOIN
+			job_details jd ON (jd.rec_id = ao.jobs AND jd.is_active = true)
+		WHERE
+			jd.job_code =  #{jobType}
+		AND
+			ag.is_active=true;
+	</select>
+	
+	<insert id="insertIntoTicketMasterDetails" parameterType="com.qts.icam.model.administrator.Approver">
+		INSERT INTO ticket_master_details(
+            rec_id, obj_id, updated_by, updated_on, 
+            date_of_creation,  ticket_master_details_code, ticket, 
+            approver_group, ticket_master_details_status, 
+            ticket_master_details_open_date, 
+            approval_level)
+    VALUES (uuid_generate_v4(),#{objectId}, 
+		    (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+		   (SELECT extract(epoch FROM now())),
+		    (SELECT extract(epoch FROM now())),	
+            (select('TASKMASTER' ||(select COALESCE((SELECT MAX(ticket_master_details_id) FROM ticket_master_details), 0 )+1))),
+            (SELECT rec_id FROM ticket WHERE ticket_id = (SELECT MAX(ticket_id) FROM ticket WHERE is_active = true)),
+            (SELECT rec_id FROM approver_group WHERE approver_group_code = #{approverGroupCode} AND is_active = true),
+            (SELECT rec_id FROM ticket_status WHERE ticket_status_code=#{status} AND is_active=true),
+            (SELECT extract(epoch FROM now())),
+            #{approverGroupDesc});
+	</insert>
+
+	<resultMap id="getTicketMasterDetailsRM" type="com.qts.icam.model.ticket.Ticket">
+		<id property="ticketCode" column="ticket_code" jdbcType="VARCHAR" />
+		<result property="ticketOpenDate" column="ticket_open_date" jdbcType="VARCHAR" />
+		<result property="affectedUser" column="approver_group_name" jdbcType="VARCHAR" />
+		<result property="reportedBy" column="reportedBy" jdbcType="VARCHAR" />
+		<result property="ticketService.ticketServiceName" column="ticket_service_name"	jdbcType="VARCHAR" />
+		<result property="ticketService.ticketServiceCode" column="ticket_service_code"	jdbcType="VARCHAR" />
+		<result property="ticketSummary" column="ticket_summary" jdbcType="VARCHAR" />
+		<result property="ticketDesc" column="ticket_desc" jdbcType="VARCHAR" />
+		<result property="status" column="ticket_status_code" jdbcType="VARCHAR" />
+		<collection property="commentList" ofType="com.qts.icam.model.ticket.TicketComment">
+			<id property="comment" column="ticket_comment" jdbcType="VARCHAR" />
+			<result property="updatedBy" column="commented_by" jdbcType="VARCHAR" />
+			<result property="ticketCommentDate" column="date_of_comment" jdbcType="INTEGER" />
+		</collection>
+		<collection property="taskCommentList" ofType="com.qts.icam.model.ticket.TaskComment">
+			<id property="comment" column="task_comment" jdbcType="VARCHAR" />
+			<result property="updatedBy" column="task_commented_by" jdbcType="VARCHAR" />
+			<result property="taskCommentDate" column="date_of_comment_task" jdbcType="INTEGER" />
+		</collection>
+		<collection property="serviceTypeList" ofType="com.qts.icam.model.ticket.ServiceType">
+			<id property="ticketServiceCode" column="key" jdbcType="VARCHAR" />
+			<result property="ticketServiceName" column="value" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	
+	<!-- Modified ON 061120172017By Naimisha changd "getTicketMasterDetails" to "getTicketDetailsForEdit"	 -->
+	
+	
+	<select id="getTicketDetailsForEdit" resultMap="getTicketMasterDetailsRM" parameterType="com.qts.icam.model.ticket.Ticket">
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY'))as ticket_open_date,
+			r1.user_id as reportedBy,
+			t.ticket_summary,
+			t.ticket_desc,
+			tss.ticket_status_code,
+			c.category_name as ticket_service_name,
+			c.category_code as ticket_service_code,
+			tc.ticket_comment,
+			r2.user_id as commented_by,
+			(SELECT to_char((SELECT	to_timestamp(tc.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM'))as date_of_comment,
+			t.ticket_code ,
+			tac.task_comment,
+			r3.user_id as task_commented_by,
+			(SELECT to_char((SELECT	to_timestamp(tac.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM'))as date_of_comment_task,
+			key,
+			value
+			
+		FROM
+			ticket t			
+			JOIN category c ON (t.category = c.rec_id AND c.is_active = true)
+			JOIN resource r1 ON (r1.rec_id = t.reported_by AND r1.is_active = true)
+			JOIN ticket_status tss ON (tss.rec_id = t.ticket_status AND tss.is_active = true)
+			LEFT JOIN ticket_comment tc ON (t.rec_id=tc.ticket AND tc.is_active = true)
+			LEFT JOIN resource r2 ON (r2.rec_id = tc.updated_by AND r2.is_active = true)
+			LEFT JOIN  task_details td ON (t.rec_id = td.ticket AND t.is_active = true)
+			LEFT JOIN task_comment tac ON (td.rec_id = tac.task_details AND tac.is_active = true)
+			LEFT JOIN resource r3 ON(r3.rec_id = tac.updated_by AND r3.is_active = true)
+			JOIN resource r4 ON (td.task_alocatted_by = r4.rec_id AND r4.is_active = true)
+			JOIN resource r5 ON (t.ticket_recepient = r5.rec_id AND r5.is_active = true)
+			LEFT JOIN ticket_key_value_mapping tkvm ON (tkvm.ticket = t.rec_id AND tkvm.is_active = true)
+		WHERE
+			t.ticket_code = #{ticketCode}
+		AND
+			r5.user_id =  #{updatedBy}
+		ORDER BY 
+			tac.date_of_creation;
+	</select>
+	
+	<select id="selectTickctHavingStatusNOTClosedAndApproved" resultType="com.qts.icam.model.ticket.Ticket" parameterType = "com.qts.icam.model.ticket.Ticket">
+		SELECT
+			ticket_master_details_code as ticketCode,
+			ticket_status_code as status
+		FROM
+		ticket t
+		JOIN job_details jd ON (t.service_type = jd.rec_id AND jd.is_active = true)
+		JOIN ticket_master_details tmd ON (tmd.ticket = t.rec_id AND tmd.is_active = true)
+		JOIN approver_group ag ON (tmd.approver_group = ag.rec_id AND ag.is_active = true)
+		JOIN approver_group_resource_mapping agrm ON (agrm.approver_group = ag.rec_id AND agrm.is_active = true)
+		JOIN resource r ON (r.rec_id = agrm.resource AND r.is_active = true)
+		JOIN ticket_status tss ON (tss.rec_id = tmd.ticket_master_details_status AND tss.is_active = true)
+		WHERE
+			ticket_code = #{ticketRecId}
+		AND
+			ticket_status_code != 'APPROVED'
+		AND
+			r.user_id != #{updatedBy}
+		AND 
+			t.is_active = true;
+	</select>
+	
+	<update id="updateTicketMasterDetails" parameterType="com.qts.icam.model.ticket.Ticket">
+		UPDATE
+			ticket_master_details
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active =true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			ticket_master_details_status = (SELECT rec_id FROM ticket_status WHERE ticket_status_code=#{status} AND is_active=true),
+			ticket_master_details_comment = #{description}
+		<if test="status == 'CLOSED'">
+			,ticket_master_details_close_date=(SELECT extract(epoch FROM now()))
+		</if>
+		<if test="status == 'APPROVED'">
+			,ticket_master_details_close_date=(SELECT extract(epoch FROM now()))
+		</if>
+		WHERE
+		ticket_master_details_code=#{ticketCode}
+		AND
+		is_active=true;
+	</update>
+	
+	<select id="fetchLevelFromTicketMasterDetailsForAData" resultType="com.qts.icam.model.administrator.Approver" parameterType = "com.qts.icam.model.ticket.Ticket">
+		SELECT
+			approval_level as approverGroupName,
+			ag.approver_group_code as approverGroupCode
+		FROM 
+			ticket_master_details tmd
+		JOIN 
+			approver_group ag ON (tmd.approver_group = ag.rec_id AND ag.is_active = true)
+		WHERE
+			ticket_master_details_code = #{ticketCode}
+		AND
+			tmd.is_active = true;
+	</select>
+	
+	<update id="updateTicketStatusWIP" parameterType="com.qts.icam.model.ticket.Ticket">
+		UPDATE
+			ticket
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active =true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			ticket_status=(SELECT rec_id FROM ticket_status WHERE ticket_status_code=#{status} AND is_active=true),
+			ticket_desc=#{description}
+		<if test="status == 'CLOSED'">
+			,ticket_close_date=(SELECT extract(epoch FROM now()))
+		</if>
+		<if test="status == 'APPROVED'">
+			,ticket_close_date=(SELECT extract(epoch FROM now()))
+		</if>
+		WHERE
+		ticket_code=#{ticketRecId}
+		AND
+		is_active=true;
+	</update>
+	
+	<select id="selectClosedTaskList"  resultType="com.qts.icam.model.common.Task">
+		
+		<!-- SELECT 
+				td.task_details_id as taskId,
+				jd.job_name as taskName,
+				to_char((SELECT to_timestamp(td.date_of_creation)), 'DD/MM/YYYY') as activationTime ,
+				td.notification_description as taskDesc,
+				ts.ticket_status_code as status,
+				COALESCE(r1.first_name || ' ' || COALESCE(r1.middle_name,' ') || ' ' || r1.last_name) as createdById,
+				COALESCE(r2.first_name || ' ' || COALESCE(r2.middle_name,' ') || ' ' || r2.last_name) as taskOwnerName,
+				t.ticket_master_details_code  as taskCode
+		FROM
+				task_details td
+		JOIN
+				job_details jd ON (td.task_type = jd.rec_id AND jd.is_active = true)
+		JOIN
+				ticket_master_details t ON (td.ticket_master_details = t.rec_id AND t.is_active = true)
+		JOIN 
+				ticket_status ts On(td.status = ts.rec_id AND ts.is_active = true)
+		JOIN 
+				resource r1 ON(r1.rec_id = td.task_alocatted_by AND r1.is_active = true)
+		JOIN
+				resource r2 ON(r2.rec_id = td.actualowner_id AND r2.is_active = true) 
+		WHERE
+				r2.user_id = #{userId}
+		AND
+				ts.ticket_status_code != 'OPEN'; -->
+				
+		SELECT 
+				td.task_details_id as taskId,
+				c.category_name as taskName,
+				to_char((SELECT to_timestamp(td.date_of_creation)), 'DD/MM/YYYY') as activationTime ,
+				td.task_description as taskDesc,
+				ts.task_status as status,
+				COALESCE(r1.first_name || ' ' || COALESCE(r1.middle_name,' ') || ' ' || r1.last_name) as createdById,
+				COALESCE(r2.first_name || ' ' || COALESCE(r2.middle_name,' ') || ' ' || r2.last_name) as taskOwnerName,
+				td.task_details_code  as taskCode,
+				ticket_code as taskObjectId
+		FROM
+				task_details td
+		JOIN
+				ticket t ON (td.ticket = t.rec_id AND t.is_active = true)
+		JOIN
+				category c ON (td.category = c.rec_id AND c.is_active = true)
+		
+		JOIN 
+				task_status ts On(td.task_status = ts.rec_id AND ts.is_active = true)
+		JOIN 
+				resource r1 ON(r1.rec_id = td.task_alocatted_by AND r1.is_active = true)
+		JOIN
+				resource r2 ON(r2.rec_id = td.actualowner_id AND r2.is_active = true) 
+		WHERE
+				r2.user_id = #{userId}
+		AND
+				ts.task_status != 'OPEN'
+		AND
+				td.is_active = true;
+				
+	</select>
+	
+	<!-- Added By Naimisha 29082017 -->
+	
+	<resultMap id="fetchQuestionAnswerForSurveyOfATicketRM" type="com.qts.icam.model.survey.QuestionMaster">
+		<id property="surveyId" column="survey_id" jdbcType="VARCHAR" />
+		<result property="surveyName" column="survey_name" jdbcType="VARCHAR" />	
+		<collection property="questionList" ofType="com.qts.icam.model.survey.Question">
+			<id property="questionId" column="question" jdbcType="VARCHAR" />
+			<result property="question" column="question_name" jdbcType="VARCHAR" />
+			<result property="objectId" column="input_type" jdbcType="VARCHAR" />
+			<collection property="answerList" ofType="com.qts.icam.model.survey.Answer">
+				<id property="answerId" column="answer_id" jdbcType="VARCHAR" />
+				<result property="initialValue" column="initial_value" jdbcType="VARCHAR" />
+				<!-- <result property="inputType" column="input_type" jdbcType="VARCHAR" /> -->
+				<result property="weightage" column="weightage" jdbcType="VARCHAR" />
+			</collection>
+		</collection>
+	</resultMap>
+	<select id="fetchQuestionAnswerForSurveyOfATicket" resultMap="fetchQuestionAnswerForSurveyOfATicketRM" parameterType = "com.qts.icam.model.erp.JobType">
+		SELECT
+			survey_id,
+			survey_name,
+			psqm.question_id as question,
+			question_name,
+			answer_id,
+			initial_value,
+			input_type,
+			weightage
+		FROM
+			program_survey_question_slave psqs 
+		JOIN
+			program_survey_question_master psqm ON (psqs.question_id = psqm.question_id AND psqm.is_active = true)
+		JOIN
+			program_survey_answer_master psam ON (psam.question_id = psqm.question_id AND psam.is_active = true)
+		WHERE 
+			survey_id = (SELECT survey_id FROM category_survey_mapping WHERE category = (SELECT rec_id FROM category WHERE category_code = #{jobTypeCode} AND is_active = true))
+		ORDER BY 
+			psqm.question_id;
+	</select>
+	
+	<insert id="insertTicketSurvey" parameterType="com.qts.icam.model.survey.Question">
+		<foreach item="answerId" collection="answerList"  open="" close="" separator=";">
+			INSERT INTO ticket_survey_answer_slave(
+	            rec_id, obj_id, updated_by, updated_on, 
+	            date_of_creation, user_id, question_id, answer,survey_id,ticket)
+		    VALUES ((select uuid_generate_v4()), #{objectId},
+			    (SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			    (SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())), 
+		          #{updatedBy}, #{answerId.questionId}, #{answerId.answerId},#{surveyId},
+		          (SELECT rec_id FROM ticket WHERE ticket_id = (SELECT MAX(ticket_id) FROM ticket WHERE is_active = true) AND is_active = true));
+
+		</foreach>
+	</insert>
+	
+	<select id="fetchSurveyDetailsOfATicket" resultType="com.qts.icam.model.survey.Answer" parameterType = "java.lang.String">
+		SELECT
+			question_name as questionId,
+			answer as answerId
+		FROM
+			ticket_survey_answer_slave tsas
+		JOIN
+			program_survey_question_master psqm ON (psqm.question_id = tsas.question_id AND psqm.is_active = true)
+		WHERE
+			ticket = (SELECT rec_id FROM ticket WHERE ticket_code = #{ticketCode} AND is_active = true)
+		AND
+			tsas.is_active = true;
+	</select>
+	
+	<!-- Added by Saif.Ali
+	Date-05/09/2017 -->
+	
+	<resultMap id="fetchProgramDetailsList" type="com.qts.icam.model.common.Course">
+		<id property="courseName" column="course_name" jdbcType="VARCHAR" />
+		<result property="courseDuration" column="course_duration" jdbcType="INTEGER" />
+		<result property="credit" column="credit" jdbcType="INTEGER" />	
+		<collection property="termList" ofType="com.qts.icam.model.backoffice.Term">
+			<id property="termCode" column="term_code" jdbcType="VARCHAR" />
+			<result property="termName" column="term_name" jdbcType="VARCHAR" />
+			<collection property="subjectList" ofType="com.qts.icam.model.academics.Subject">
+				<id property="subjectCode" column="subject_code" jdbcType="VARCHAR" />
+				<result property="subjectName" column="subject_name" jdbcType="VARCHAR" />
+			</collection>
+		</collection>
+	</resultMap>
+	
+	<select id="getProgramDetailsList" parameterType= "com.qts.icam.model.common.Course" resultMap="fetchProgramDetailsList">
+	SELECT
+			c.course_name, 
+			c.course_duration,
+			c.credit,
+			t.term_name,
+			t.term_code,
+			s.subject_name,
+			s.subject_code
+	 FROM
+	 	 course c
+	 JOIN 
+	 	course_type ct ON(ct.rec_id= c.course_type and ct.is_active= true)
+	 JOIN 
+	 	term_course_subject_mapping tcsm ON(tcsm.course= c.rec_id and tcsm.is_active= true)
+	 JOIN 
+	 	subject s on(tcsm.subject = s.rec_id and s.is_active=true)
+	JOIN
+		 term t on(tcsm.term = t.rec_id and t.is_active=true)
+	WHERE
+		 c.course_code = #{courseCode}
+	</select>
+	
+	
+	<resultMap id="fetchFeesRelatedDetailsList" type="com.qts.icam.model.backoffice.Fees">
+		<collection property="socialCategoryList" ofType="com.qts.icam.model.common.SocialCategory">
+			<id property="socialCategoryCode" column="social_category_code" jdbcType="VARCHAR" />
+			<result property="socialCategoryName" column="social_category_name" jdbcType="VARCHAR" />
+			<collection property="feesStructureList" ofType="com.qts.icam.model.backoffice.Fees">
+				<id property="feesCode" column="fees_structure_code" jdbcType="VARCHAR" />
+				<result property="feesName" column="fees_structure_name" jdbcType="VARCHAR" />
+				<result property="amount" column="amount" jdbcType="DOUBLE" />
+				<!-- <result property="amountPaid" column="tot_amount_paid" jdbcType="DOUBLE" />
+				<result property="amountPayable" column="amount_payable" jdbcType="DOUBLE" /> -->
+			</collection>
+		</collection>
+	</resultMap>	
+<select id="getFeesRelatedDetailsList" parameterType= "com.qts.icam.model.common.Course" resultMap="fetchFeesRelatedDetailsList">
+
+	SELECT 
+		sfta.amount,
+		fs.fees_structure_name,
+		fs.fees_structure_code,
+		sc.social_category_name,
+		sc.social_category_code
+		<!-- sfp.tot_amount_paid,
+		sfpd.amount_payable -->
+	FROM 
+		student_fees_template_amount sfta
+	JOIN 	
+		student_fees_template_details sftd ON(sftd.rec_id= sfta.student_fees_template_details and sftd.is_active= true)
+	JOIN 
+		fees_structure fs ON (fs.rec_id = sftd.fees_structure and fs.is_active=true)
+	JOIN 
+		course c ON(c.rec_id= sfta.course and c.is_active= true)
+	JOIN
+		social_category sc ON(sc.rec_id = sfta.social_category and sc.is_active= true)
+	JOIN 
+		term t ON(t.rec_id= sfta.term and t.is_active= true)
+	JOIN
+		resource r ON(r.social_category= sc.rec_id and r.is_active= true)
+	<!-- JOIN
+		student_fees_paid_details sfpd ON(sfpd.student_fees_template_amount=sfta.rec_id and sfpd.is_active= true )
+	JOIN
+		student_fees_paid sfp ON(sfp.student_id = r.rec_id and sfp.is_active= true) -->
+	WHERE 
+		c.course_code= #{courseCode}
+	AND 
+		r.user_id= #{updatedBy}
+	
+</select>
+
+<select id="getAmountPaymentList" parameterType= "com.qts.icam.model.common.Course" resultType="com.qts.icam.model.backoffice.Fees">
+
+	SELECT 
+		 sfp.tot_amount_paid as amountPaid,
+		sfpd.amount_payable as amountPayable
+	FROM 
+		student_fees_template_amount sfta
+	JOIN 
+		course c ON(c.rec_id= sfta.course and c.is_active= true)
+	JOIN
+		social_category sc ON(sc.rec_id = sfta.social_category and sc.is_active= true)
+	JOIN
+		resource r ON(r.social_category= sc.rec_id and r.is_active= true)
+	JOIN
+		student_fees_paid_details sfpd ON(sfpd.student_fees_template_amount=sfta.rec_id and sfpd.is_active= true )
+	JOIN
+		student_fees_paid sfp ON(sfp.student_id = r.rec_id and sfp.is_active= true)
+	WHERE 
+		c.course_code= #{courseCode}
+	AND 
+		r.user_id= #{updatedBy}
+	
+</select>
+
+<!-- Added by naimisha 08092017 -->
+
+	<select id="selectStudentAgainstProgramAndUserId" resultType="com.qts.icam.model.common.Student" parameterType="com.qts.icam.model.common.Course">
+	
+		SELECT
+			scm.roll_number as roll,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')as studentName
+		FROM
+			course c
+		JOIN
+			student_course_mapping scm ON (scm.course = c.rec_id ANd scm.is_active = true)
+		JOIN
+			resource r ON (r.user_id = scm.user_id AND r.is_active = true)
+
+		WHERE
+			c.course_code = #{courseCode}
+		AND
+			scm.user_id = #{updatedBy}
+		AND
+			c.is_active = true;
+	</select>
+
+	<!-- /*added by ranita.sur on 08092017*/ -->
+	<select id="fetchLibraryFineDetailsOfUser" resultType="com.qts.icam.model.library.BookAllocation" parameterType = "java.lang.String">
+		     SELECT
+			     b.book_name as bookAllocationCode,
+			     (to_char((SELECT to_timestamp(bad.book_return_date)),'DD/MM/YYYY')) as bookReturnDate,
+			     bad.penalty as "bookPenalty.bookPenaltyToPay",
+			     bos1.book_operational_status_name as bookAllocationObjectId
+			 FROM
+			     book_allocation_details bad
+			 JOIN book_operational_status bos ON (bad.book_allocation_details_status = bos.rec_id) AND (bos.is_active=true)
+			 JOIN book_allocation ba ON (bad.book_allocation = ba.rec_id) AND (ba.is_active =true)
+			 LEFT JOIN book_operational_status bos1 ON (bad.fine_status=bos1.rec_id) AND (bos1.is_active = true)
+			 JOIN resource r ON (ba.book_issued_to = r.rec_id) AND (r.is_active = true)
+			 JOIN book b ON (bad.book_code = b.book_code) AND (b.is_active=true)
+			 WHERE
+			      r.user_id=#{userId}
+			 AND
+			     bad.is_active=true;   
+	</select>
+	
+	<insert id="insertChatDetailsForIndividualChat" parameterType="com.qts.icam.model.common.Notification">
+		INSERT INTO individual_chat(
+            date_of_creation, chat_from, chat_to, msg)
+    	VALUES ((SELECT extract(epoch FROM now())),
+    		 	#{notificationSender}, 
+    		 	#{notificationReplyTo}, 
+    		 	#{notificationDesc} 
+            );
+
+	</insert>
+	<update id="updateChatStatusToReadForAUser" parameterType="java.lang.String">
+		
+         UPDATE individual_chat
+         SET is_read = true
+         WHERE chat_from = #{user};
+         
+          UPDATE individual_chat
+         SET is_read = true
+         WHERE chat_to = #{user};
+
+	</update>
+	
+	<select id="getChatDetailsForIndividualChatForAUser" parameterType="com.qts.icam.model.common.Notification" resultType = "com.qts.icam.model.common.Notification">
+		SELECT
+			chat_from as notificationName,
+			msg as notificationDesc
+		FROM
+			individual_chat
+		WHERE
+			chat_from = #{notificationSender}
+		AND
+			is_read = false;
+
+	</select>
+	
+	<insert id="submitEmailAttachmentDoc" parameterType="com.qts.icam.model.common.Notification">
+		 <!-- <foreach item="attachment" collection="attachmentList"  open="" close="" separator=";"> -->
+			INSERT INTO email_attachment(
+	            rec_id, obj_id, updated_by, updated_on, 
+	            date_of_creation, email_attachment_code, email_attachment_name, 
+	            email_attachment_location, email_attachment_file_name,email_send,attachment_type)
+	    	VALUES (uuid_generate_v4(),
+					#{notificationObjectId}, 
+					(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+					extract(epoch FROM now()),
+					extract(epoch FROM now()), 
+					(select('EMAILATTCH-' ||(SELECT COALESCE((SELECT MAX(email_attachment_id) FROM email_attachment), 0 )+1))),
+					#{emailBodyTemplate},
+				    #{emailFilepath},
+				    
+					#{emailBodyTemplate},
+					(SELECT rec_id FROM email_send WHERE email_send_id = (SELECT MAX(email_send_id) FROM email_send WHERE is_active = true) AND is_active = true),
+					#{attachmentType});
+		<!-- </foreach> -->
+	</insert>	
+	
+	<insert id="submitEmailReceivedAttachmentDoc" parameterType="com.qts.icam.model.common.Notification">
+		 
+			INSERT INTO email_received_attachment(
+	            rec_id, obj_id, updated_by, updated_on, 
+	            date_of_creation, email_received_attachment_code, email_received_attachment_name, 
+	            email_received_attachment_location, email_received_attachment_file_name,email_received)
+	    	VALUES (uuid_generate_v4(),
+					#{notificationObjectId}, 
+					(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+					extract(epoch FROM now()),
+					extract(epoch FROM now()), 
+					(select('EMAILRECEIVEDATTCH-' ||(SELECT COALESCE((SELECT MAX(email_received_attachment_id) FROM email_received_attachment), 0 )+1))),
+					#{emailBodyTemplate},
+				    #{emailFilepath},
+				    
+					#{emailBodyTemplate},
+					(SELECT rec_id FROM email_received WHERE email_received_id = (SELECT MAX(email_received_id) FROM email_received WHERE is_active = true) AND is_active = true));
+		
+	</insert>	
+	
+	<insert id="updateMyEventsForMeetingInvitation" parameterType="com.qts.icam.model.common.Notification" >
+		INSERT INTO my_events(
+								my_events_usrid,
+								my_events_start_date, my_events_end_date,
+  								my_events_desc 
+	            					)
+	    VALUES ( 
+	    		#{updatedBy},
+		       #{meetingStartTime},
+		      #{meetingEndTime},
+		       #{notificationSubject}
+	    );
+	</insert>
+	
+	
+	<!-- Added By Naimisha 24102017 -->
+	<select id="getTaskListForATicket" parameterType="java.lang.String" resultType = "com.qts.icam.model.common.Task">
+		SELECT
+			ta.task_name as taskName,
+			td.task_details_code as taskCode ,
+			ts.task_status as status,
+			task_description as taskDesc,
+			r.user_id as userId,
+			level as objectId
+		FROM 
+			task_details td
+		JOIN
+			ticket t ON (td.ticket = t.rec_id AND t.is_active = true)
+		JOIN
+			task ta ON (td.task = ta.rec_id AND ta.is_active = true)
+		JOIN
+			task_status ts ON (td.task_status = ts.rec_id AND ts.is_active)
+		JOIN
+			resource r ON (td.actualowner_id = r.rec_id AND r.is_active =true)
+		WHERE
+			ticket_code = #{ticketCode}
+		AND
+			td.is_active = true;
+	</select>
+	
+	<select id="getTaskListForACategory" parameterType="java.lang.String" resultType = "com.qts.icam.model.common.Task">
+		SELECT
+			t.serial_id as taskId,
+			t.task_code as taskCode ,
+			t.task_name as taskName,
+			c.category_name as taskDesc
+		FROM
+			task t
+		JOIN
+			category_task_mapping ctm ON (ctm.task = t.rec_id AND ctm.is_active = true)
+		JOIN
+			category c ON (ctm.category = c.rec_id AND c.is_active = true)
+		WHERE
+			category_code = #{ticketServiceCode}
+		AND
+			t.is_active = true
+		ORDER BY taskId;
+	</select>
+	
+		<!-- Added by naimisha 25102017 -->
+
+	<!-- Modified  by naimisha 11102018 -->
+	
+	<insert id="insertIntoTaskDetailsForATicket" parameterType="com.qts.icam.model.ticket.Ticket">
+	
+		INSERT INTO task_details(
+						rec_id,obj_id,date_of_creation,
+						updated_by,updated_on,actualowner_id,
+						title,is_active,task_alocatted_by,task_description,
+						ticket,task_status,task_details_code,
+						category,level,task
+		)VALUES(
+			uuid_generate_v4(),
+			#{ticketObjectId},
+			(SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			(SELECT extract (epoch FROM now())),
+			(SELECT rec_id FROM resource WHERE user_id = #{affectedUser} AND is_active = true),
+			#{ticketService.ticketServiceName},
+			false,
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			#{description},
+			(SELECT rec_id FROM ticket WHERE ticket_code = #{ticketCode} AND is_active = true),
+			(SELECT ts.rec_id FROM task_status ts JOIN ticket_status t ON (ts.ticket_status = t.rec_id AND t.is_active = true) WHERE ticket_status_code=#{status} AND ts.type = 'OPEN' AND ts.is_active = true AND task_type = #{approval}),
+			(SELECT('TSK-' || (SELECT COALESCE((SELECT MAX(task_details_id) FROM task_details),0)+1))),
+			(SELECT rec_id FROM category WHERE category_code = #{ticketService.ticketServiceCode} AND is_active = true),
+			#{ticketDesc},
+			(SELECT rec_id FROM task WHERE task_code = #{taskStatus} AND is_active = true)
+		);
+	</insert>
+	
+	<resultMap id="getTaskDetailsRM" type="com.qts.icam.model.ticket.Ticket">
+		<id property="ticketCode" column="task_details_code" jdbcType="INTEGER" />
+		<result property="reportedBy" column="createdById" jdbcType="VARCHAR" />
+		<result property="ticketObjectId" column="taskName"	jdbcType="VARCHAR" />
+		<result property="ticketSummary" column="ticket_summary" jdbcType="VARCHAR" />
+		<result property="ticketDesc" column="taskDesc" jdbcType="VARCHAR" />
+		<result property="status" column="status" jdbcType="VARCHAR" />
+		<result property="message" column="ticket_code" jdbcType="VARCHAR" />
+		<result property="comment" column="category_code" jdbcType="VARCHAR" />
+		<result property="key" column="key" jdbcType="VARCHAR" />
+		<result property="value" column="value" jdbcType="VARCHAR" />
+		<result property="isLinked" column="is_linked" jdbcType="BOOLEAN" />
+		<result property="isFinance" column="is_finance" jdbcType="BOOLEAN" />
+		<result property="note" column="note" jdbcType="VARCHAR" />
+		<result property="department" column="department_code" jdbcType="VARCHAR" />
+		<result property="functionalityName" column="functionality_name" jdbcType="VARCHAR" />
+		<collection property="commentList" ofType="com.qts.icam.model.ticket.TicketComment">
+			<id property="comment" column="ticket_comment" jdbcType="VARCHAR" />
+			<result property="updatedBy" column="commented_by" jdbcType="VARCHAR" />
+			<result property="ticketCommentDate" column="date_of_comment_ticket" jdbcType="INTEGER" />
+		</collection>
+		
+		<collection property="taskCommentList" ofType="com.qts.icam.model.ticket.TaskComment">
+			<id property="comment" column="task_comment" jdbcType="VARCHAR" />
+			<result property="updatedBy" column="task_commented_by" jdbcType="VARCHAR" />
+			<result property="taskCommentDate" column="date_of_comment_task" jdbcType="INTEGER" />
+		</collection>
+		
+		<collection property="serviceTypeList" ofType="com.qts.icam.model.ticket.ServiceType">
+			<id property="ticketServiceCode" column="key" jdbcType="VARCHAR" />
+			<result property="ticketServiceName" column="value" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	
+	<select id="getTaskDetailsOfATask" parameterType="com.qts.icam.model.common.Task" resultMap = "getTaskDetailsRM">
+		SELECT 
+				td.task_details_id as taskId,
+				c.category_name as taskName,
+				c.category_code ,
+				to_char((SELECT to_timestamp(td.date_of_creation)), 'DD/MM/YYYY') as activationTime ,
+				td.task_description as taskDesc,
+				ts.task_status_code as status,
+				COALESCE(r1.first_name || ' ' || COALESCE(r1.middle_name,' ') || ' ' || r1.last_name) as createdById,
+				COALESCE(r2.first_name || ' ' || COALESCE(r2.middle_name,' ') || ' ' || r2.last_name) as taskOwnerName,
+				td.task_details_code,
+				tic.ticket_comment,
+				tc.task_comment,
+				t.ticket_code,
+				r3.user_id as commented_by,
+				(SELECT to_char((SELECT	to_timestamp(tic.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM'))as date_of_comment_ticket,
+				r4.user_id as task_commented_by,
+				(SELECT to_char((SELECT	to_timestamp(tc.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM'))as date_of_comment_task,
+				key,
+				value,
+				is_linked,
+				is_finance,
+				note,
+				functionality_name,
+				department_code
+		FROM
+				task_details td
+		JOIN
+				category c ON (td.category = c.rec_id AND c.is_active = true)
+		JOIN
+				ticket t ON (t.rec_id = td.ticket AND t.is_active = true)
+		JOIN 
+				task_status ts On(td.task_status = ts.rec_id AND ts.is_active = true)
+		JOIN 
+				resource r1 ON(r1.rec_id = td.task_alocatted_by AND r1.is_active = true)
+		JOIN
+				resource r2 ON(r2.rec_id = td.actualowner_id AND r2.is_active = true) 
+		LEFT JOIN
+				task_comment tc ON (td.rec_id = tc.task_details AND tc.is_active = true)
+		LEFT JOIN
+				ticket_comment tic ON (t.rec_id = tic.ticket AND tic.is_active = true)
+		LEFT JOIN 
+				resource r3 ON(r3.rec_id = tic.updated_by AND r3.is_active = true)
+		LEFT JOIN 
+				resource r4 ON(r4.rec_id = tc.updated_by AND r4.is_active = true)
+		LEFT JOIN 
+				ticket_key_value_mapping tkvm ON (tkvm.ticket = t.rec_id AND tkvm.is_active = true)
+		JOIN
+				task ta ON (td.task = ta.rec_id  AND ta.is_active = true)
+		LEFT JOIN
+				module_functionality mf ON (ta.functionality = mf.rec_id AND mf.is_active = true)
+		JOIN 		
+				department d ON (t.department = d.rec_id AND d.is_active =true)
+		WHERE
+				r2.user_id = #{updatedBy}
+		AND
+			task_details_code = #{taskCode}
+		AND
+			td.is_active = true;
+	</select>
+	
+	 <select id="selectTaskTypeForATask" parameterType="com.qts.icam.model.common.Task" resultType = "java.lang.String">
+		
+		SELECT
+			approval_required 
+		FROM
+			task_details td
+		JOIN
+			task t ON (td.task = t.rec_id AND t.is_active = true)
+		WHERE
+			task_details_code = #{taskCode}
+		AND
+			td.is_active = true;
+	
+	</select>
+	
+	<select id="getAllTaskStatusListAccordingToTaskType" parameterType="java.lang.String" resultType = "com.qts.icam.model.ticket.TicketStatus">
+		SELECT
+			task_status_code as ticketStatusCode,
+			task_status as ticketStatusName
+		FROM
+			task_status
+		WHERE
+			task_type = #{taskTypeValue}
+		AND
+			is_active = true;
+	</select> 
+	
+	<select id = "getLatestInsertedTicket" resultType = "com.qts.icam.model.ticket.Ticket">
+		SELECT
+			ticket_code as ticketCode
+		FROM
+			ticket
+		WHERE
+			ticket_id = (SELECT MAX(ticket_id) FROM ticket WHERE is_active = true);
+	</select>
+	
+	 <select id="getTaskApprovalRequiredOrNot" parameterType="java.lang.String" resultType = "java.lang.String">
+		
+		SELECT
+			approval_required 
+		FROM
+			task  
+		WHERE
+			task_code = #{taskCode}
+		AND
+			is_active = true;
+	
+	</select>
+	
+	<select id="getAllLevelListOfTasksForATicket" parameterType="java.lang.String" resultType = "java.lang.String">
+		
+		SELECT
+			level
+		FROM
+			task_details td
+		JOIN
+			ticket t ON (td.ticket = t.rec_id AND t.is_active = true)
+		WHERE
+			t.ticket_code = #{ticketCode}
+		AND
+			td.is_active = false;
+	
+	</select>
+	
+	<update id = "updateTaskDetailsForMinimumLevel" parameterType = "com.qts.icam.model.ticket.Ticket">
+	
+		UPDATE
+			task_details
+		SET
+			is_active = true
+		WHERE
+			level = #{ticketRecId}
+		AND
+			ticket = (SELECT rec_id FROM ticket WHERE ticket_code = #{ticketCode} AND is_active = true)
+		AND
+			is_active = false;
+			
+	</update>
+	
+	<update id="updateTaskDetails" parameterType="com.qts.icam.model.ticket.Ticket">
+		UPDATE task_details SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+			updated_on = (SELECT extract(epoch FROM now())),
+			task_status = (SELECT rec_id FROM task_status WHERE task_status_code = #{status} AND task_type = #{approval} AND is_active = true)
+		WHERE
+			task_details_code = #{ticketCode}
+		AND
+			is_active = true;
+	</update>
+	
+	<update id = "updateTicketStatusAgainstTaskStatus" parameterType = "com.qts.icam.model.ticket.Ticket">
+		UPDATE ticket SET
+			ticket_status = (SELECT ts.rec_id FROM ticket_status ts JOIN task_status tas ON (tas.ticket_status = ts.rec_id AND tas.is_active = true)WHERE tas.task_status_code = #{status} AND task_type = #{approval} AND ts.is_active = true)
+			<if test="type == 'CLOSED'">
+				,ticket_close_date=(SELECT extract(epoch FROM now()))
+			</if>
+			<if test="type == 'COMPLETED'">
+				,ticket_close_date=(SELECT extract(epoch FROM now()))
+			</if>
+		WHERE
+			ticket_code = #{ticketRecId}
+		AND
+			is_active = true;
+	
+	</update>
+	
+	<select id="getMyGridDataList" resultType="com.qts.icam.model.backoffice.TimeTableGridData" parameterType="com.qts.icam.model.backoffice.Term">
+		SELECT 
+       		cell_id as gridId,
+       		cell_data as gridData
+       	FROM 
+			school_time_table_grid
+		WHERE
+			semester = #{termName}
+		AND
+			teacher = (SELECT r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')   FROM resource r WHERE r.user_id = #{updatedBy} AND is_active = true)
+		AND
+			cell_data NOT IN (SELECT r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')   FROM resource r WHERE r.user_id = #{updatedBy} AND is_active = true);
+	
+	</select>
+	
+	<select id="getTimeTableGridDataForStudent" resultType="com.qts.icam.model.backoffice.TimeTableGridData" parameterType="com.qts.icam.model.backoffice.Term">
+	<!-- 	SELECT 
+       		cell_id as gridId,
+       		cell_data as gridData
+       	FROM 
+			school_time_table_grid
+		WHERE
+			semester = #{termName}
+		AND
+			program = #{termDesc}
+		AND
+			cell_data NOT IN(SELECT r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  FROM resource r WHERE is_active = true); -->
+	
+		SELECT 
+       		cell_id as gridId,
+       		cell_data as gridData
+       	FROM 
+			school_time_table_grid
+		WHERE
+			semester = #{termName}
+		
+		AND
+			cell_data IN (SELECT subject_name from subject s 
+					JOIN course_subject_mapping csm ON (csm.subject = s.rec_id  AND csm.is_active = true)
+					JOIN course c ON (csm.course = c.rec_id AND c.is_active = true)
+					WHERE
+						course_name =  #{termDesc}
+					AND
+						s.is_active = true)
+	</select>
+	
+	
+	<!-- Added By Naimisha 06112017 -->
+	
+	
+	<select id="getpresentLeveOfTheTask" parameterType="java.lang.String" resultType = "java.lang.String">
+		
+		SELECT
+			level
+		FROM
+			task_details 
+		
+		WHERE
+			task_details_code = #{taskCode}
+		AND
+			is_active = true;
+	
+	
+	</select>
+	
+	<select id="getListOfTaskWithPresentLevel" parameterType="com.qts.icam.model.ticket.Ticket" resultType = "com.qts.icam.model.ticket.Ticket">
+		
+		SELECT
+			td.task_details_code
+		FROM
+			task_details td
+		JOIN
+			ticket t ON (td.ticket = t.rec_id AND t.is_active = true)
+		JOIN
+			task_status ts ON (td.task_status = ts.rec_id AND ts.is_active = true)
+		WHERE
+			t.ticket_code = #{ticketCode}
+		AND
+			level = #{moduleName}
+		AND
+			td.is_active = true
+		AND
+			ts.task_status NOT IN ('CLOSED','APPROVE');
+	
+	
+	</select>
+	
+	<select id="getTicketDetailsForEditNew" resultMap="getTicketMasterDetailsRM" parameterType="com.qts.icam.model.ticket.Ticket">
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY'))as ticket_open_date,
+			r1.user_id as reportedBy,
+			t.ticket_summary,
+			t.ticket_desc,
+			tss.ticket_status_code,
+			c.category_name as ticket_service_name,
+			c.category_code as ticket_service_code,
+			tc.ticket_comment,
+			r2.user_id as commented_by,
+			(SELECT to_char((SELECT	to_timestamp(tc.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM'))as date_of_comment,
+			t.ticket_code,
+			key,
+			value
+			
+		FROM
+			ticket t			
+			JOIN category c ON (t.category = c.rec_id AND c.is_active = true)
+			JOIN resource r1 ON (r1.rec_id = t.reported_by AND r1.is_active = true)
+			JOIN ticket_status tss ON (tss.rec_id = t.ticket_status AND tss.is_active = true)
+			LEFT JOIN ticket_comment tc ON (t.rec_id=tc.ticket AND tc.is_active = true)
+			LEFT JOIN resource r2 ON (r2.rec_id = tc.updated_by AND r2.is_active = true)
+			JOIN resource r4 ON(r4.rec_id = t.ticket_recepient AND r4.is_active = true)
+			LEFT JOIN ticket_key_value_mapping tkvm ON (tkvm.ticket = t.rec_id AND tkvm.is_active = true)
+		WHERE
+			t.ticket_code = #{ticketCode}
+		AND
+			r4.user_id =  #{updatedBy}
+		AND
+			t.is_active = true
+		
+		ORDER BY 
+			tc.date_of_creation;
+	</select>
+	
+	
+	<!-- Added By Naimisha 21112017 -->
+	
+	<select id="getListOfTaskForATicket" parameterType="java.lang.String" resultType = "com.qts.icam.model.common.Task">
+		SELECT
+			ta.task_name as taskName,
+			td.task_details_code as taskCode ,
+			ts.task_status as status,
+			task_description as taskDesc,
+			r.user_id as userId,
+			level as objectId
+		FROM 
+			task_details td
+		JOIN
+			ticket t ON (td.ticket = t.rec_id AND t.is_active = true)
+		JOIN
+			task ta ON (td.task = ta.rec_id AND ta.is_active = true)
+		JOIN
+			task_status ts ON (td.task_status = ts.rec_id AND ts.is_active)
+		JOIN
+			resource r ON (td.actualowner_id = r.rec_id AND r.is_active =true)
+		WHERE
+			ticket_code = #{ticketCode}
+		ORDER BY objectId<!-- 
+		AND
+			td.is_active = true -->;
+	</select>
+	
+	<!-- Added By NAimisha  10012018 -->
+	<select id="getTicketDetailsForMyService" resultMap="getTicketDetailsRM" parameterType="com.qts.icam.model.ticket.Ticket">
+		
+			
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY'))as ticket_open_date,
+			r1.user_id as reportedBy,
+			t.ticket_summary,
+			t.ticket_desc,
+			tss.ticket_status_code,
+			c.category_name as ticket_service_name,
+			c.category_code as ticket_service_code,
+			tc.ticket_comment,
+			r2.user_id as commented_by,
+			(SELECT to_char((SELECT	to_timestamp(tc.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM'))as date_of_comment,
+			t.ticket_code ,
+			tac.task_comment,
+			r3.user_id as task_commented_by,
+			(SELECT to_char((SELECT	to_timestamp(tac.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM'))as date_of_comment_task
+			
+		FROM
+			ticket t			
+			JOIN category c ON (t.category = c.rec_id AND c.is_active = true)
+			JOIN resource r1 ON (r1.rec_id = t.reported_by AND r1.is_active = true)
+			JOIN ticket_status tss ON (tss.rec_id = t.ticket_status AND tss.is_active = true)
+			LEFT JOIN ticket_comment tc ON (t.rec_id=tc.ticket AND tc.is_active = true)
+			LEFT JOIN resource r2 ON (r2.rec_id = tc.updated_by AND r2.is_active = true)
+			LEFT JOIN  task_details td ON (t.rec_id = td.ticket AND t.is_active = true)
+			LEFT JOIN task_comment tac ON (td.rec_id = tac.task_details AND tac.is_active = true)
+			LEFT JOIN resource r3 ON(r3.rec_id = tac.updated_by AND r3.is_active = true)
+			
+		WHERE
+			t.ticket_code = #{ticketCode}
+		ORDER BY 
+			tc.date_of_creation;
+	</select>
+	
+	
+	<!-- Added By Naimisha 29012018 -->
+	
+	<select id="selectMailTemplateDetailsForACategory" parameterType="com.qts.icam.model.common.EmailDetails" resultType = "com.qts.icam.model.common.EmailDetails">
+			SELECT
+				category_code as emailDetailsCode,
+				template_subject as emailDetailsSubject,
+				template_body as emailDetailsDesc,
+				template_type as status
+			FROM	
+				category_template_user_mapping_sla ctu
+			JOIN
+				event_template  et ON (ctu.event_template = et.rec_id AND et.is_active = true)
+			JOIN
+				category c ON (ctu.category = c.rec_id AND c.is_active = true)
+			JOIN
+				ticket_status ts ON(ctu.ticket_status = ts.rec_id AND ts.is_active = true) 
+			WHERE
+				c.category_code = #{emailDetailsCode}
+			AND
+				ticket_status_code = #{emailDetailsName}
+			AND
+				ctu.is_active = true;
+	</select>
+	
+	<insert id="insertIntoNotificationForTask" parameterType="com.qts.icam.model.ticket.Ticket">
+		INSERT INTO notification(
+						            rec_id,
+						            obj_id, 
+						            updated_by, 
+						            updated_on, 
+						            date_of_creation, 
+						            notification_code, 
+						            notification_desc, 
+						            notification_from, 
+						            notification_subject, 
+						            notification_to)
+    VALUES
+						    	 (uuid_generate_v4(), 
+							    #{ticketObjectId}, 
+							    (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+							    (SELECT extract(epoch FROM now())),
+							    (SELECT extract(epoch FROM now())),
+							    (select('NOTI' ||(select COALESCE((SELECT MAX(notification_id) FROM notification), 0 )+1))),
+						        #{comment},
+						        (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+						        (SELECT task_name FROM task WHERE task_code = #{ticketService.ticketServiceName} AND is_active = true), 
+						        (SELECT rec_id FROM resource WHERE user_id=#{moduleName} AND is_active = true));
+	</insert>
+	
+	<select id="selectMailTemplateDetailsForATask" parameterType="com.qts.icam.model.common.Task" resultType = "com.qts.icam.model.common.EmailDetails">
+		SELECT
+			template_subject as emailDetailsSubject,
+			template_body as emailDetailsDesc,
+			task_name as emailDetailsCode,
+			template_type as status
+		FROM
+			task_template_mapping ttm
+		JOIN
+			event_template et ON (et.rec_id = ttm.event_template AND et.is_active = true)
+		JOIN
+			task t ON (t.rec_id = ttm.task AND t.is_active = true)
+		JOIN
+			task_status ts ON (ttm.task_status = ts.rec_id AND ts.is_active = true)
+		WHERE
+			ts.type = #{taskDesc}
+		AND
+			t.task_code = #{taskCode}
+		AND
+			ttm.is_active = true;
+	</select>
+	
+	<!-- Added by naimisha 22022018 -->
+	<insert id="insertIntoTicketStudentLeave" parameterType="com.qts.icam.model.ticket.Ticket">
+		INSERT INTO ticket_student_leave(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            ticket, standard, section, roll_number,from_date,to_date)
+    VALUES (	
+	    	uuid_generate_v4(),
+			#{ticketObjectId},
+			(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM ticket WHERE ticket_id = (SELECT MAX(ticket_id) FROM ticket WHERE is_active = true)), 
+			#{standard}, 
+			#{section},
+			#{rollNumber},
+			#{fromDate},
+			#{toDate});
+	</insert>
+	
+	<select id="getStudentLeaveDetailsForATicket" parameterType="java.lang.String" resultType = "com.qts.icam.model.ticket.Ticket">
+		SELECT
+			standard as standard,
+			section as section,
+			roll_number as rollNumber,
+			from_date as fromDate,
+			to_date as toDate
+		FROM
+			ticket_student_leave tsl
+		JOIN
+			ticket t ON (tsl.ticket = t.rec_id AND t.is_active)
+		WHERE 
+			tsl.is_active = true
+		AND
+			ticket_code = #{ticketCodeValue};
+
+	</select>
+	
+	<select id="selectMaxAttendanceIdFromAttendanceDetails" resultType="java.lang.Integer" >
+		
+		
+		SELECT 
+			attendance_details_id
+		FROM
+			attendance_details
+		WHERE
+			attendance_details_id = (SELECT MAX(attendance_details_id) FROM attendance_details WHERE is_active = true)
+		AND 
+			is_active = true
+	</select>
+	
+	<select id = "selectAbsentDaysListForAStudent" parameterType = "com.qts.icam.model.ticket.Ticket" resultType = "com.qts.icam.model.common.StudentAttendance">
+		SELECT 
+			date_of_absent as absentDay
+		FROM
+			attendance_details
+		WHERE
+			attendance_details_id > #{ticketId}
+		<!-- AND
+			resource = (SELECT rec_id FROM resource WHERE user_id = #{rollNumber} AND is_active = true) -->
+		AND 
+			is_active = true
+	</select>
+	
+	<select id="selectTaskCodeForATicketOfParticularLevel" parameterType="com.qts.icam.model.ticket.Ticket" resultType="com.qts.icam.model.ticket.Ticket">
+		SELECT 
+			task_code as ticketCode,
+			r.user_id as affectedUser
+		FROM
+			task ta 
+		JOIN
+			task_details td ON (td.task = ta.rec_id AND td.is_active = true)
+		JOIN
+			ticket t ON (td.ticket = t.rec_id AND t.is_active = true)
+		JOIN
+			resource r ON (td.actualowner_id = r.rec_id AND r.is_active = true)
+		WHERE
+			t.is_active = true
+		AND
+			t.ticket_code = #{ticketCode}
+		AND
+			td.level = #{ticketRecId}
+		AND
+			ta.is_active = true;
+	</select>
+	
+	<select id="getAllLevelList" resultType = "java.lang.String">
+		SELECT
+			ticketing_level_code
+		FROM
+			ticketing_level
+		ORDER BY 
+			ticketing_level_id;
+	
+	</select>
+	
+	 <resultMap id="getCommodityPurchaseOrderDetailsForATicketRM" type="com.qts.icam.model.inventory.CommodityPurchaseOrder">
+		<id property="purchaseOrderCode" column="commodity_order_code" jdbcType="VARCHAR" />
+		<result property="purchaseOrderOpenDate" column="purchaseOrderOpenDate"	jdbcType="VARCHAR" />
+		<result property="netTotal" column="totalamount" jdbcType="DOUBLE" />
+		<result property="vendorCode" column="vendor_code" jdbcType="VARCHAR" />
+		<result property="vendorName" column="vendor_name"	jdbcType="VARCHAR" />
+		<collection property="commodityPurchaseOrderDetailsList" ofType="com.qts.icam.model.inventory.CommodityPurchaseOrderDetails">
+			<result property="commodity" column="commodity_name" jdbcType="VARCHAR" />
+			<result property="qtyOrdered" column="qty_ordered" jdbcType="DOUBLE" />
+			<result property="rate" column="rate" jdbcType="DOUBLE" />
+			<result property="amount" column="amount" jdbcType="DOUBLE" />
+		</collection>
+	</resultMap>
+	
+	<select id="getCommodityPurchaseOrderDetailsForATicket" parameterType="java.lang.String" resultMap="getCommodityPurchaseOrderDetailsForATicketRM">
+		SELECT
+			co.commodity_order_code,
+			to_char((SELECT to_timestamp(co.commodity_order_open_date)), 'DD/MM/YYYY') as purchaseOrderOpenDate,
+			co.totalamount,
+			co.amountstatus ,
+			v.vendor_code,
+			v.vendor_name,
+			c.commodity_name,
+			qty_ordered,
+			rate,
+			amount 
+		FROM
+			commodity_order co
+		JOIN commodity_order_details cod ON(co.rec_id = cod.commodity_order AND cod.is_active = true)
+		JOIN commodity c ON(c.rec_id = cod.commodity AND c.is_active = true)
+		JOIN vendor v ON(co.vendor = v.rec_id AND v.is_active=true)
+		JOIN ticket t ON(co.ticket = t.rec_id AND t.is_active = true)
+		WHERE
+			co.is_active=true
+		AND
+			orderstatus='OPEN'
+		AND
+			ticket_code = #{ticketCodeValue};
+	</select>
+	
+	<select id="getUserDetailsAssociatedWithATicket" parameterType="java.lang.String" resultType="com.qts.icam.model.ticket.Ticket">
+			SELECT
+				r1.user_id as reportedBy,
+				r1.first_name || ' ' || COALESCE(r1.middle_name,' ') || ' ' || COALESCE(r1.last_name,'  ')  as userName,
+				r2.user_id as affectedUser,
+				r2.first_name || ' ' || COALESCE(r2.middle_name,' ') || ' ' || COALESCE(r2.last_name,'  ')  as approval
+			FROM
+				ticket t 
+			JOIN
+				resource r1 ON (t.reported_by = r1.rec_id AND r1.is_active = true)
+			JOIN
+				resource r2 ON (t.ticket_recepient = r2.rec_id AND r2.is_active = true)
+			WHERE
+				t.ticket_code = #{ticketCode}
+			AND
+				t.is_active = true
+	</select>
+	
+	<!-- anup.roy // for fetching list of status -->
+	
+	<select id="getAllStatusOfItems" resultType="com.qts.icam.model.common.StatusOfItem">
+		SELECT
+			status_of_item_code as statusOfItemCode,
+			status_of_item_name as statusOfItemName,
+			status_of_item_name as statusOfItemDesc
+		FROM
+			status_of_item
+		WHERE
+			is_active = true		
+	</select>
+	
+	<!-- Added By Naimisha 05042018 -->
+	
+	<insert id="insertIntoTicketKeyMapping" parameterType="com.qts.icam.model.ticket.TaskComment">
+	        	INSERT INTO ticket_key_value_mapping(
+			             rec_id, obj_id, updated_by, updated_on, 
+			            date_of_creation, ticket, key,value)
+			    VALUES (uuid_generate_v4(), 
+			            #{taskCommentObjectId}, 
+					    (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+					    extract(epoch FROM now()),
+					    extract(epoch FROM now()), 
+			            (SELECT rec_id FROM ticket WHERE ticket_id = (SELECT MAX(ticket_id) FROM ticket WHERE is_active = true)),
+			            #{taskCommentCode},
+			            #{taskCommentDesc});
+
+      </insert>	
+
+	<!-- for submitting status of items -->
+	
+	<insert id="submitStatusOfItem" parameterType="com.qts.icam.model.common.StatusOfItem">
+		INSERT INTO
+			status_of_item
+				(
+					rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            		status_of_item_code, status_of_item_name, status_of_item_desc
+				)
+		VALUES
+				(
+					uuid_generate_v4(),
+					#{objectId},
+					(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+					(SELECT extract(epoch FROM now())),
+					(SELECT extract(epoch FROM now())),
+					(SELECT 'STATUSOFITEM-' ||COALESCE((SELECT MAX(serial_id) FROM status_of_item), 0 )+1),
+					#{statusOfItemName},
+					#{statusOfItemDesc}
+				);
+	</insert>
+
+	<!-- Added By Naimisha 09042018 -->
+	
+	<insert id="insertTicketStatus" parameterType="com.qts.icam.model.ticket.Ticket">
+		 INSERT INTO ticket_status(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            ticket_status_code, ticket_status_name, ticket_status_desc, 
+             type)
+    VALUES (uuid_generate_v4(), 
+            #{ticketObjectId}, 
+		    (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+		    extract(epoch FROM now()),
+		    extract(epoch FROM now()), 
+           (SELECT 'TKETSTATUS-' ||COALESCE((SELECT MAX(ticket_status_id) FROM ticket_status), 0 )+1),
+           UPPER(#{status}),
+           UPPER(#{status}),
+           #{approval});
+
+      </insert>
+	
+	<!-- added by sourav.bhadra on 09-04-2018 -->
+	<select id="getDepartmentForAUser" resultType="com.qts.icam.model.common.Department" parameterType="java.lang.String">
+			SELECT 
+				department_code as departmentCode,
+				department_name as departmentName
+			FROM
+				department d
+			JOIN
+				employee_details ed ON (ed.department = d.rec_id AND ed.is_active = true)
+			JOIN
+				resource r ON (ed.resource = r.rec_id AND r.is_active = true)
+			WHERE
+				r.user_id = #{userId}
+			AND
+				d.is_active = true	
+	</select>
+	
+	 <select id="getTicketStatusForAType" resultType="com.qts.icam.model.ticket.TicketStatus" parameterType="java.lang.String">
+			SELECT
+				ticket_status_code as ticketStatusCode,
+				ticket_status_name as ticketStatusName
+			FROM
+				ticket_status
+			WHERE
+				type = 'OPEN'
+			AND
+				is_active = true
+	</select>
+	
+	<!-- added by sourav.bhadra on 10-04-2018 -->
+	<select id="selectParentDepartmentBudgetDetails" parameterType="com.qts.icam.model.common.Budget" resultType="com.qts.icam.model.common.Budget">
+		SELECT 
+			actual_income as actualIncome,
+			balance as expectedIncome,
+			reserve_balance as reserveFund
+		FROM 
+			budget
+		WHERE 
+			department = (SELECT rec_id FROM department WHERE department_name ilike #{department} AND is_active = true)
+		AND 
+			financial_year = (SELECT rec_id FROM financial_year WHERE financial_year_name ilike #{academicYear} AND is_active = true)
+		AND 
+			is_active = true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 10-04-2018 -->
+	<select id="selectSubDeptsForBudgetAllocation" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Department">
+		SELECT 
+			department_code as departmentCode, 
+			department_name as departmentName, 
+			obj_id as objectId
+		FROM 
+			department
+		WHERE 
+			parent_department = (SELECT rec_id FROM department WHERE department_code = #{department} AND is_active = true)
+		AND 
+			is_active = true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 11-04-2018 -->
+	<update id="updateParentDepartmentBudgetDetails" parameterType="com.qts.icam.model.common.Budget">
+		UPDATE budget
+		SET 
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			updated_on = (SELECT extract(epoch FROM now())),
+			balance = #{expectedIncome}
+		WHERE 
+			department = (SELECT rec_id FROM department WHERE department_name ilike #{department} AND is_active = true)
+		AND 
+			financial_year = (SELECT rec_id FROM financial_year WHERE financial_year_name ilike #{academicYear} AND is_active = true)
+		AND 
+			is_active = true;
+	</update>
+	
+	<!-- added by sourav.bhadra on 11-04-2018 -->
+	<update id="updateEstimatedReserveFundForADepartment" parameterType="com.qts.icam.model.common.Budget">
+		UPDATE budget
+		SET 
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			updated_on = (SELECT extract(epoch FROM now())),
+			balance = #{actualIncome},
+			reserve_balance = #{reserveFund}
+		WHERE 
+			department = (SELECT rec_id FROM department WHERE department_name ilike #{department} AND is_active = true)
+		AND 
+			financial_year = (SELECT rec_id FROM financial_year WHERE financial_year_name ilike #{academicYear} AND is_active = true)
+		AND 
+			is_active = true;
+	</update>
+
+	<select id="getDetailsOfTaskAgainstATaskCode" resultType="com.qts.icam.model.common.Task" parameterType="java.lang.String">
+		SELECT
+			task_assignee as taskType,
+			department_code as "department.departmentCode",
+			department_name as "department.departmentName",
+			designation_code as "designation.designationCode",
+			designation_name as "designation.designationName",
+			designation_level_code as "designationLevel.designationLevelCode",
+			designation_level_name as "designationLevel.designationLevelName"
+		FROM
+			task t 
+		LEFT JOIN department d ON (t.department = d.rec_id AND d.is_active = true)
+		LEFT JOIN designation de ON (t.designation = de.rec_id AND de.is_active = true)
+		LEFT JOIN designation_level dl ON (t.designation_level = dl.rec_id AND dl.is_active = true)
+		WHERE
+			task_code = #{taskCode}
+		AND
+			t.is_active = true;
+	</select>
+	
+	<select id="selectResourcesForDepartmentANdDesignationANDDesignationLevel" resultType="com.qts.icam.model.common.Resource" parameterType="com.qts.icam.model.erp.Employee">
+		SELECT
+			r.user_id as userId,
+			r.first_name || COALESCE(r.middle_name,'') || COALESCE(r.last_name,'  ')  as firstName
+		FROM
+			resource r 
+		JOIN	employee_details ed ON (ed.resource = r.rec_id AND ed.is_active = true)
+		JOIN	department d ON (ed.department = d.rec_id AND d.is_active = true)
+		JOIN	designation_level_mapping dlm ON (ed.designation_level_mapping = dlm.rec_id AND dlm.is_active = true)
+		JOIN 	designation de ON (dlm.designation = de.rec_id AND de.is_active = true)
+		JOIN	designation_level dl ON (dlm.designation_level = dl.rec_id AND dl.is_active = true) 
+		WHERE
+			d.department_code = #{department.departmentCode}
+		AND
+			de.designation_code = #{designation.designationCode}
+		AND
+			dl.designation_level_code = #{designationLevel.designationLevelCode} 
+		AND
+			r.is_active = true
+	
+	</select>
+	
+	<select id="selectReportingManagerForAUser" resultType="com.qts.icam.model.common.Resource" parameterType="java.lang.String">
+			SELECT
+				r1.user_id as userId,
+				COALESCE(r1.first_name,'  ') || COALESCE(r1.middle_name,'  ') || COALESCE(r1.last_name,'  ')  as firstName
+				
+			FROM
+				resource r 
+			JOIN
+				employee_details ed ON (ed.resource = r.rec_id AND ed.is_active = true)
+			LEFT JOIN
+				resource r1 ON (ed.reporting_manager = r1.rec_id AND r1.is_active = true)
+			WHERE
+				r.user_id = #{userId}
+			AND
+				r.is_active = true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 17-04-2018 -->
+	<update id="updateParentDeptRemainingBalance" parameterType="com.qts.icam.model.common.Budget">
+		UPDATE budget
+		SET 
+			updated_by = (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			balance = (balance-(#{actualIncome}))
+		WHERE 
+			financial_year = (SELECT rec_id FROM financial_year WHERE financial_year_name=#{academicYear} AND is_active=true)
+		AND
+			department=(select rec_id from department where department_code=#{budgetDesc} and is_active=true)
+		AND
+			is_active = true;
+	</update>
+	
+	<!-- added by sourav.bhadra on 17-04-2018 -->
+	<update id="updateBudgetStatusInDepartmentTable" parameterType="com.qts.icam.model.common.Budget">
+		UPDATE 
+			department
+		SET 
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active=true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			budget_status = true
+		WHERE 
+			department_code ilike #{department}
+		AND
+			is_active = true;
+	</update>
+
+	<select id="getTypeForATaskStatus" resultType="java.lang.String" parameterType="java.lang.String">
+			
+		SELECT
+			type
+		FROM
+			task_status
+		WHERE
+			task_status_code = #{taskStatus}
+		AND
+			is_active = true;
+	</select>
+	
+	<select id="selectTaskStatusAgainstType" resultType="java.lang.String" parameterType="com.qts.icam.model.ticket.Ticket">
+			
+		SELECT
+			task_status_code
+		FROM
+			task_status
+		WHERE
+			type = #{type}
+		AND
+			task_type = #{approval}
+		AND
+			is_active = true;
+	</select>
+	
+	<select id="selectTableNameAgainstTicketNo" resultType="java.lang.String" parameterType="com.qts.icam.model.ticket.Ticket">
+		SELECT 
+			table_name 
+		FROM ticket_task_tablename_mapping  t
+		WHERE ticket = (SELECT rec_id FROM ticket WHERE ticket_code = #{ticketRecId} AND is_active = true)
+		AND t.is_active = true;
+	</select>
+	
+	<update id="updateTablesRelatedToATicketAndtask" parameterType="com.qts.icam.model.ticket.Ticket" statementType="CALLABLE">
+		
+			select table_update_for_rejection_of_ticket_and_task(
+						#{ticketRecId, mode=IN, jdbcType=VARCHAR},
+						#{updatedBy, mode=IN, jdbcType=VARCHAR}
+			);
+	</update>
+	
+	 <select id="getTicketStatusListForAType" resultType="com.qts.icam.model.ticket.TicketStatus" parameterType="java.lang.String">
+			SELECT
+				ticket_status_code as ticketStatusCode,
+				ticket_status_name as ticketStatusName
+			FROM
+				ticket_status
+			WHERE
+				type = #{type}
+			AND
+				is_active = true
+	</select>
+	
+	<select id="selectTicketStatusTypeAgainstStatus" resultType="java.lang.String" parameterType="java.lang.String">
+			SELECT
+				type
+			FROM
+				ticket_status
+			WHERE
+				ticket_status_code = #{type}
+			AND
+				is_active = true
+	</select>
+	
+	<select id="selectTaskStatusAgainstTicketStatus" resultType="com.qts.icam.model.ticket.TicketStatus" parameterType="java.lang.String">
+			SELECT 
+				task_status_code as ticketStatusCode,
+				task_status as ticketStatusName
+			FROM
+				task_status tas
+			JOIN
+				ticket_status tis ON (tas.ticket_status = tis.rec_id AND tis.is_active =  true)
+			WHERE
+				ticket_status_code = #{ticketStatus}
+			AND
+				tas.is_active = true;
+	</select>
+	
+	<update id="updateTaskDetailsStatus" parameterType="com.qts.icam.model.ticket.Ticket">
+		UPDATE task_details SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+			updated_on = (SELECT extract(epoch FROM now())),
+			task_status = (SELECT rec_id FROM task_status WHERE task_status_code = #{taskStatus} AND is_active = true)
+		WHERE
+			ticket = (SELECT rec_id FROM ticket WHERE ticket_code = #{ticketRecId} AND is_active = true)
+		AND
+			is_active = true;
+	</update>
+	
+	<select id="selectMailTemplateDetailsForATicket" parameterType="com.qts.icam.model.ticket.Ticket" resultType = "com.qts.icam.model.common.EmailDetails">
+		SELECT
+			template_subject as emailDetailsSubject,
+			template_body as emailDetailsDesc,
+			category_name as emailDetailsCode,
+			template_type as status
+		FROM
+			category_template_user_mapping_sla ct
+		JOIN
+			event_template et ON (et.rec_id = ct.event_template AND et.is_active = true)
+		JOIN
+			category c ON (c.rec_id = ct.category AND c.is_active = true)
+		JOIN
+			ticket_status ts ON (ct.ticket_status = ts.rec_id AND ts.is_active = true)
+		WHERE
+			ticket_status_code = #{status}
+		AND
+			c.category_code = #{ticketService.ticketServiceCode}
+		AND
+			ct.is_active = true;
+	</select>
+	
+	<select id="selectTaskStatusAgainstTicketCodeAndTaskLevel" resultType="com.qts.icam.model.ticket.TicketStatus" parameterType="com.qts.icam.model.ticket.Ticket">
+			SELECT
+				task_status_code as ticketStatusCode,
+				ts.task_status as ticketStatusName
+			FROM
+				task_status ts
+			JOIN
+				task_details td ON (td.task_status = ts.rec_id AND td.is_active = true)
+			JOIN
+				ticket t ON (td.ticket = t.rec_id AND t.is_active = true)
+			WHERE
+				ticket_code = #{ticketCode}
+			AND
+				level = #{ticketRecId}
+			AND
+				ts.is_active = true;
+	</select>
+	<select id="selectLastInsertedRecId" resultType="java.lang.String" parameterType="com.qts.icam.model.ticket.Ticket">
+		SELECT
+			rec_id
+		FROM ${tableName}
+		WHERE serial_id = (SELECT MAX(serial_id)FROM ${tableName})
+		AND is_active=true;
+	</select>
+	
+	<select id="getTaskNoListForUserAndFunctinalityWise" resultType="com.qts.icam.model.common.Task" parameterType="com.qts.icam.model.common.Task">
+		SELECT 
+			task_details_code as taskCode,
+			action as action
+		FROM
+			task_details td 
+		JOIN
+			resource r ON (td.actualowner_id = r.rec_id AND r.is_active = true)
+		JOIN
+			task_status ts ON (td.task_status = ts.rec_id AND ts.is_active = true)
+		JOIN
+			task t ON (td.task = t.rec_id AND t.is_active = true)
+		JOIN
+			module_functionality mf ON (t.functionality = mf.rec_id AND mf.is_active = true)
+		WHERE
+			r.user_id = #{userId}
+		AND
+			td.is_active = true
+		AND
+			functionality_name ilike #{taskName}
+		AND
+			ts.type NOT IN ('CLOSED','COMPLETED','REJECTED');
+	</select>
+	
+	<insert id="insertIntoSchoolNote" parameterType="com.qts.icam.model.common.SchoolNote">
+		INSERT INTO school_note(
+						            rec_id,
+						            obj_id, 
+						            updated_by, 
+						            updated_on, 
+						            date_of_creation, 
+						            note, 
+						            description, 
+						            recipients)
+    VALUES
+						    	(uuid_generate_v4(), 
+							    #{objectId}, 
+							    (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true), 
+							    (SELECT extract(epoch FROM now())),
+							    (SELECT extract(epoch FROM now())),
+							    #{note},
+						       	#{description},
+						        #{json});
+	</insert>
+	
+	<select id="getSchoolNoteList" resultType="com.qts.icam.model.common.SchoolNote">
+		SELECT
+			note as note,
+			description as description,
+			recipients as json
+		FROM
+			school_note
+		WHERE
+			is_active = true;
+	</select>
+	
+	<select id="getMobileNumberAgainstRollNumbers" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT
+			mobile_no 
+		FROM
+			resource r
+		WHERE
+			r.user_id = #{rollNumber} AND is_active = true;
+	</select>
+	
+	<insert id="saveSMSDetailsForAudit" parameterType="com.qts.icam.model.common.SmsAudit">
+		 INSERT INTO sms_details_audit_log(
+	            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+	            mobile_number, message, action_for, status, opening_balance, closing_balance, net_balance)
+	    VALUES ((select uuid_generate_v4()), #{objectId},
+	    	(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+			#{mobileNumber}, #{message}, #{actionFor}, #{status}, #{openingBalance}, #{closingBalance}, #{balance}); 
+	</insert>
+	
+	
+</mapper>

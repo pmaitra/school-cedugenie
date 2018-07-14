@@ -1,0 +1,2722 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.mapper.administrator.AdministratorMapper">
+
+	<select id="getmoduleList" resultType="com.qts.icam.model.administrator.Module" >	
+		SELECT
+		 	module_name as moduleName,
+		 	module_code as moduleCode
+		FROM 
+			module 
+		WHERE		
+			is_active = true
+			ORDER BY module_name ASC;
+	</select>
+	
+	
+	<select id="getRolesForModule" parameterType="java.lang.String" resultType="com.qts.icam.model.administrator.Role" >
+		SELECT
+			r.role_name as roleName,
+			r.role_code as roleCode,
+			r.role_desc as roleDescription,
+			rt.role_type_name roleTypeName
+		FROM	
+			role r			 
+		JOIN
+			module m ON(m.rec_id = r.module) AND (m.is_active = true)
+		JOIN
+			role_type rt ON (r.role_type = rt.rec_id) AND (rt.is_active = true)			
+		WHERE
+				m.module_code=#{moduleCode}
+		AND
+				r.is_active=true;
+	</select>
+	
+	
+	<select id="roleCountForModule" parameterType="java.lang.String" resultType="Integer" >	
+		Select
+			count(module) 
+		from 
+			role 
+		where 
+			module=(SELECT rec_id FROM module WHERE module_code=#{moduleCode} AND is_active=true)
+		AND
+				is_active=true;
+	</select>
+	
+	<insert id="insertRole" parameterType="com.qts.icam.model.administrator.Role">
+		INSERT INTO role(
+            rec_id,
+            obj_id,
+            updated_by,
+            updated_on,
+            date_of_creation,
+            is_active, 
+            role_name,
+            role_desc,
+            module,
+            role_type,
+            role_code)
+	    VALUES (
+			uuid_generate_v4(),
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			true, 
+			#{roleName},
+			#{roleDescription},
+			(SELECT rec_id FROM module WHERE module_code=#{moduleCode} AND is_active=true),
+			(SELECT rec_id FROM role_type WHERE role_type_name=#{roleTypeName} AND is_active=true),		
+			(SELECT ('ROLECODE-' ||(select COALESCE((SELECT MAX(role_id) FROM role), 0 )+1)))
+		);	
+	</insert>
+	
+	
+	<update id="deleteRole" parameterType="com.qts.icam.model.administrator.Role">
+				UPDATE
+					role
+				SET
+					is_active = false,
+					updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active=true),
+					updated_on = (SELECT extract(epoch FROM now()))
+				WHERE
+					is_active =true
+				AND
+					role_code = #{roleCode};
+	</update>
+	
+	<select id="selectAllResourceType" resultType="com.qts.icam.model.common.ResourceType">
+		SELECT
+			resource_type_name as resourceTypeName,
+			resource_type_code as resourceTypeCode
+		FROM
+			resource_type rt		
+		WHERE
+			is_active=true
+		AND
+			rt.resource_type_name !='STUDENT'
+		AND
+			rt.resource_type_name !='SUPERADMIN';
+	</select>
+	
+	
+	
+	<insert id="insertRoleContactMapping" parameterType="com.qts.icam.model.common.Resource">
+		INSERT INTO
+		 role_resource_mapping(
+			rec_id,
+			obj_id,
+			updated_by,
+			updated_on,
+			date_of_creation,
+			is_active,
+			role,
+			resource,
+			resource_type)
+		VALUES (
+			uuid_generate_v4(),
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy}),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			true,
+			(SELECT rec_id FROM role WHERE role_code= #{roleName} AND is_active = true),
+			(SELECT rec_id FROM resource WHERE user_id= #{userId} AND is_active = true),
+			(SELECT rec_id FROM resource_type WHERE resource_type_code=#{resourceTypeName} AND is_active = true)
+			);
+	</insert>
+	
+	
+	<resultMap id="getRoleContactMappingListResultMap" type="com.qts.icam.model.administrator.Role">
+		<id property="roleName" column="role_name" jdbcType="VARCHAR" />
+		<id property="roleCode" column="role_code" jdbcType="VARCHAR" />
+		<collection property="resourceList" ofType="com.qts.icam.model.common.Resource">
+			<id property="userId" column="user_id" jdbcType="VARCHAR" />
+			<result property="name" column="name" jdbcType="VARCHAR" />			
+		</collection>
+	</resultMap>
+	
+	<select id="selectRoleContactMappingList" resultMap="getRoleContactMappingListResultMap" >
+		SELECT
+			ro.role_name ,
+			ro.role_code,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as name,
+			r.user_id 
+		FROM
+			role_resource_mapping rrm		
+		JOIN
+			resource r ON(r.rec_id = rrm.resource ) AND (r.is_active = true)
+		JOIN
+			role ro ON (ro.rec_id = rrm.role) AND (ro.is_active = true)
+		WHERE
+			rrm.is_active = true;
+	</select>
+	
+	
+	<select id="searchRoleContactmapping" resultMap="getRoleContactMappingListResultMap" parameterType="java.util.Map">
+		SELECT
+				ro.role_name ,
+				ro.role_code,
+				r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || r.last_name as name,
+				r.user_id
+			FROM
+				role_resource_mapping rrm		
+			JOIN
+				resource r ON(r.rec_id = rrm.resource ) AND (r.is_active = true)
+			JOIN
+				role ro ON (ro.rec_id = rrm.role) AND (ro.is_active = true)
+			WHERE
+				rrm.is_active = true
+				<if test="contactName != null">
+						AND r.first_name ILIKE ('%'||#{contactName}||'%')
+						OR r.middle_name ILIKE ('%'||#{contactName}||'%')
+						OR r.last_name ILIKE ('%'||#{contactName}||'%')
+				</if>		
+				<if test="roleName != null">
+						AND ro.role_name ILIKE ('%'||#{roleName}||'%')
+				</if>
+				<if test="userId != null">
+						AND r.user_id ILIKE ('%'||#{userId}||'%')
+				</if>
+				;
+	</select>
+	
+	
+	<select id="getRoleContactMapping" parameterType="com.qts.icam.model.administrator.Role"
+		resultType="com.qts.icam.model.common.Resource">
+			SELECT
+			r.user_id as userId,
+			r.first_name as firstName,
+			r.middle_name as middleName,
+			r.last_name as lastName,
+			rt.resource_type_name as resourceTypeName,
+			rt.resource_type_code as desc,
+			ro.role_name as roleName,
+			ro.role_code as code
+		FROM
+			role_resource_mapping rrm		
+		JOIN
+			resource r ON(r.rec_id = rrm.resource ) AND (r.is_active = true)
+		JOIN
+			resource_type rt ON(rt.rec_id = rrm.resource_type ) AND (rt.is_active = true)
+		JOIN
+			role ro ON (ro.rec_id = rrm.role) AND (ro.is_active = true)
+		WHERE
+			rrm.is_active=true
+		AND
+			ro.role_code=#{roleName};		
+	</select>
+			
+	<update id="updateRoleContactMapping" parameterType="com.qts.icam.model.common.Resource" statementType="CALLABLE">
+			select update_role_contact_mapping(
+						#{objectId, mode=IN, jdbcType=VARCHAR},
+						#{updatedBy, mode=IN, jdbcType=VARCHAR},
+						#{userId, mode=IN, jdbcType=VARCHAR},
+						#{roleName, mode=IN, jdbcType=VARCHAR},
+						#{resourceTypeName, mode=IN, jdbcType=VARCHAR}
+			);
+	</update>
+	
+	<update id="inactiveRoleContactMapping" parameterType="com.qts.icam.model.common.Resource">
+		UPDATE
+			role_resource_mapping
+		SET
+			is_active =false,
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active=true),
+			updated_on = (SELECT extract(epoch FROM now()))
+		WHERE
+			is_active = true
+		AND
+			role =(SELECT rec_id FROM role WHERE is_active =true AND role_code = #{code})
+		AND
+			resource_type=(SELECT rec_id FROM resource_type WHERE is_active =true AND resource_type_code = #{resourceTypeName})
+		AND
+			resource=(SELECT rec_id FROM resource WHERE is_active =true AND user_id  ilike  #{userId}) ;
+	</update>
+	
+	
+	<select id="getAccessTypeList" resultType="com.qts.icam.model.administrator.AccessType">
+		SELECT
+			at.access_type_name as accessTypeName ,
+			at.access_type_code as accessTypeCode,
+			at.access_type_desc as accessTypeDesc
+		FROM
+			access_type at		
+		WHERE
+			is_active=true
+		AND
+			at.access_type_name!='SUPER ADMIN';
+	</select>
+	
+	
+	<insert id="insertAccessType" parameterType="com.qts.icam.model.administrator.AccessType">
+		INSERT INTO access_type(
+				rec_id, 
+				obj_id, 
+				updated_by, 
+				updated_on, 
+				date_of_creation, 
+				is_active, 
+				access_type_name, 
+				access_type_desc, 
+				access_type_code)
+		VALUES (
+				uuid_generate_v4(), 
+				#{objectId}, 
+				(SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())),
+				 true, 
+				#{accessTypeName},
+				#{accessTypeDesc},
+				(SELECT ('AT-' ||(select COALESCE((SELECT MAX(access_type_id) FROM access_type),0)+1)))
+				);
+	</insert>
+	
+	<select id="lastInsertedAccessType" resultType="String">
+		Select
+			access_type_code as accessTypeCode
+		From
+			access_type
+		Where
+			is_active=true
+		AND
+			access_type_id=(SELECT MAX(access_type_id) FROM access_type);
+	</select>
+	
+	<insert id="insertRoleAccessMapping" parameterType="com.qts.icam.model.administrator.Role">
+		INSERT INTO access_type_role_mapping(
+				rec_id, 
+				obj_id, 
+				updated_by, 
+				updated_on, 
+				date_of_creation, 
+				is_active, 
+				access_type, 
+				role)
+			VALUES (
+				uuid_generate_v4(), 
+				#{objectId}, 
+				(SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())),
+				 true, 			
+				(SELECT rec_id FROM access_type WHERE access_type_code =#{accessTypeName} AND is_active =true), 
+				(SELECT rec_id FROM role WHERE role_code =#{roleCode} AND is_active =true)
+				);
+	</insert>
+	
+	
+	<select id="getDetailsForAccessType" resultType="com.qts.icam.model.administrator.AccessType" parameterType="com.qts.icam.model.administrator.AccessType">
+		Select
+			access_type_name as accessTypeName,
+			access_type_code as accessTypeCode,
+			access_type_desc as accessTypeDesc
+		From
+			access_type
+		Where
+			is_active=true
+		AND
+			access_type_code=#{accessTypeCode};
+	</select>
+	
+	<select id="getAccessTypeRoleMapping" resultType="com.qts.icam.model.administrator.Role" parameterType="com.qts.icam.model.administrator.AccessType">
+		Select
+			r.role_name as roleName,
+			r.role_code as roleCode
+		FROM
+			access_type_role_mapping atrm
+		JOIN
+			access_type at ON(at.rec_id = atrm.access_type) AND (at.is_active = true)
+		JOIN
+			role r ON(r.rec_id = atrm.role) AND (r.is_active = true)
+		WHERE
+			atrm.is_active =true
+		AND
+			access_type_code=#{accessTypeCode};
+	</select>
+	
+	
+	
+	<update id="updateAccessType" parameterType="com.qts.icam.model.administrator.AccessType">
+		UPDATE
+			access_type
+		SET
+			updated_on=(SELECT extract(epoch FROM now())),
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+			access_type_name=#{accessTypeName},
+			access_type_desc=#{accessTypeDesc}		
+		WHERE
+			is_active = true
+		AND
+			access_type_code =#{accessTypeCode};
+	</update>
+	
+	<update id="updateAccessRoleMapping" parameterType="com.qts.icam.model.administrator.AccessType">
+		UPDATE
+			access_type_role_mapping
+		SET
+			updated_on=(SELECT extract(epoch FROM now())),
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+			is_active=false		
+		WHERE
+			is_active = true
+		AND
+			access_type =(SELECT rec_id FROM access_type WHERE access_type_code = #{accessTypeCode} AND is_active = true);		
+	</update>
+	
+	
+	<update id="deleteAccessType" parameterType="com.qts.icam.model.administrator.AccessType">
+		UPDATE
+			access_type_resource_mapping
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			is_active = false
+		WHERE
+			access_type = (SELECT rec_id FROM access_type WHERE access_type_code = #{accessTypeCode} AND is_active = true)
+		AND
+			is_active = true;
+
+
+		UPDATE
+			access_type_role_mapping
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			is_active = false
+		WHERE
+			access_type = (SELECT rec_id FROM access_type WHERE access_type_code = #{accessTypeCode} AND is_active = true)
+		AND
+			is_active = true;
+
+
+		UPDATE
+			access_type
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			is_active = false
+		WHERE
+			is_active = true
+		AND
+			access_type_code = #{accessTypeCode};		
+	</update>
+	
+	<select id="getResourceTypeForMapping" resultType="com.qts.icam.model.common.ResourceType">
+		SELECT
+			resource_type_name as resourceTypeName,
+			resource_type_code as resourceTypeCode
+		FROM
+			resource_type rt		
+		WHERE
+		is_active=true
+		AND		
+		   resource_type_code != 'SUPERADMIN'
+		AND
+			resource_type_code != 'STUDENT';
+	</select>	
+	
+	<insert id="insertAccessTypeContactMapping" parameterType="com.qts.icam.model.common.Resource">
+		INSERT INTO access_type_resource_mapping(
+			rec_id,
+			obj_id,
+			updated_by,
+			updated_on,
+			date_of_creation,
+			is_active,
+			access_type,
+			resource)
+	VALUES (
+			uuid_generate_v4(),
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			true,
+			(SELECT rec_id FROM access_type WHERE access_type_code =#{accessType.accessTypeCode} AND is_active =true),
+			(SELECT rec_id FROM resource WHERE user_id= #{userId} AND is_active =true)
+			);
+	</insert>
+	
+	
+	<resultMap id="getAccessTypeContactMappingResultMap" type="com.qts.icam.model.common.Resource">
+		<id property="userId" column="user_id" jdbcType="VARCHAR" />
+		<result property="name" column="name" jdbcType="VARCHAR" />
+		<result property="accessType.accessTypeName" column="access_type_name" jdbcType="VARCHAR" />
+		<result property="accessType.accessTypeCode" column="access_type_code" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<select id="getAccessTypeContactMapping" resultMap="getAccessTypeContactMappingResultMap">
+
+		SELECT
+			at.access_type_name,
+			at.access_type_code,
+			r.user_id,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as name
+		FROM
+			access_type_resource_mapping atrm		
+		JOIN
+			resource r ON(atrm.resource = r.rec_id)	AND(r.is_active=true)
+		JOIN
+			access_type at ON(atrm.access_type = at.rec_id)	AND(at.is_active=true)
+		WHERE
+			atrm.is_active=true
+		AND
+			((access_type_name !='SUPER ADMIN') OR (access_type_code!='AT-1'));
+
+	</select>
+	
+	
+	<resultMap id="deleteAccessTypeContactMappingSearchResultMap" type="com.qts.icam.model.common.Resource">
+		<id property="userId" column="user_id" jdbcType="VARCHAR" />
+		<result property="name" column="name" jdbcType="VARCHAR" />
+		<result property="accessType.accessTypeName" column="accesstype_name"
+			jdbcType="VARCHAR" />
+	</resultMap>
+
+	<select id="accessTypeContactMappingSearch" parameterType="java.util.Map" resultMap="getAccessTypeContactMappingResultMap">
+		SELECT
+			at.access_type_name,
+			at.access_type_code,
+			r.user_id,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as name
+		FROM
+			access_type_resource_mapping atrm
+		JOIN
+			resource r ON(atrm.resource = r.rec_id)	AND(r.is_active=true)
+		JOIN
+			access_type at ON(atrm.access_type = at.rec_id)	AND(at.is_active=true)
+		WHERE
+			atrm.is_active=true
+			<if test="contactName != null">
+				AND r.first_name ILIKE ('%'||#{contactName}||'%')
+				OR r.middle_name ILIKE ('%'||#{contactName}||'%')
+				OR r.last_name ILIKE ('%'||#{contactName}||'%')
+			</if>		
+			<if test="accessType != null">
+				AND at.access_type_name ILIKE ('%'||#{accessType}||'%')
+			</if>
+			<if test="userId != null">
+				AND r.user_id ILIKE ('%'||#{userId}||'%')
+			</if>
+			;
+	</select>
+	
+	
+	<update id="deleteAccessTypeContactMapping" parameterType="com.qts.icam.model.administrator.AccessType">
+		UPDATE
+			access_type_resource_mapping 	
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			is_active = false
+			WHERE
+			access_type = (SELECT rec_id FROM access_type WHERE access_type_code=#{accessTypeCode} AND is_active =true )
+			AND
+			resource = (SELECT rec_id FROM resource WHERE user_id=#{accessTypeDesc} AND is_active = true)
+			AND
+			is_active = true;		
+	</update>
+	
+	<select id="getFunctionalitiesFromRole" parameterType="com.qts.icam.model.administrator.Role" resultType="com.qts.icam.model.administrator.Functionality">
+		SELECT
+			mf.functionality_name as functionalityName,
+			frm.view as view,
+			frm.write as insert,
+			frm.update as update,
+			m.module_name as moduleName
+		FROM
+			functionality_role_mapping frm		
+		LEFT JOIN
+			module_Functionality mf ON(frm.module_functionality =mf.rec_id) AND (mf.is_active=true) 
+		LEFT JOIN
+			module m ON (frm.module = m.rec_id) AND (m.is_active=true) AND (mf.module = m.rec_id)
+		LEFT JOIN
+			role r ON(frm.role = r.rec_id) AND (r.is_active=true)AND (r.module = m.rec_id)
+		WHERE
+			frm.is_active=true
+		AND
+			m.module_code=#{moduleCode}
+		AND
+			r.role_code=#{roleCode}			
+	</select>
+
+	<select id="getFunctionalitiesForModule" parameterType="com.qts.icam.model.administrator.Role" 	resultType="com.qts.icam.model.administrator.Functionality">
+		SELECT
+			mf.functionality_name as functionalityName,
+			m.module_name as moduleName
+		FROM
+			module_functionality mf		
+		JOIN
+			module m ON(m.rec_id = mf.module) AND (m.is_active = true)
+		WHERE
+			m.module_code=#{moduleCode}
+		AND
+			mf.is_active=true;
+	</select>
+	
+	<insert id="insertFunctionalityRoleMapping" parameterType="com.qts.icam.model.administrator.Functionality"
+		statementType="CALLABLE">
+		select insert_into_functionality_role_mapping(
+		#{objectId, mode=IN, jdbcType=VARCHAR},
+		#{updatedBy, mode=IN, jdbcType=VARCHAR},
+		#{functionalityName, mode=IN, jdbcType=VARCHAR},
+		#{functionalityDesc, mode=IN, jdbcType=VARCHAR},
+		#{moduleName, mode=IN, jdbcType=VARCHAR},
+		#{view, mode=IN, jdbcType=BOOLEAN},
+		#{insert, mode=IN, jdbcType=BOOLEAN},
+		#{update, mode=IN, jdbcType=BOOLEAN}
+		)
+	</insert>
+	
+	<insert id="insertUserGroup" parameterType="com.qts.icam.model.administrator.UserGroup">
+		INSERT INTO user_group(
+				rec_id, 
+				obj_id, 
+				updated_by, 
+				updated_on, 
+				date_of_creation, 
+				is_active, 
+				user_group_code, 
+				user_group_name, 
+				user_group_desc	)
+    VALUES (		
+			uuid_generate_v4(),
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			true,  
+			(SELECT ('USERGROUP-' ||(select COALESCE((SELECT MAX(user_group_id) FROM user_group), 0 )+1))), 
+			#{userGroupName}, 
+			#{userGroupDesc}
+			);
+	</insert>
+	
+	<insert id="insertUserGroupResourceMapping" parameterType="com.qts.icam.model.common.Resource">
+		INSERT INTO user_group_resource_mapping(
+						rec_id, 
+						obj_id, 
+						updated_by, 
+						updated_on, 
+						date_of_creation, 
+						is_active, 
+						user_group, 
+						resource
+						)
+		    VALUES (		
+					uuid_generate_v4(),
+					#{userGroup.objectId},
+					(SELECT rec_id FROM resource WHERE user_id=#{userGroup.updatedBy} AND is_active=true),
+					(SELECT extract(epoch FROM now())),
+					(SELECT extract(epoch FROM now())),
+					true,  
+					(Select rec_id from user_group where is_active=true AND user_group_id=(SELECT MAX(user_group_id) FROM user_group)), 
+					(SELECT rec_id FROM resource WHERE user_id=#{userId} AND is_active=true)
+					);
+	</insert>
+	
+	
+	<select id="selectAllUserGroups" resultType="com.qts.icam.model.administrator.UserGroup">
+		SELECT
+			user_group_code as userGroupCode,
+			user_group_name	as userGroupName,
+			user_group_desc as userGroupDesc,
+			to_char((SELECT to_timestamp(date_of_creation)),'DD/MM/YYYY')as status
+		FROM
+			user_group
+		WHERE
+			is_active=true;
+	</select>
+	
+	
+	
+	<update id="inactiveUserGroupDetails" parameterType="com.qts.icam.model.administrator.UserGroup">
+			UPDATE
+				user_group_resource_mapping 	
+			SET
+				updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+				updated_on = (SELECT extract(epoch FROM now())),
+				is_active = false
+			WHERE
+				user_group = (SELECT rec_id FROM user_group WHERE user_group_code=#{userGroupCode} AND is_active =true )
+			AND
+				is_active = true;
+
+		
+			UPDATE
+				user_group
+			SET
+				updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+				updated_on = (SELECT extract(epoch FROM now())),
+				is_active = false
+			WHERE
+				user_group_code =#{userGroupCode}
+			AND
+				is_active = true;	
+	</update>
+	
+	<select id="selectUserGroupDetails" parameterType="com.qts.icam.model.administrator.UserGroup" resultType="com.qts.icam.model.common.Resource">
+		SELECT
+			user_group_code as "userGroup.userGroupCode",
+			user_group_name	as "userGroup.userGroupName",
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as name ,
+			r.user_id as userId
+		FROM
+			user_group_resource_mapping ugrm
+		JOIN
+			user_group ug  ON(ugrm.user_group = ug.rec_id)	AND(ug.is_active=true)
+		JOIN
+			resource r ON(ugrm.resource = r.rec_id)	AND(r.is_active=true)
+		WHERE
+			ugrm.is_active=true
+		AND
+			ug.user_group_code=#{userGroupCode};		
+	</select>
+	
+	
+	<resultMap id="getNotificationDetailsResultMap" type="com.qts.icam.model.administrator.Module">			
+			<id property="moduleName" column="module_name" jdbcType="VARCHAR"/>
+				<collection property="functionalityList" ofType="com.qts.icam.model.administrator.Functionality">
+					<id property="functionalityName" column="functionality_name" jdbcType="VARCHAR"/>
+						<collection property="loggingAspectList" ofType="com.qts.icam.model.common.LoggingAspect">
+							<id property="methodName" column="method_name" jdbcType="VARCHAR"/>
+							<result property="activityLog" column="activity_log" jdbcType="BOOLEAN"/>
+							<result property="notification" column="notification" jdbcType="BOOLEAN"/>
+							<result property="task" column="module_functionality_method_mapping_name" jdbcType="VARCHAR"/>
+							<result property="notificationLevel" column="notification_level_name" jdbcType="VARCHAR"/>
+						</collection>
+				</collection>
+		</resultMap>
+		<select id="getNotificationDetails" parameterType="java.lang.String" resultMap="getNotificationDetailsResultMap" >
+			SELECT 
+				m.module_name,
+				mf.functionality_name,
+				mfmm.method_name,
+				mfmm.module_functionality_method_mapping_name,
+				mfmm.notification,
+				mfmm.activity_log,
+				nl.notification_level_name
+			FROM
+				module_functionality_method_mapping mfmm
+			LEFT JOIN
+				notification_level nl ON (mfmm.notification_level = nl.rec_id) AND (nl.is_active = true)
+			JOIN 
+				module_functionality mf ON (mfmm.module_functionality = mf.rec_id) AND ( mf.is_active = true)
+			JOIN
+				module m ON (mf.module = m.rec_id) AND (m.is_active = true)
+			WHERE 
+				m.module_name = #{moduleName}
+			ORDER BY 
+			mf.functionality_name,mfmm.module_functionality_method_mapping_name;
+			
+		</select>
+		
+		<update id = "inactiveUrgentAndNormalNotification" parameterType="com.qts.icam.model.common.LoggingAspect">
+				UPDATE 
+					logging_notification_user_group_mapping
+			  	SET 
+					updated_by=(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active =true), 
+					updated_on=(SELECT extract(epoch FROM now())),  
+					is_active=false
+			 	WHERE 
+					module_functionality_method_mapping=(SELECT 
+															mfmm.rec_id
+														 FROM
+															module_functionality_method_mapping mfmm												
+														 JOIN module_functionality mf ON (mfmm.module_functionality = mf.rec_id) AND ( mf.is_active =true)
+														 JOIN module m ON (mf.module = m.rec_id) AND (m.is_active =true)
+														 WHERE
+															mfmm.is_active =true
+														 AND
+															m.module_name=#{module.moduleName}
+														 AND
+															mf.functionality_name=#{functionality.functionalityName}
+														 AND
+															mfmm.method_name=#{methodName}
+														)
+				<if test="notificationLevel == 'URGENT'">
+					 AND notification_level=(SELECT rec_id FROM notification_level WHERE notification_level_name='URGENT' AND is_active =true)
+				</if>
+				<if test="notificationLevel == 'NORMAL'">
+					 AND notification_level=(SELECT rec_id FROM notification_level WHERE notification_level_name='NORMAL' AND is_active =true)
+		   		</if>
+				<if test="serviceName !=null">
+		   			AND user_group = (SELECT rec_id FROM approver_group WHERE approver_group_code=#{serviceName} AND is_active =true)
+		   		</if>;<!-- usergroupCode set into  serviceName -->	
+	</update>
+	
+	
+	<insert id="updateNotification" parameterType="com.qts.icam.model.common.LoggingAspect" statementType="CALLABLE">
+			select insert_into_logging_notification_user_group_mapping(
+						#{loggingObjectId, mode=IN, jdbcType=VARCHAR},
+						#{updatedBy, mode=IN, jdbcType=VARCHAR},
+						#{module.moduleName, mode=IN, jdbcType=VARCHAR},
+						#{functionality.functionalityName, mode=IN, jdbcType=VARCHAR},
+						#{methodName, mode=IN, jdbcType=VARCHAR},
+						#{activityLog, mode=IN, jdbcType=BOOLEAN},
+						#{notification, mode=IN, jdbcType=BOOLEAN},
+						#{task, mode=IN, jdbcType=VARCHAR},
+						#{notificationLevel, mode=IN, jdbcType=VARCHAR}
+			)
+	</insert>
+		
+		
+	<update id = "inactiveActiveActivityLog" parameterType="com.qts.icam.model.common.LoggingAspect">
+			UPDATE 
+				module_functionality_method_mapping
+			SET  
+			       updated_by=(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active=true), 
+			       updated_on=(SELECT extract(epoch FROM now())),  
+			       activity_log=#{activityLog}
+			WHERE 
+			       module_functionality=(SELECT 
+												mf.rec_id 
+											 FROM 
+												module_functionality mf							 
+											 JOIN module m ON (m.rec_id = mf.module) AND (m.is_active=true)
+											 WHERE
+												mf.is_active=true
+											 AND
+												m.module_name=#{module.moduleName}
+											 AND
+												mf.functionality_name=#{functionality.functionalityName}
+											)
+			    AND  
+			       method_name=#{methodSignatureName}
+			    AND
+			       is_active=true;
+	</update>
+	
+	<!-- chnages taken from saurav.bhadra 07042017 -->
+	<select id="viewSLAForTicketing" resultType="com.qts.icam.model.ticket.Ticket">
+		SELECT
+			ag.approver_group_name as moduleName,
+			ts.ticket_status_name as ticketSummary,
+			sl.sla_id as ticketRecId,
+			sl.max_days as ticketMaxDays
+		FROM
+			sla sl		
+		JOIN
+			approver_group ag ON(ag.rec_id = sl.module) AND (ag.is_active = true)
+		JOIN
+			ticket_status ts ON(ts.rec_id = sl.ticket_status) AND (ts.is_active=true)
+		WHERE			
+			sl.is_active=true;
+	</select>
+	
+	<!-- chnages taken from saurav.bhadra 07042017 -->
+	
+	<insert id="createTicketingSLA" parameterType="com.qts.icam.model.ticket.Ticket">
+		INSERT INTO sla(
+				rec_id, 
+				obj_id, 
+				updated_by, 
+				updated_on, 
+				date_of_creation, 
+				is_active, 
+				module, 
+				max_days, 
+				min_days, 
+				ticket_status)
+	VALUES (
+				(SELECT uuid_generate_v4()), 
+				#{ticketObjectId}, 
+				(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active=true), 
+				(SELECT extract(epoch FROM now())), 
+				(SELECT extract(epoch FROM now())), 
+				true, 
+				(SELECT rec_id FROM approver_group WHERE approver_group_code=#{moduleName} AND is_active=true), 
+				#{ticketMaxDays}, 
+				#{ticketMinDays}, 
+				(SELECT rec_id FROM ticket_status WHERE ticket_status_name=#{status} AND is_active=true)
+		 );
+				
+	</insert>
+	
+	<!-- changes taken from saurav.bhadra 07042017 -->
+	
+	<update id="updateTicketingSLA" parameterType="com.qts.icam.model.ticket.Ticket">
+		UPDATE
+			sla
+		SET 
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active=true), 
+			updated_on=(SELECT extract(epoch FROM now())),
+			max_days=#{ticketMaxDays}
+		WHERE 
+			ticket_status=(SELECT rec_id FROM ticket_status WHERE ticket_status_name=#{status} AND is_active=true)
+		AND
+			module=(SELECT rec_id FROM approver_group WHERE approver_group_name=#{moduleName} AND is_active=true);
+	</update>
+	
+	<select id="studentListForXml" resultType="com.qts.icam.model.administrator.StudentForXml" parameterType="java.lang.String">
+<!-- 		SELECT DISTINCT -->
+<!-- 			smd.student_id as registrationId, -->
+<!-- 			c.class_name as yearClass, -->
+<!-- 			co.course_name as yearCourse, -->
+<!-- 			s.section_name as yearSection, -->
+<!-- 			st.stream_name as yearStream -->
+<!-- 		FROM -->
+<!-- 			"History_Student_Marks_Details" smd -->
+<!-- 		JOIN "Class" c ON(c.class_code=smd.class) -->
+<!-- 		JOIN "Course" co ON(co.course_code=smd.course) -->
+<!-- 		JOIN "Section" s ON(s.section_code=smd.section) -->
+<!-- 		JOIN "Stream" st ON(st.stream_code=smd.stream) -->
+<!-- 		WHERE -->
+<!-- 			year=#{academicYear}; -->
+	</select>
+	
+	
+	<select id="studentDetailsForXml" resultType="com.qts.icam.model.administrator.StudentForXml" parameterType="java.lang.String">
+<!-- 		SELECT -->
+<!-- 			r.registration_id as registrationId, -->
+<!-- 			r.first_name || ' ' || r.middle_name || ' ' || COALESCE(r.last_name,'  ')  as name, -->
+<!-- 			rf.first_name || ' ' || rf.middle_name || ' ' || rf.last_name as fathersName, -->
+<!-- 			rm.first_name || ' ' || rm.middle_name || ' ' || rm.last_name as mothersName, -->
+<!-- 			(SELECT to_char((SELECT to_timestamp(r.date_of_creation)), 'DD/MM/YYYY'))as admissionDate, -->
+<!-- 			c.course_name as admissionCourse, -->
+<!-- 			cl.class_name as admissionClass, -->
+<!-- 			(SELECT to_char((SELECT to_timestamp(r.date_of_birth)), 'DD/MM/YYYY'))as dateOfBirth, -->
+<!-- 			a.address_1 || ' ' || a.address_2 || ' ' || ci.city_name || ' ' || d.district_name || ' ' || st.state_name || '  Land Mark-' || a.land_mark || '  PO-' || a.post_office || ' PS-' || a.police_station || '  PIN-' || a.postal_code || ' ' || co.country_name as prsentAddress, -->
+<!-- 			a1.address_1 || ' ' || a1.address_2 || ' ' || ci1.city_name || ' ' || d1.district_name || ' ' || st1.state_name || '  Land Mark-' || a1.land_mark || '  PO-' || a1.post_office || ' PS-' || a1.police_station || '  PIN-' || a1.postal_code || ' ' || co1.country_name as permanentAddress, -->
+<!-- 			r.nationality as nationality, -->
+<!-- 			r.email_address as email, -->
+<!-- 			r.contact_number as contactNumber, -->
+<!-- 			g.gender_name as gender, -->
+<!-- 			r.religion as religion, -->
+<!-- 			r.blood_group as bloodGroup, -->
+<!-- 			cou.course_name as leavingCourse, -->
+<!-- 			cl1.class_name as leavingClass -->
+<!-- 		FROM -->
+<!-- 			"Resource" r -->
+<!-- 		JOIN "Resource_Type" rt ON(r.resource_type=rt.rec_id) -->
+<!-- 		JOIN "Admission_Drive" ad ON(r.admission_drive_name=ad.admission_drive_name) -->
+<!-- 		JOIN "Course" c ON(ad.course=c.rec_id) -->
+<!-- 		JOIN "Class" cl ON(c.course_class=cl.rec_id) -->
+<!-- 		JOIN "Resource" rf ON(r.father_name=rf.rec_id) -->
+<!-- 		JOIN "Resource" rm ON(r.mother_name=rm.rec_id) -->
+<!-- 		JOIN "Personal_Location" pl ON(r.present_address=pl.rec_id) -->
+<!-- 		JOIN "Address" a ON(pl.personal_location_address=a.rec_id) -->
+<!-- 		JOIN "Country" co ON(a.country=co.rec_id) -->
+<!-- 		JOIN "City" ci ON(a.city=ci.rec_id) -->
+<!-- 		JOIN "District" d ON(a.district=d.rec_id) -->
+<!-- 		JOIN "State" st ON(a.state=st.rec_id) -->
+<!-- 		JOIN "Personal_Location" pl1 ON(r.permanent_address=pl1.rec_id) -->
+<!-- 		JOIN "Address" a1 ON(pl1.personal_location_address=a1.rec_id) -->
+<!-- 		JOIN "Country" co1 ON(a1.country=co1.rec_id) -->
+<!-- 		JOIN "City" ci1 ON(a1.city=ci1.rec_id) -->
+<!-- 		JOIN "District" d1 ON(a1.district=d1.rec_id) -->
+<!-- 		JOIN "State" st1 ON(a1.state=st1.rec_id) -->
+<!-- 		JOIN "Gender" g ON(r.gender=g.rec_id) -->
+<!-- 		JOIN "Course" cou ON(r.course=cou.rec_id) -->
+<!-- 		JOIN "Class" cl1 ON(cou.course_class=cl1.rec_id) -->
+<!-- 		WHERE -->
+<!-- 			rt.resource_type_code='CODE-STUDENT-1' -->
+<!-- 		AND -->
+<!-- 			r.registration_id=#{registrationId}; -->
+	</select>
+	
+	<select id="examListForXml" resultType="com.qts.icam.model.administrator.ExamForXml" parameterType="com.qts.icam.model.administrator.StudentForXml">
+<!-- 		SELECT DISTINCT -->
+<!-- 			smd.exam_name as examCode, -->
+<!-- 			e.exam_name as examName, -->
+<!-- 			smd.exam_type as examTypeCode, -->
+<!-- 			et.exam_type_name as examType, -->
+<!-- 			smd.term as termCode, -->
+<!-- 			td.term_details_name as term -->
+<!-- 		FROM -->
+<!-- 			"History_Student_Marks_Details" smd -->
+<!-- 		JOIN "Exam" e ON(smd.exam_name=e.exam_code) -->
+<!-- 		JOIN "Exam_Type" et ON(smd.exam_type=et.exam_type_code) -->
+<!-- 		JOIN "Term_Details" td ON(smd.term=td.term_details_code) -->
+<!-- 		WHERE -->
+<!-- 			smd.student_id=#{registrationId} -->
+<!-- 		AND -->
+<!-- 			smd.year=#{year}; -->
+	</select>
+	
+	
+	<select id="subjectMarksListForXml" resultType="com.qts.icam.model.administrator.SubjectMarksForXml" parameterType="com.qts.icam.model.administrator.ExamForXml">
+<!-- 		SELECT -->
+<!-- 			s.subject_name as subject, -->
+<!-- 			sg.subject_group_name as subjectGroup, -->
+<!-- 			smd.full_marks as fullMarks, -->
+<!-- 			smd.passing_marks as passMarks, -->
+<!-- 			smd.marks_obtain as obtainedMarks -->
+<!-- 		FROM -->
+<!-- 			"History_Student_Marks_Details" smd -->
+<!-- 		JOIN "Subject" s ON(smd.subject_name=s.subject_code) -->
+<!-- 		JOIN "Subject_Group" sg ON(smd.subject_group=sg.subject_group_code) -->
+<!-- 		WHERE -->
+<!-- 			student_id=#{registrationId} -->
+<!-- 		AND -->
+<!-- 			year=#{year} -->
+<!-- 		AND -->
+<!-- 			exam_type=#{examTypeCode} -->
+<!-- 		AND -->
+<!-- 			exam_name=#{examCode} -->
+<!-- 		AND -->
+<!-- 			term=#{termCode}; -->
+	</select>
+	
+	
+	<select id="staffListForXml" resultType="com.qts.icam.model.administrator.StaffForXml" >
+<!-- 		SELECT -->
+<!-- 			r.user_id as userId, -->
+<!-- 			rt.resource_type_name as resourceType, -->
+<!-- 			r.first_name || ' ' || r.middle_name || ' ' || COALESCE(r.last_name,'  ')  as name, -->
+<!-- 			rf.first_name || ' ' || rf.middle_name || ' ' || rf.last_name as fathersName, -->
+<!-- 			rm.first_name || ' ' || rm.middle_name || ' ' || rm.last_name as mothersName, -->
+<!-- 			(SELECT to_char((SELECT to_timestamp(r.date_of_birth)), 'DD/MM/YYYY'))as dateOfBirth, -->
+<!-- 			a.address_1 || ' ' || a.address_2 || ' ' || ci.city_name || ' ' || d.district_name || ' ' || st.state_name || '  Land Mark-' || a.land_mark || '  PO-' || a.post_office || ' PS-' || a.police_station || '  PIN-' || a.postal_code || ' ' || co.country_name as prsentAddress, -->
+<!-- 			a1.address_1 || ' ' || a1.address_2 || ' ' || ci1.city_name || ' ' || d1.district_name || ' ' || st1.state_name || '  Land Mark-' || a1.land_mark || '  PO-' || a1.post_office || ' PS-' || a1.police_station || '  PIN-' || a1.postal_code || ' ' || co1.country_name as permanentAddress, -->
+<!-- 			r.nationality as nationality, -->
+<!-- 			r.email_address as email, -->
+<!-- 			r.contact_number as contactNumber, -->
+<!-- 			g.gender_name as gender, -->
+<!-- 			r.religion as religion, -->
+<!-- 			r.blood_group as bloodGroup, -->
+<!-- 			(SELECT to_char((SELECT to_timestamp(erp.doj)), 'DD-MM-YYYY')) as dateOfJoining, -->
+<!-- 			(SELECT to_char((SELECT to_timestamp(erp.date_of_retirement)), 'DD-MM-YYYY')) as dateOfRetirement, -->
+<!-- 			jt.job_type_name as jobType, -->
+<!-- 			jt.job_type_code as jobTypeCode, -->
+<!-- 			erp.is_retired as retired, -->
+<!-- 			erp.mode_of_retirement as modeOfRetirement, -->
+<!-- 			erp.reason_for_retirement as reasonOfRetirement, -->
+<!-- 			tl.teaching_level_name as teachingLevel, -->
+<!-- 			erp.is_leaving_certificate_granted as leavingCertificateGranted, -->
+<!-- 			dep.department_name as department, -->
+<!-- 			des.designation_name as designation, -->
+<!-- 			des.designation_code as designationCode, -->
+			
+<!-- 			lvl.level_code as designationLevelCode,			 -->
+<!-- 			lvl.level_name as designationLevelName, -->
+			
+<!-- 			salary_template_code as templateName, -->
+<!-- 			salary_template_name as templateName -->
+<!-- 		FROM		 -->
+<!-- 		"Resource" r -->
+<!-- 		LEFT JOIN "Resource_Type" rt ON(r.resource_type=rt.rec_id) -->
+<!-- 		LEFT JOIN "Resource" rf ON(r.father_name=rf.rec_id) -->
+<!-- 		LEFT JOIN "Resource" rm ON(r.mother_name=rm.rec_id) -->
+<!-- 		LEFT JOIN "Personal_Location" pl ON(r.present_address=pl.rec_id) -->
+<!-- 		LEFT JOIN "Address" a ON(pl.personal_location_address=a.rec_id) -->
+<!-- 		LEFT JOIN "Country" co ON(a.country=co.rec_id) -->
+<!-- 		LEFT JOIN "City" ci ON(a.city=ci.rec_id) -->
+<!-- 		LEFT JOIN "District" d ON(a.district=d.rec_id) -->
+<!-- 		LEFT JOIN "State" st ON(a.state=st.rec_id) -->
+<!-- 		LEFT JOIN "Personal_Location" pl1 ON(r.permanent_address=pl1.rec_id) -->
+<!-- 		LEFT JOIN "Address" a1 ON(pl1.personal_location_address=a1.rec_id) -->
+<!-- 		LEFT JOIN "Country" co1 ON(a1.country=co1.rec_id) -->
+<!-- 		LEFT JOIN "City" ci1 ON(a1.city=ci1.rec_id) -->
+<!-- 		LEFT JOIN "District" d1 ON(a1.district=d1.rec_id) -->
+<!-- 		LEFT JOIN "State" st1 ON(a1.state=st1.rec_id) -->
+<!-- 		LEFT JOIN "Gender" g ON(r.gender=g.rec_id) -->
+<!-- 		LEFT JOIN "ERP" erp ON(r.emp_number=erp.rec_id)		 -->
+<!-- 		LEFT JOIN "Teaching_Level" tl ON(erp.teaching_level=tl.rec_id) -->
+<!-- 		LEFT JOIN "Department" dep ON(r.department=dep.rec_id)		 -->
+<!-- 		LEFT JOIN "Designation_Level_Mapping" dlm ON (dlm.rec_id = erp.designation_level_mapping) -->
+<!-- 		LEFT JOIN "Designation" des ON (dlm.designation=des.rec_id) -->
+<!-- 		LEFT JOIN "Level" lvl ON (dlm.level = lvl.rec_id) -->
+<!-- 		LEFT JOIN "Job_Type" jt ON(erp.job_type=jt.rec_id) -->
+<!-- 		LEFT JOIN "Salary_Template" sts ON (dlm.salary_template = sts.rec_id) -->
+<!-- 		WHERE -->
+<!-- 			rt.resource_type_code IN ('CODE-TEACHER-1','CODE-NONTEACHINGSTAFF');		 -->
+	</select>
+	
+	<select id="salaryDetailsList" resultType="com.qts.icam.model.administrator.SalaryDetailsForXml" parameterType="com.qts.icam.model.administrator.StaffForXml">
+<!-- 		SELECT -->
+<!-- 			sbu.salarybreakup_name as breakupName, -->
+<!-- 			sbu.salarybreakup_type as breakupType, -->
+<!-- 			esa.amount as breakupAmount -->
+<!-- 		FROM -->
+<!-- 			"Salary_Break_Up" sbu -->
+<!-- 		JOIN "Status_Flag" sf ON(sbu.active=sf.rec_id) -->
+<!-- 		JOIN "ERP_Salary_Amount" esa ON (esa.salary_break_up = sbu.rec_id) AND (esa.active = sf.rec_id) -->
+<!-- 		JOIN "ERP" erp ON (erp.rec_id = esa.user_id) AND (sf.rec_id = erp.active) -->
+<!-- 		JOIN "Resource" r ON (r.emp_number = erp.rec_id) AND (sf.rec_id = r.active) -->
+<!-- 		WHERE -->
+<!-- 			sf.status_sym='A'		 -->
+<!-- 		AND -->
+<!-- 			r.user_id  ilike  #{userId} -->
+<!-- 		AND -->
+<!-- 			sbu.salarybreakup_code IS NOT NULL -->
+<!-- 		ORDER BY  -->
+<!-- 			sbu.salarybreakup_id;		 -->
+	</select>
+	
+	<select id="getSubjectsTaught" resultType="com.qts.icam.model.administrator.SubjectsForXml" parameterType="java.lang.String">
+<!-- 		SELECT -->
+<!-- 			s.subject_name as subject, -->
+<!-- 			sg.subject_group_name as subjectGroup -->
+<!-- 		FROM -->
+<!-- 			"Teacher_Subject_Mapping" tsm -->
+<!-- 		JOIN "Resource" r ON(r.rec_id=tsm.resource) -->
+<!-- 		JOIN "Subject_SubjectGroup_Mapping" ssgm ON(ssgm.rec_id = tsm.subject_subjectgroup_mapping) -->
+<!-- 		JOIN "Subject_Group" sg ON (ssgm.subject_group=sg.rec_id) -->
+<!-- 		JOIN "Subject" s ON (ssgm.subject=s.rec_id) -->
+<!-- 		WHERE -->
+<!-- 			r.user_id=#{userId}; -->
+	</select>
+	
+	<insert id="insertInArchiveAndPurge" parameterType="com.qts.icam.model.administrator.PreviousData">
+<!-- 		INSERT INTO "Archive_And_Perge"( -->
+<!-- 			rec_id, obj_id, updated_by, updated_on,  -->
+<!-- 			date_of_creation, academic_year, archived, archive_date, perged) -->
+<!-- 		VALUES (uuid_generate_v4(), #{objectId}, (SELECT rec_id FROM "Resource" WHERE user_id=#{updatedBy}), -->
+<!-- 			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())), #{next}, -->
+<!-- 			true, (SELECT extract(epoch FROM now())), false); -->
+	</insert>
+	
+	
+	<parameterMap id="purgeRecordPostParameterMap" type="com.qts.icam.model.common.AcademicYear">		
+		<parameter property="academicYearName" jdbcType="VARCHAR" mode="IN" />
+	</parameterMap>
+	
+		<insert id="purgeRecordPost" parameterMap="purgeRecordPostParameterMap" statementType="CALLABLE">
+<!-- 		{call data_purging(?)} -->
+		</insert>
+	
+	
+	<insert id="updateArchiveAndPurge" parameterType="com.qts.icam.model.common.AcademicYear">
+<!-- 		UPDATE "Archive_And_Perge" SET -->
+<!-- 			updated_by=(SELECT rec_id FROM "Resource" WHERE user_id=#{updatedBy}), -->
+<!-- 			updated_on=(SELECT extract(epoch FROM now())),  -->
+<!-- 			perged=true, -->
+<!-- 			perge_date=(SELECT extract(epoch FROM now())) -->
+<!-- 		WHERE -->
+<!-- 			academic_year=#{academicYearName}; -->
+	</insert>
+	
+	<select id="checkForPurging" resultType="com.qts.icam.model.administrator.PreviousData" parameterType="java.lang.String">
+<!-- 		SELECT -->
+<!-- 			academic_year as objectId, -->
+<!-- 			perged as staff, -->
+<!-- 			(SELECT to_char((SELECT to_timestamp(perge_date)), 'DD-MM-YYYY')) as next -->
+<!-- 		FROM -->
+<!-- 			"Archive_And_Perge" -->
+<!-- 		WHERE -->
+<!-- 			academic_year=#{academicYear}; -->
+	</select>
+	
+	
+	
+	<resultMap id="selectNotificationMediumsResultMap" type="com.qts.icam.model.common.LoggingAspect">
+		<id property="notificationLevel" column="notification_level_name"
+			jdbcType="VARCHAR" />
+		<collection property="notificationMediums"
+			ofType="com.qts.icam.model.common.NotificationMedium">
+			<id property="notificationMediumName" column="notification_medium_name"
+				jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="selectNotificationMediums" resultMap="selectNotificationMediumsResultMap">
+		SELECT
+			nl.notification_level_name,nm.notification_medium_name
+		FROM
+			notification_level nl,notification_medium nm 
+		WHERE
+			nl.is_active = true
+		AND
+			nm.is_active = true
+	</select>
+	
+	<select id="checkingNotificationLevelMediumCode" parameterType="com.qts.icam.model.common.NotificationMedium" resultType="java.lang.String">
+		SELECT
+			nlmm.notification_level_medium_mapping_code as notificationLevelMediumCode
+		FROM
+			notification_level nl
+		JOIN
+			notification_level_medium_mapping nlmm ON ( nl.rec_id = nlmm.notification_level) AND (nlmm.is_active = true)
+		JOIN
+			notification_medium nm ON ( nm.rec_id = nlmm.notification_medium) AND (nm.is_active = true)
+		WHERE
+			nl.is_active = true
+		AND
+			nl.notification_level_name=#{notificationMediumDesc}
+		AND
+			nm.notification_medium_name=#{notificationMediumName};
+	</select>
+	
+	<select id="getAllNotificationMediumsForNotificationLevel" parameterType="java.lang.String" resultType="com.qts.icam.model.common.NotificationMedium">
+		SELECT
+			nlmm.is_active as active, nm.notification_medium_name as notificationMediumName
+		FROM
+			notification_level_medium_mapping nlmm
+		JOIN
+			notification_level nl ON (nlmm.notification_level= nl.rec_id)
+		JOIN
+			notification_medium nm ON (nlmm.notification_medium = nm.rec_id)
+		WHERE
+			nl.notification_level_name=#{notificationLevelName};
+	</select>
+
+	<insert id="insertNotificationMediumAndLevelMapping" parameterType="com.qts.icam.model.common.NotificationMedium">
+		INSERT INTO 
+			notification_level_medium_mapping(
+			rec_id,
+			obj_id,
+			notification_level_medium_mapping_name,
+			notification_level_medium_mapping_code,
+			notification_level_medium_mapping_desc,
+			date_of_creation,
+			updated_by,
+			updated_on,
+			notification_level,
+			notification_medium
+		)VALUES(
+			uuid_generate_v4(),
+			#{objectId},
+			(select (#{notificationMediumDesc}||'-'||#{notificationMediumName})),
+			(select (#{notificationMediumDesc}||'-'||#{notificationMediumName})),
+			(select (#{notificationMediumDesc}||'-'||#{notificationMediumName})),
+			(SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy}),
+			(SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM notification_level WHERE notification_level_name = #{notificationMediumDesc} AND is_active = true),
+			(SELECT rec_id FROM notification_medium WHERE notification_medium_name = #{notificationMediumName} AND is_active = true)
+		);
+	</insert>
+	
+	<update id="inActiveNotificationMediumAndLevelMapping" parameterType="com.qts.icam.model.common.NotificationMedium">
+		UPDATE
+			notification_level_medium_mapping
+		SET
+		    is_active=false,
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy}),
+			updated_on=(SELECT extract(epoch FROM now()))
+		WHERE
+			notification_level=(SELECT rec_id FROM notification_level WHERE notification_level_name = #{notificationMediumDesc} AND is_active=true)
+		AND
+			notification_medium=(SELECT rec_id FROM notification_medium WHERE notification_medium_name = #{notificationMediumName} AND is_active=true)
+		AND
+			is_active=true;
+	</update>
+	
+	<update id="activeNotificationMediumAndLevelMapping" parameterType="com.qts.icam.model.common.NotificationMedium">
+		UPDATE
+			notification_level_medium_mapping
+		SET
+			is_active=true,
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy}),
+			updated_on=extract(epoch FROM now())
+		WHERE
+			notification_level=(SELECT rec_id FROM notification_level WHERE notification_level_name = #{notificationMediumDesc} AND is_active=true)
+		AND
+			notification_medium=(SELECT rec_id FROM notification_medium WHERE notification_medium_name = #{notificationMediumName} AND is_active=true)
+		AND
+			is_active=false;
+	</update>
+
+
+	<!-- Modified by naimisha 22082017 -->
+	<insert id="insertApproverGroup" parameterType="com.qts.icam.model.administrator.Approver">
+		INSERT INTO approver_group(			    
+			    rec_id, 
+			    obj_id, 
+			    updated_by, 
+			    updated_on, 
+			    date_of_creation, 
+			    is_active, 
+			    approver_group_code, 
+			    approver_group_name, 
+			    approver_group_desc)
+    VALUES (
+			uuid_generate_v4(),
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			true,  
+			(SELECT ('APPROVERGROUP-' ||(select COALESCE((SELECT MAX(approver_group_id) FROM approver_group), 0 )+1))), 
+			#{approverGroupName},
+			#{approverGroupDesc}
+			);
+	</insert>
+	
+	<insert id="insertApproverGroupResourceMapping" parameterType="com.qts.icam.model.common.Resource">
+		INSERT INTO approver_group_resource_mapping(
+						rec_id, 
+						obj_id, 
+						updated_by, 
+						updated_on, 
+						date_of_creation, 
+						is_active, 
+						approver_group, 
+						resource)
+    VALUES (
+					uuid_generate_v4(),
+					#{approver.objectId},
+					(SELECT rec_id FROM resource WHERE user_id=#{approver.updatedBy} AND is_active=true),
+					(SELECT extract(epoch FROM now())),
+					(SELECT extract(epoch FROM now())),
+					true,  
+					(Select rec_id from approver_group where is_active=true AND approver_group_id=(SELECT MAX(approver_group_id) FROM approver_group)), 
+					(SELECT rec_id FROM resource WHERE user_id=#{userId} AND is_active=true)
+					);
+	</insert>
+	
+	
+	<!-- Modified By Naimisha 22082017 -->
+	<select id="selectAllApproverGroups" resultType="com.qts.icam.model.administrator.Approver">
+		SELECT
+			approver_group_code as approverGroupCode,
+			approver_group_name	as approverGroupName,
+			approver_group_desc as approverGroupDesc,
+			to_char((SELECT to_timestamp(date_of_creation)),'DD/MM/YYYY')as status
+			
+		FROM
+			approver_group
+		WHERE
+			is_active=true;
+	</select>
+	
+	<update id="inactiveApproverGroupDetails" parameterType="com.qts.icam.model.administrator.Approver">
+			UPDATE
+				approver_group_resource_mapping 	
+			SET
+				updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+				updated_on = (SELECT extract(epoch FROM now())),
+				is_active = false
+			WHERE
+				approver_group = (SELECT rec_id FROM approver_group WHERE approver_group_code=#{approverGroupCode} AND is_active =true )
+			AND
+				is_active = true;
+
+		
+			UPDATE
+				approver_group
+			SET
+				updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+				updated_on = (SELECT extract(epoch FROM now())),
+				is_active = false
+			WHERE
+				approver_group_code =#{approverGroupCode}
+			AND
+				is_active = true;
+	</update>
+	
+	<select id="selectApproverGroupDetails" parameterType="com.qts.icam.model.administrator.Approver" resultType="com.qts.icam.model.common.Resource">
+		SELECT
+			approver_group_code as "approver.approverGroupCode",
+			approver_group_name	as "approver.approverGroupName",
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as name ,
+			r.user_id as userId
+		FROM
+			approver_group_resource_mapping agrm
+		JOIN
+			approver_group ag  ON(agrm.approver_group = ag.rec_id)	AND(ag.is_active=true)
+		JOIN
+			resource r ON(agrm.resource = r.rec_id)	AND(r.is_active=true)
+		WHERE
+			agrm.is_active=true
+		AND
+			ag.approver_group_code=#{approverGroupCode}
+		ORDER BY 
+			(approver_group_resource_id);			
+	</select>
+	
+<!-- 	/********Changed By Naimisha 29032017********/ -->
+	 <!-- <resultMap id="getjobDetailsListRM" type="com.qts.icam.model.erp.JobType">
+		<result property="jobTypeCode" column="job_code" jdbcType="VARCHAR" />
+		<result property="jobTypeName" column="job_name" jdbcType="VARCHAR" />
+		<result property="jobTypeDesc" column="job_desc" jdbcType="VARCHAR" /> 
+	</resultMap>   -->
+	<!-- //missing link integration 17042018 -->
+	<select id="getjobDetailsList" resultType="com.qts.icam.model.erp.JobType">
+		SELECT 
+			task_code as jobTypeCode,
+			task_name as jobTypeName,
+			task_desc as jobTypeDesc,
+			is_serial as serialApproval,
+			is_parallel as parallelApproval,
+			approval_required as approvalRequired
+		 FROM
+			task 
+		WHERE 
+			is_active = true
+	</select> 
+	<!-- 	/********Changed By Naimisha 29032017********/ -->
+	<!-- //Modified By Naimisha 10042018 -->
+	<insert id="insertJobDetails" parameterType="com.qts.icam.model.erp.JobType">
+		INSERT INTO
+			task(
+			rec_id,
+			obj_id,
+			updated_by,
+			updated_on,
+			date_of_creation,		
+			task_name,
+			task_desc,
+			task_code,
+			approval_required,
+			is_finance,
+			is_linked,
+			note,
+			functionality,
+			task_assignee,
+			department,
+			designation,
+			designation_level,
+			action)
+		VALUES (uuid_generate_v4(),
+			#{jobTypeObjectId},
+			(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),		
+			UPPER(#{jobTypeName}),
+			UPPER(#{jobTypeDesc}),
+			(SELECT ('TASK-' ||(select COALESCE((SELECT MAX(serial_id) FROM task), 0 )+1))),
+			#{approvalRequired},
+			#{isFinance},
+			#{isLinked},
+			#{note},
+			(SELECT rec_id FROM module_functionality WHERE functionality_name = #{functionality} AND is_active = true),
+			#{taskAssignee},
+			(SELECT rec_id FROM department WHERE department_code = #{department} AND is_active = true),
+			(SELECT rec_id FROM designation WHERE designation_code = #{designation} AND is_active = true),
+			(SELECT dl.rec_id FROM designation_level dl JOIN designation_level_mapping dlm ON (dl.rec_id = dlm.designation_level AND dlm.is_active = true) JOIN designation d ON (dlm.designation = d.rec_id AND d.is_active = true) WHERE designation_code = #{designation} AND designation_level_code = #{designationLevel} AND dl.is_active = true),
+			#{action});
+	</insert>
+	
+	<select id="getAllDataOfApprovalOrder" resultType="com.qts.icam.model.administrator.Approver" >
+		SELECT 
+				ag.approver_group_name as approverGroupName,
+				ao.approver_order as approverGroupCode,
+				job_name as status
+				
+		FROM
+			approval_order ao
+		JOIN 	
+			approver_group ag ON (ao.approver_group = ag.rec_id AND ag.is_active = true)
+		JOIN
+			job_details jd ON (ao.jobs = jd.rec_id AND jd.is_active = true)
+		AND	
+			ao.is_active = true;
+	</select>
+	<!-- //Modified By Naimisha 25082017 -->
+	<insert id="insertApproverOrderDetails" parameterType="com.qts.icam.model.administrator.Approver">
+		INSERT INTO
+		approval_order(
+		rec_id,
+		obj_id,
+		updated_by,
+		updated_on,
+		date_of_creation,		
+		approver_group,
+		approver_order,
+		jobs)
+		VALUES (uuid_generate_v4(),
+		#{objectId},
+		(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+		(SELECT extract(epoch FROM now())),
+		(SELECT extract(epoch FROM now())),	
+		(SELECT rec_id FROM approver_group WHERE approver_group_code=#{approverGroupCode} AND is_active = true),	
+		#{approverGroupName},
+		(SELECT rec_id FROM job_details WHERE job_code = #{approverGroupDesc} AND is_active = true));
+	</insert>
+	
+<!-- For task notification and delegation -->	
+	<select id="allResourceDetailsList" resultType="com.qts.icam.model.common.Resource" parameterType = "java.lang.String">
+		
+	SELECT
+			user_id as userId,
+			first_name as firstName,
+			middle_name as middleName,
+			last_name as lastName
+	FROM	 
+			resource
+	WHERE
+			 resource_type = (SELECT rec_id from resource_type where resource_type_code = #{resourceTypeName});
+	</select> 
+	
+
+	
+	<insert id="insertIntoMyEventsForTaskDetails" parameterType="com.qts.icam.model.common.Resource">
+		INSERT INTO my_events( 
+					            my_events_usrid, 
+					            my_events_start_date, 
+					            my_events_end_date, 
+					            my_events_desc)
+			   		 VALUES (#{resourceType.resourceTypeCode},
+						   	 #{startDate}, 
+						   	 #{startDate},
+				          	 #{jobType.jobTypeName});
+	</insert>
+	
+		<select id="allTaskDetailsList" resultType="com.qts.icam.model.common.TaskDetails" parameterType = "java.lang.String">
+		
+	SELECT
+			r.first_name ||' '|| COALESCE(r.middle_name,' ') ||' '|| COALESCE(r.last_name,' ')as updatedBy,
+			r1.first_name ||' '|| COALESCE(r1.middle_name,' ') ||' '|| COALESCE(r1.last_name,' ') as presentUser,
+			jd.job_name as taskDetailsName,
+			sf.status_desc as status,
+			(SELECT to_char((SELECT to_timestamp(td.date_of_creation)), 'DD-MM-YYYY')) as startDate
+	FROM 
+		task_details td
+	JOIN
+		resource r ON (td.task_alocatted_by = r.rec_id)
+	JOIN
+		resource r1 ON(td.actualowner_id = r1.rec_id)
+	JOIN
+		job_details jd ON (td.task_type = jd.rec_id)
+	JOIN
+		status_flag sf ON (td.status = sf.rec_id)
+	WHERE
+		td.task_alocatted_by = (select rec_id from resource where user_id = #{userName})
+	AND
+		td.is_active = true;
+	<!-- AND 
+		td.is_read = false; -->
+		
+	
+	</select>
+	
+	
+	<select id="selectUserNameByUserId" resultType="com.qts.icam.model.common.Resource" parameterType = "java.lang.String">
+		
+		SELECT
+			r.first_name ||' '|| COALESCE(r.middle_name,' ') ||' '|| COALESCE(r.last_name,' ')as updatedBy
+			
+		FROM 
+			resource r 
+		
+		WHERE
+			r.user_id = #{userId}
+		AND
+			r.is_active = true;
+		
+	
+	</select> 
+	
+	
+	<update id="deleteApprovalOrder" parameterType="com.qts.icam.model.administrator.Approver">
+	
+			UPDATE 
+				approval_order 
+			SET 
+				updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+				updated_on = (SELECT extract(epoch FROM now())),
+				is_active = false
+			WHERE 
+				approved_by_group = (select rec_id from approver_group where approver_group_name = #{approverGroupName} AND is_active = true)
+			AND
+				applicant_group = (select rec_id from approver_group where approver_group_name = #{approverGroupDesc} AND is_active = true)
+			AND
+				is_active = true;
+		<!-- UPDATE
+			access_type_resource_mapping 	
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id  ilike  #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			is_active = false
+			WHERE
+			access_type = (SELECT rec_id FROM access_type WHERE access_type_code=#{accessTypeCode} AND is_active =true )
+			AND
+			resource = (SELECT rec_id FROM resource WHERE user_id=#{accessTypeDesc} AND is_active = true)
+			AND
+			is_active = true;	 -->	
+	</update>
+	
+	<select id="getAllTaskList" resultType="java.lang.String" >	
+		SELECT
+			 job_name as jobTypeType
+		FROM job_details
+	</select>
+	
+	<!-- /************Done By Naimisha 23112016*************/ -->
+	<update id="setInactiveSubjectGroup" parameterType="com.qts.icam.model.academics.SubjectGroup">
+		UPDATE
+			subject_group
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+			is_active = false,
+			updated_on = (SELECT extract(epoch FROM now()))
+		WHERE
+			is_active = true	
+		AND
+			subject_group_code =#{subjectGroupCode};	
+	</update>
+	
+	<update id="setInactiveSubject" parameterType="com.qts.icam.model.academics.Subject">
+		UPDATE
+			subject
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			is_active = false
+		WHERE
+			is_active = true
+		AND
+			subject_code =#{subjectCode};	
+	</update>
+	
+	<update id="setInactiveStaff" parameterType="com.qts.icam.model.common.Resource">
+	UPDATE
+			resource
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			is_active = false
+		WHERE
+			is_active = true
+		AND
+			user_id =#{userId};	
+	</update>
+	
+	<!-- naimisha 25052017 -->
+	
+	<update id="setInactiveStudent" parameterType="com.qts.icam.model.common.Resource">
+	UPDATE
+			resource
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			is_active = false
+		WHERE
+			is_active = true
+		AND
+			resource_type= (SELECT rec_id FROM resource_type WHERE is_active = true AND resource_type_name='STUDENT')
+		AND
+			user_id =#{registrationId};	
+	</update>
+	
+	<update id="setCourseInactive" parameterType="com.qts.icam.model.common.Course">
+		UPDATE
+			course
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			is_active = false
+		WHERE
+			is_active = true
+		AND
+			course_code =#{courseCode};		
+	</update>
+	
+	<select id="getRespositoryStructure" resultType="com.qts.icam.model.common.RepositoryStructure">
+		SELECT
+			repository_structure_code as repositoryPathCode,
+			repository_structure_name as repositoryPathName,
+			repository_structure_os as os
+		FROM
+			repository_structure
+		WHERE
+			is_active = true;		
+	</select>
+	
+	<select id="selectExistingRepository" parameterType="com.qts.icam.model.common.RepositoryStructure" resultType="java.lang.String">
+		SELECT
+			repository_structure_code
+		FROM
+			repository_structure
+		WHERE
+			repository_structure_os = #{os}
+		AND
+			is_active = true;	
+	</select>
+	
+	<update id="inactiveExistingRepository" parameterType="com.qts.icam.model.common.RepositoryStructure">
+		UPDATE
+			repository_structure
+		SET
+			is_active = false
+		WHERE
+			repository_structure_os = #{os}
+		AND
+			is_active = true;
+	</update>
+	
+	<insert id="saveRepository" parameterType="com.qts.icam.model.common.RepositoryStructure">
+		INSERT INTO
+			repository_structure
+		VALUES
+			(
+				uuid_generate_v4(),	#{repositoryObjectId},
+				(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())),
+				true,
+				(SELECT 'REPOS-' ||COALESCE((SELECT MAX(repository_structure_id) FROM repository_structure), 0 )+1),
+				#{repositoryPathName},
+				#{repositoryPathName},
+				#{os}
+			);
+	</insert>
+	
+	<!-- new query added by saurav.bhadra 07042017 -->
+	
+	<update id="deleteSLATicket" parameterType="com.qts.icam.model.ticket.Ticket">
+		UPDATE
+			sla
+		SET 
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active=true), 
+			updated_on=(SELECT extract(epoch FROM now())),
+			is_active = false
+		WHERE 
+			is_active = true
+		AND
+			sla_id=#{ticketId};
+	</update>
+	
+	<select id="approverGroupListForAJobType" resultType="com.qts.icam.model.administrator.Approver" parameterType = "java.lang.String">
+		SELECT
+			approver_group_code as approverGroupCode,
+			approver_group_name	as approverGroupName,
+			approver_group_desc as approverGroupDesc,
+			is_serial as serialApproval,
+			is_parallel as parallelApproval
+		FROM
+			approver_group ag
+		JOIN
+			job_details jd ON (jd.approvers_group = ag.rec_id AND jd.is_active = true)
+		WHERE
+			jd.job_code =  #{jobType}
+		AND
+			ag.is_active=true;
+	</select>
+	
+	<select id="approverGroupListAgainstUserId" resultType="com.qts.icam.model.administrator.Approver" parameterType = "java.lang.String">
+		SELECT
+			approver_group_code as approverGroupCode,
+			approver_group_name	as approverGroupName
+		FROM
+			approver_group ag
+		JOIN	approver_group_resource_mapping agrm ON (agrm.approver_group = ag.rec_id AND agrm.is_active = true)
+		JOIN	resource r ON (agrm.resource = r.rec_id AND r.is_active = true)
+		WHERE
+			r.user_id =  #{userId}
+		AND
+			ag.is_active = true
+	</select>
+	
+	
+	<!-- //Modified By Naimisha 28082017 -->
+	<select id="jobTypeListAgainstApproverGroup" resultType="com.qts.icam.model.erp.JobType" parameterType = "java.lang.String">
+		SELECT
+			jd.job_code as jobTypeCode,
+			jd.job_name as jobTypeName
+		FROM
+			job_details jd
+		JOIN
+			approval_order ao ON (ao.jobs = jd.rec_id AND ao.is_active = true)
+		JOIN
+			approver_group ag ON (ao.approver_group = ag.rec_id AND ag.is_active = true)
+		WHERE
+			ag.approver_group_code = #{approverGroupCode}
+		AND
+			jd.is_active = true;
+
+	
+	</select>
+<!-- 	Modified By Naimisha 28052017 -->
+
+	<select id="getTaskDetailsAgainstJobTypeAndApproverGroup" resultType="com.qts.icam.model.common.TaskDetails" parameterType = "com.qts.icam.model.common.TaskDetails">
+		SELECT
+			tmd.ticket_master_details_code as taskDetailsObjectId,
+			jd.job_code as taskDetailsCode,
+			jd.job_name as taskDetailsName,
+			(SELECT to_char((SELECT to_timestamp(tmd.ticket_master_details_open_date)), 'DD-MM-YYYY')) as startDate,
+			(SELECT to_char((SELECT to_timestamp(tmd.ticket_master_details_close_date)), 'DD-MM-YYYY')) as endDate,
+			ts.ticket_status_code status,
+			t.ticket_desc as taskDetailsDesc
+		FROM
+			job_details jd
+		JOIN
+			ticket t ON (jd.rec_id = t.service_type AND t.is_active  = true)
+		JOIN
+			ticket_master_details tmd ON (tmd.ticket = t.rec_id AND tmd.is_active = true)
+		JOIN
+			approver_group ag ON (ag.rec_id = tmd.approver_group AND ag.is_active = true)
+		JOIN
+			ticket_status ts ON (tmd.ticket_master_details_status = ts.rec_id AND ts.is_active = true)
+		WHERE
+			ag.approver_group_code = #{taskDetailsCode}
+		AND
+			job_code = #{taskType}
+		AND
+			ts.ticket_status_code NOT IN ('CLOSED','APPROVED')
+		AND
+			jd.is_active = true;
+	
+	</select>
+	
+	<select id="selecTaskDetailsForATicket" resultType="com.qts.icam.model.common.Task" parameterType="com.qts.icam.model.common.Task">
+		SELECT
+			 (SELECT to_char((SELECT to_timestamp(tc.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM')) as startDate,
+			 r.user_id as userId,
+			 r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as updatedBy,
+			  task_comment as taskComment
+		FROM
+			  task_comment tc
+	  	JOIN
+			  task_details td ON (tc.task = td.rec_id AND tc.is_active = true)
+		JOIN
+			  ticket_master_details t ON (td.ticket_master_details = t.rec_id AND t.is_active = true)
+		JOIN
+			  resource r ON (r.rec_id = td.actualowner_id  AND r.is_active = true)
+	  	WHERE
+			  t.ticket_master_details_code = #{taskCode}
+		AND
+			td.is_active = true;
+	</select>
+	
+	<update id="deleteRoleContactMapping" parameterType="com.qts.icam.model.administrator.Role">
+		UPDATE
+			role_resource_mapping
+		SET
+			is_active =false,
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active=true),
+			updated_on = (SELECT extract(epoch FROM now()))
+		WHERE
+			is_active = true
+		AND
+			role =(SELECT rec_id FROM role WHERE is_active =true AND role_code = #{roleCode})
+		AND
+			resource=(SELECT rec_id FROM resource WHERE is_active =true AND user_id  =  #{roleName}) ;
+	</update>
+	
+	<select id="getAllRolesForProfilematrix" resultType="com.qts.icam.model.administrator.Role">
+		SELECT
+			role_code as roleCode,
+			role_name as roleName
+		FROM
+			role 
+		WHERE
+			is_active = true
+		ORDER BY
+			date_of_creation DESC;	
+	</select>
+	
+	<select id="getAllModulesForProfilematrix" resultType="com.qts.icam.model.administrator.Module">
+		SELECT 
+			module_code as moduleCode,
+			module_name as moduleName
+		FROM
+			module
+		WHERE
+			is_active = true
+		ORDER BY
+			date_of_creation DESC;	
+	</select>
+	
+	<select id="submitProfileMatrix" parameterType="com.qts.icam.model.administrator.Module">
+		INSERT INTO profile_matrix(
+	            rec_id, object_id, updated_by, date_of_creation, updated_on, 
+	            role, module, tab_check, search_check, profile_matrix_code)
+    	VALUES ((SELECT	uuid_generate_v4()),#{objectId},(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+    			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+    			(SELECT rec_id FROM role WHERE role_code = #{moduleName} AND is_active = true),
+    			(SELECT rec_id FROM module WHERE module_code = #{moduleCode} AND is_active = true),
+    			#{tabCheck},#{searchCheck},
+    			(SELECT ('PROFILEMATRIX-' ||(select COALESCE((SELECT MAX(profile_matrix_id) FROM profile_matrix), 0 )+1))));
+	</select>
+	
+	<select id="getModuleListForSpecificRole" parameterType="java.lang.String" resultType="com.qts.icam.model.administrator.Module">
+		SELECT
+			module_code as moduleCode,
+			module_name as moduleName
+		FROM
+			profile_matrix pm
+		JOIN
+			module m ON (pm.module = m.rec_id AND m.is_active = true)
+		JOIN 
+			role r ON (pm.role = r.rec_id AND r.is_active = true)
+		WHERE
+			r.role_code = #{roleCode}
+		AND
+			pm.is_active = true
+	</select>
+	
+	<select id="getTabAndSearchForModuleAndRole" parameterType="com.qts.icam.model.administrator.Module" resultType="com.qts.icam.model.administrator.Module">
+		SELECT
+			tab_check as tabCheck,
+			search_check as searchCheck
+		FROM
+			profile_matrix pm
+		JOIN
+			module m ON (pm.module = m.rec_id AND m.is_active = true)
+		JOIN 
+			role r ON (pm.role = r.rec_id AND r.is_active = true)
+		WHERE
+			r.role_code = #{moduleName}
+		AND
+			m.module_code = #{moduleCode}
+		AND
+			pm.is_active = true	
+	</select>
+	
+	<delete id="deletePreviousCombinationOfProfileMatrix">
+		DELETE FROM profile_matrix where is_active = true
+	</delete>
+	
+	<!-- Author Saif.Ali -->
+	<insert id="insertEmailEventForTemplate" parameterType="com.qts.icam.model.administrator.EmailEventAndTemplate">	
+		INSERT INTO
+			email_event(rec_id,obj_id,updated_by,updated_on,date_of_creation,event_code,event_name)
+		VALUES
+			(
+				uuid_generate_v4(),	#{objectId},
+				(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())),
+				(SELECT 'EVENT-' ||COALESCE((SELECT MAX(email_event_id) FROM email_event), 0 )+1),
+				UPPER(#{eventName})
+			);
+	</insert>
+	
+	<!-- Author Saif.Ali -->
+	<select id="getListOfEmailEventForTemplate" resultType="com.qts.icam.model.administrator.EmailEventAndTemplate">
+		SELECT
+			event_name as eventName,
+			event_code as eventCode,
+			email_event_id as serialId
+		FROM
+			email_event
+		WHERE
+			is_active = true	
+	</select>
+	
+	<!-- Author Saif.Ali -->
+	<update id="updateEmailEventForTemplate" parameterType = "com.qts.icam.model.administrator.EmailEventAndTemplate">
+		UPDATE
+			email_event
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active=true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			event_name = UPPER(#{eventName})
+		WHERE
+			event_code= #{eventCode}
+		AND 
+			is_active= true;
+	</update>
+	
+	<!-- Author Saif.Ali -->
+	<!-- Modified by Saif 17-10-2017 -->
+	<insert id="insertTemplateForEmailEvent" parameterType="com.qts.icam.model.administrator.EmailEventAndTemplate">	
+		INSERT INTO
+			event_template(rec_id,obj_id,updated_by,updated_on,date_of_creation,template_code,template_subject,template_body,template_footer,
+			template_type,velocity_template_path)
+		VALUES
+			(
+				uuid_generate_v4(),	#{objectId},
+				(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())),
+				(SELECT 'TEMPLATE-' ||COALESCE((SELECT MAX(email_event_template_id) FROM event_template), 0 )+1),
+				#{emailSubject},#{emailBody},#{emailFooter},#{templateFor},#{eventCode}
+			);
+			<!-- <foreach item="parameter" collection="actionList"  open="" close="" separator=";">naimisha code
+			</foreach> -->
+	</insert>
+	
+	<!-- Author Saif.Ali -->
+	<select id="getEmailTemplateListToShow" resultType="com.qts.icam.model.administrator.EmailEventAndTemplate">
+		SELECT
+			email_event_template_id as serialId,
+			template_code as templateCode,
+			template_subject as emailSubject,
+			template_body as emailBody,
+			template_footer as emailFooter,
+			template_type as templateFor		<!-- Modified by Saif 17-10-2017 -->
+		FROM
+			event_template
+		WHERE
+			is_active = true	
+	</select>
+	
+	<!-- Author Saif.Ali -->
+	<select id="getEmailEventListForMapping" resultType="com.qts.icam.model.administrator.EmailEventAndTemplate">
+		SELECT
+			ee.event_code as eventCode,
+		    ee.event_name as eventName
+		FROM
+			email_event ee
+		WHERE
+			ee.is_active = true
+		AND
+			ee.rec_id NOT IN(SELECT event FROM email_event_template_mapping WHERE is_active= true)
+	</select>
+	
+	<!-- Author Saif.Ali -->
+	<select id="getEmailTemplateListForMapping" resultType="com.qts.icam.model.administrator.EmailEventAndTemplate">
+		SELECT
+			eet.template_code as templateCode,
+		    eet.template_subject as emailSubject
+		FROM
+			email_event_template eet
+		WHERE
+			eet.is_active = true	
+		AND 
+			eet.rec_id NOT IN(SELECT template from email_event_template_mapping WHERE is_active= true)
+	</select>
+	
+	<!-- Author Saif.Ali -->
+	<insert id="insertEmailEventAndTemplateMapping" parameterType="com.qts.icam.model.administrator.EmailEventAndTemplate">	
+		INSERT INTO
+			email_event_template_mapping(rec_id,obj_id,updated_by,updated_on,date_of_creation,event,template)
+		VALUES
+			(
+				uuid_generate_v4(),	#{objectId},
+				(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())),
+				(select rec_id from email_event where event_name= #{eventName}),(select rec_id from email_event_template where template_subject = #{emailSubject})
+			);
+	</insert>
+	
+	<!-- Author Saif.Ali -->
+	<select id="getMappingListOfEmailEventAndTemplate" resultType="com.qts.icam.model.administrator.EmailEventAndTemplate">
+		SELECT
+			ee.event_name as eventName,
+		    eet.template_subject as emailSubject
+		FROM
+			email_event_template_mapping em
+		JOIN 
+			email_event ee ON(ee.rec_id= em.event AND ee.is_active= true)
+		JOIN
+			email_event_template eet ON(eet.rec_id = em.template AND eet.is_active= true)
+		WHERE
+			em.is_active = true	
+	</select>
+	
+	<!-- Author Saif.Ali -->
+	<select id="getTemplateDetailsToEditForEvent" resultType="com.qts.icam.model.administrator.EmailEventAndTemplate" parameterType="java.lang.String">
+		SELECT
+			template_code as templateCode,
+			template_subject as emailSubject,
+		    template_body as emailBody,
+		    template_footer as emailFooter,
+		    template_type as templateFor		<!-- Modified by Saif 17-10-2017 -->
+		FROM
+			event_template
+		WHERE
+			is_active = true	
+		AND 
+			template_code= #{templateCode}
+	</select>
+	
+	<!-- Author Saif.Ali -->
+	<!-- Modified by Saif 17-10-2017 -->
+	<update id="updateTemplateInformationForEmail" parameterType = "com.qts.icam.model.administrator.EmailEventAndTemplate">
+		UPDATE
+			event_template
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active=true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			template_subject = UPPER(#{emailSubject}),
+			template_body = UPPER(#{emailBody}),
+			template_footer = UPPER(#{emailFooter}),
+			template_type= #{templateFor}
+		WHERE
+			template_code= #{templateCode}
+		AND 
+			is_active= true;
+	</update>
+		<!-- added By ranita.sur on 28082017 for mapping with survey -->
+		<!-- //missing link integration 17042018 -->
+	<select id="getAllSurveyList" resultType="com.qts.icam.model.survey.Question" >
+		SELECT 
+		     DISTINCT survey_id as surveyId,
+		     survey_name as surveyName 
+		     
+		FROM
+			 program_survey_question_slave	
+		WHERE 
+		    is_active = true;
+
+	</select>
+
+	<!-- added By ranita.sur on 27112017 for mapping with survey -->
+	<!-- //missing link integration 17042018 -->
+	<insert id="insertCategorySurveyMapping" parameterType="com.qts.icam.model.erp.JobType">
+		INSERT INTO category_survey_mapping(
+             rec_id, obj_id, updated_by, updated_on, 
+            date_of_creation, survey_id,category)
+    VALUES (  (uuid_generate_v4()), #{jobTypeObjectId},
+     (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())), #{jobTypeName}, (SELECT rec_id FROM category WHERE category_code = #{approverGroupName} AND is_active = true));
+	</insert>
+	<!-- added By ranita.sur on 27112017 for mapping with survey -->
+	<!-- //missing link integration 17042018 -->
+	<select id="getAllTaskSurveyList" resultType="com.qts.icam.model.erp.JobType" >
+		SELECT DISTINCT
+				 ps.survey_name as jobTypeName,
+				  jd.category_name as approverGroupName
+		  FROM 
+		  		category_survey_mapping ts
+		  JOIN
+			    program_survey_question_slave ps ON (ps.survey_id= ts.survey_id AND ps.is_active=true)
+		  JOIN
+			    category jd ON (jd.rec_id= ts.category AND jd.is_active=true) 
+			WHERE 
+			     ts.is_active=true;
+
+	</select>
+	<!-- Added By Naimisha 16102017 -->
+	<insert id="insertIntoCategory" parameterType="com.qts.icam.model.erp.JobType">
+		INSERT INTO category(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+             category_code, category_name, category_desc)
+    	VALUES (	(uuid_generate_v4()), 
+					#{jobTypeObjectId},
+					(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+					(SELECT extract(epoch FROM now())),
+					(SELECT extract(epoch FROM now())), 
+					(SELECT ('CATEGORY-' ||(select COALESCE((SELECT MAX(category_id) FROM category), 0 )+1))),
+					 UPPER(#{category}),
+					  UPPER(#{category}));
+
+	</insert>
+	
+	<insert id="insertIntoCategoryTaskMapping" parameterType="com.qts.icam.model.erp.JobType">
+		INSERT INTO category_task_mapping(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            task, category)
+    VALUES (	(uuid_generate_v4()), 
+		#{jobTypeObjectId},
+		(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+		(SELECT extract(epoch FROM now())),
+		(SELECT extract(epoch FROM now())),
+		(SELECT rec_id FROM task WHERE task_code = #{jobTypeCode} AND is_active = true),
+		(SELECT rec_id FROM category WHERE category_id = (SELECT MAX(category_id) FROM category WHERE is_active = true))
+            );
+
+	</insert>
+	<!-- //missing link integration 17042018 -->
+	<resultMap id="getCategoryListMap" type="com.qts.icam.model.erp.JobType">
+		<id property="jobTypeCode" column="category_code" jdbcType="VARCHAR" />
+		<result property="category" column="category_name" jdbcType="VARCHAR" />		
+		<collection property="taskList" ofType="com.qts.icam.model.common.Task">
+			<id property="taskCode" column="task_code" jdbcType="VARCHAR" />
+			<result property="taskName" column="task_name" jdbcType="VARCHAR" />			
+		</collection>
+	</resultMap>
+	<!-- //missing link integration 17042018 -->
+	<select id="getCategoryList" resultMap ="getCategoryListMap" >
+		SELECT
+			category_code,
+			category_name
+		FROM
+			category c
+		
+		WHERE
+			c.is_active = true;
+
+	</select>
+	
+	<select id="getTaskistForCategory" resultMap ="getCategoryListMap" >
+		SELECT
+			category_code,
+			category_name,
+			task_code,
+			task_name
+		FROM
+			category c
+		LEFT JOIN
+			category_task_mapping ctm ON (c.rec_id = ctm.category AND ctm.is_active = true)
+		LEFT JOIN
+			task t ON (ctm.task = t.rec_id AND t.is_active = true)
+		AND
+			c.is_active = true
+		WHERE
+			category_code = #{categoryCode};
+
+	</select>
+	
+	<update id="updateIntoCategory" parameterType="com.qts.icam.model.erp.JobType">
+		UPDATE category
+		SET 
+			category_name = #{category},
+			updated_on = (SELECT extract(epoch FROM now())),
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true)
+		WHERE
+			category_code = #{jobTypeObjectId}
+		AND
+			is_active = true;
+	</update>
+	<select id="selecInactivetCategoryTaskMapping" resultMap ="getCategoryListMap" >
+		SELECT
+			category_code,
+			category_name,
+			task_code,
+			task_name
+		FROM
+			category c
+		JOIN
+			category_task_mapping ctm ON (c.rec_id = ctm.category AND ctm.is_active = false)
+		JOIN
+			task t ON (ctm.task = t.rec_id AND t.is_active = true)
+		AND
+			c.is_active = true
+		WHERE
+			category_code =#{jobTypeObjectId}
+		AND
+			task_code = #{jobTypeCode};
+
+	</select>
+	<update id="inactiveCategoryTaskMapping" parameterType="com.qts.icam.model.erp.JobType">
+		UPDATE category_task_mapping
+		SET 
+			is_active = false
+		WHERE
+			category = (SELECT rec_id FROM category WHERE category_code = #{jobTypeObjectId}AND is_active = true)
+		AND
+			is_active = true;
+	</update>
+	
+	<update id="updateIntoCategoryTaskMapping" parameterType="com.qts.icam.model.erp.JobType">
+		UPDATE category_task_mapping
+		SET 
+			is_active = true
+		WHERE
+			category = (SELECT rec_id FROM category WHERE category_code = #{jobTypeObjectId}AND is_active = true)
+		AND
+			task = (SELECT rec_id FROM task WHERE task_code = #{jobTypeCode} AND is_active = true)
+		AND
+			is_active = false;
+	</update>
+	
+	<insert id="insertCategoryTaskMapping" parameterType="com.qts.icam.model.erp.JobType">
+		INSERT INTO category_task_mapping(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            task, category)
+    VALUES (	(uuid_generate_v4()), 
+		#{jobTypeObjectId},
+		(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+		(SELECT extract(epoch FROM now())),
+		(SELECT extract(epoch FROM now())),
+		(SELECT rec_id FROM task WHERE task_code = #{jobTypeCode} AND is_active = true),
+		(SELECT rec_id FROM category WHERE category_code = #{jobTypeObjectId} AND is_active = true)
+            );
+
+	</insert>
+	
+	<insert id="insertCategoryRecipientMapping" parameterType="com.qts.icam.model.erp.JobType">
+		INSERT INTO category_appprover_group_mapping(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            approver_group, category)
+    	VALUES ((uuid_generate_v4()), 
+		#{jobTypeObjectId},
+		(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+		(SELECT extract(epoch FROM now())),
+		(SELECT extract(epoch FROM now())),
+		
+		(SELECT rec_id FROM approver_group  WHERE approver_group_code = #{jobTypeCode} AND is_active = true),
+		(SELECT rec_id FROM category WHERE category_code = #{category} AND is_active = true)
+		);
+
+
+	</insert>
+	
+	<select id="getCategoryListForRecipientMapping" resultMap ="getCategoryListMap" >
+		SELECT
+				DISTINCT category_code,
+				category_name
+			FROM
+				category c
+			JOIN
+				category_appprover_group_mapping cam ON (c.rec_id = cam.category AND cam.is_active = true)
+			AND
+				c.is_active = true
+	</select>
+	
+	<resultMap id="getCategoryListForRecipientMappingMap" type="com.qts.icam.model.erp.JobType">
+		<id property="jobTypeCode" column="category_code" jdbcType="VARCHAR" />
+		<result property="category" column="category_name" jdbcType="VARCHAR" />		
+		<collection property="approverGroupList" ofType="com.qts.icam.model.administrator.Approver">
+			<id property="approverGroupCode" column="approver_group_code" jdbcType="VARCHAR" />
+			<result property="approverGroupName" column="approver_group_name" jdbcType="VARCHAR" />			
+		</collection>
+	</resultMap>
+	
+	
+	<select id="getCategoryRecipientMapping" resultMap ="getCategoryListForRecipientMappingMap" parameterType = "java.lang.String">
+		SELECT
+			category_code,
+			category_name,
+			approver_group_code,
+			approver_group_name
+		FROM
+			category c
+		JOIN
+			category_appprover_group_mapping cam ON (c.rec_id = cam.category AND cam.is_active = true)
+		JOIN
+			approver_group ag ON (cam.approver_group = ag.rec_id AND ag.is_active = true)
+		AND
+			c.is_active = true
+		WHERE
+			category_code = #{categoryCode};
+	</select>
+	
+	<update id="inactiveCategoryApproverGroupMapping" parameterType="com.qts.icam.model.erp.JobType">
+		UPDATE category_appprover_group_mapping
+		SET 
+			is_active = false
+		WHERE
+			category = (SELECT rec_id FROM category WHERE category_code = #{jobTypeObjectId}AND is_active = true)
+		AND
+			is_active = true;
+	</update>
+	
+	<select id="selecInactivetCategoryApproverGroupMapping" resultMap ="getCategoryListForRecipientMappingMap" >
+		SELECT
+			category_code,
+			category_name,
+			approver_group_code,
+			approver_group_name
+		FROM
+			category c
+		JOIN
+			category_appprover_group_mapping cam ON (c.rec_id = cam.category AND cam.is_active = false)
+		JOIN
+			approver_group ag ON (cam.approver_group = ag.rec_id AND ag.is_active = true)
+		AND
+			c.is_active = true
+		WHERE
+			category_code = #{jobTypeObjectId}
+		AND
+			approver_group_code =  #{jobTypeCode};
+		
+
+	</select>
+	
+	<update id="updateIntoCategoryApproverGroupMapping" parameterType="com.qts.icam.model.erp.JobType">
+		UPDATE category_appprover_group_mapping
+		SET 
+			is_active = true
+		WHERE
+			category = (SELECT rec_id FROM category WHERE category_code = #{jobTypeObjectId}AND is_active = true)
+		AND
+			approver_group = (SELECT rec_id FROM approver_group WHERE approver_group_code = #{jobTypeCode} AND is_active = true)
+		AND
+			is_active = false;
+	</update>
+	
+	<insert id="insertIntoCategoryApproverGroupMapping" parameterType="com.qts.icam.model.erp.JobType">
+		INSERT INTO category_appprover_group_mapping(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            approver_group, category)
+    	VALUES ((uuid_generate_v4()), 
+		#{jobTypeObjectId},
+		(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+		(SELECT extract(epoch FROM now())),
+		(SELECT extract(epoch FROM now())),
+		
+		(SELECT rec_id FROM approver_group  WHERE approver_group_code = #{jobTypeCode} AND is_active = true),
+		(SELECT rec_id FROM category WHERE category_code = #{jobTypeObjectId} AND is_active = true)
+		);
+
+
+	</insert>
+	
+	<select id="getAllTicketStatusList" resultType ="com.qts.icam.model.ticket.Ticket" >
+			SELECT
+				ticket_status_code as ticketCode,
+				ticket_status_name  as ticketDesc,
+				type as approval
+			FROM
+				ticket_status
+			WHERE
+				is_active = true;
+	</select>
+	
+	<!-- /*Added by ranita.sur on 17102017 for editing the recipient group*/ -->
+	<select id="selectRecipientGroupDetails" parameterType="com.qts.icam.model.administrator.Approver" resultType="com.qts.icam.model.common.Resource">
+		SELECT
+			rt.resource_type_code as desc,
+			approver_group_code as "approver.approverGroupCode",
+			approver_group_name	as "approver.approverGroupName",
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as name ,
+			r.user_id as userId
+		FROM
+			approver_group_resource_mapping agrm
+		JOIN
+			approver_group ag  ON(agrm.approver_group = ag.rec_id)	AND(ag.is_active=true)
+		JOIN
+			resource r ON(agrm.resource = r.rec_id)	AND(r.is_active=true)
+		JOIN 
+			resource_type rt ON (r.resource_type=rt.rec_id AND rt.is_active =true)
+		WHERE
+			agrm.is_active=true
+		AND
+			ag.approver_group_code=#{approverGroupCode}
+		ORDER BY 
+			(approver_group_resource_id);			
+	</select>
+	
+	<update id="updateIntoApproverGroup" parameterType="com.qts.icam.model.administrator.Approver">
+		UPDATE approver_group
+		SET 
+			approver_group_name = #{approverGroupName},
+			updated_on = (SELECT extract(epoch FROM now())),
+			updated_by = (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true)
+		WHERE
+			approver_group_code = #{approverGroupCode}
+		AND
+			is_active = true;
+	</update>
+	
+	<update id="inactiveApproverGroupMapping" parameterType="com.qts.icam.model.administrator.Approver">
+		UPDATE approver_group_resource_mapping
+		SET 
+			is_active = false
+		WHERE
+			approver_group = (SELECT rec_id FROM approver_group WHERE approver_group_code = #{approverGroupCode}AND is_active = true)
+		AND
+			is_active = true;
+	</update>
+	
+	<select id="selectApproverGroupMapping" parameterType="com.qts.icam.model.administrator.Approver" resultType="com.qts.icam.model.administrator.Approver" >
+		SELECT
+			approver_group_code as approverGroupCode,
+			approver_group_name	as approapproverGroupName,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as resourceTypeCode
+		FROM
+			approver_group_resource_mapping agrm
+		JOIN
+			approver_group ag  ON(agrm.approver_group = ag.rec_id)	AND(ag.is_active=true)
+		JOIN
+			resource r ON(agrm.resource = r.rec_id)	AND(r.is_active=true)
+		WHERE
+			agrm.is_active=true
+		AND
+			ag.approver_group_code=#{approverGroupCode}
+		AND
+		 r.user_id= #{approverGroupDesc}
+		ORDER BY 
+			(approver_group_resource_id);	
+	</select>
+	
+	<update id="updateIntoApproverGroupResourceMapping" parameterType="com.qts.icam.model.administrator.Approver">
+		UPDATE approver_group_resource_mapping
+		SET 
+			is_active = true
+		WHERE
+			approver_group = (SELECT rec_id FROM approver_group WHERE approver_group_code = #{approverGroupCode}AND is_active = true)
+		AND
+			resource = (SELECT rec_id FROM resource WHERE user_id = #{approverGroupDesc} AND is_active = true)
+		AND
+			is_active = false;
+	</update>
+	
+	<insert id="insertIntoApproverGroupResourceMapping" parameterType="com.qts.icam.model.administrator.Approver">
+		INSERT INTO approver_group_resource_mapping(
+						rec_id, 
+						obj_id, 
+						updated_by, 
+						updated_on, 
+						date_of_creation, 
+						is_active, 
+						approver_group, 
+						resource)
+    VALUES (
+					uuid_generate_v4(),
+					#{objectId},
+					(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active=true),
+					(SELECT extract(epoch FROM now())),
+					(SELECT extract(epoch FROM now())),
+					true,  
+					(SELECT rec_id FROM approver_group WHERE approver_group_code = #{approverGroupCode}AND is_active = true), 
+					(SELECT rec_id FROM resource WHERE user_id=#{approverGroupDesc} AND is_active=true)
+					);
+	</insert>
+	
+	
+	<insert id="insertTaskStatus" parameterType="com.qts.icam.model.ticket.Ticket">
+		INSERT INTO task_status(
+            rec_id, obj_id, date_of_creation, updated_by, 
+            updated_on,task_status_code, task_status, task_type, ticket_status,type)
+	    VALUES (uuid_generate_v4(), 
+		    #{ticketObjectId}, 
+		    (SELECT extract(epoch FROM now())),
+		    (SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active=true),
+		    (SELECT extract(epoch FROM now())), 
+		    (SELECT ('TASKSTATUS-' ||(SELECT COALESCE((SELECT MAX(task_status_id) FROM task_status), 0 )+1))),
+	       	trim(UPPER(#{taskStatus})) ,
+	        #{approval},
+	        (SELECT rec_id FROM ticket_status WHERE ticket_status_code = #{status} AND is_active = true),
+	        #{ticketDesc});
+	</insert>
+	
+	<select id="getAllTaskStatusList" resultType ="com.qts.icam.model.ticket.Ticket" >
+		SELECT
+				task_status_code as ticketCode,
+				task_status as status,
+				ticket_status_name  as ticketDesc,
+				task_type as approval,
+				tas.type as type,
+				ticket_status_code as description
+			FROM
+				task_status tas
+			JOIN
+				ticket_status tis ON (tas.ticket_status = tis.rec_id AND tis.is_active = true)
+			WHERE
+				tas.is_active = true;
+	</select>
+	
+	<!-- Edit Task Status Details
+	 By Ranita.Sur 24102017 -->
+	<update id="saveNewTaskStatus" parameterType="com.qts.icam.model.ticket.Ticket">
+		UPDATE 
+			task_status 
+		SET 
+			task_status =#{status},
+			task_type = #{approval},
+			ticket_status = (SELECT rec_id FROM ticket_status WHERE ticket_status_code = #{ticketDesc} AND is_active = true)
+		WHERE
+			 task_status_code = #{ticketCode}	
+		AND
+			is_active=true;	
+	</update>
+	
+	<!-- Added by naimisha 05042018 -->
+	<insert id="insertCategoryKeyMapping" parameterType="com.qts.icam.model.erp.JobType">
+		INSERT INTO category_key_mapping(
+            rec_id, obj_id, updated_by, updated_on, 
+            date_of_creation, key_id, key_value, category)
+	    VALUES ((uuid_generate_v4()), 
+		   #{jobTypeObjectId},
+		   (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+		   (SELECT extract(epoch FROM now())),
+		   (SELECT extract(epoch FROM now())), 
+           (SELECT ('KEY-' ||(select COALESCE((SELECT MAX(category_key_mapping_id) FROM category_key_mapping), 0 )+1))),
+            #{jobTypeCode}, 
+            (SELECT rec_id FROM category WHERE category_code = #{category} AND is_active = true));
+
+
+
+	</insert>
+	
+	<resultMap id="getKeyForACategoryMap" type="com.qts.icam.model.ticket.Ticket">
+		<id property="ticketCode" column="category_code" jdbcType="VARCHAR" />
+		<result property="ticketDesc" column="category_name" jdbcType="VARCHAR" />		
+		<collection property="commentList" ofType="com.qts.icam.model.ticket.TicketComment">
+			<id property="ticketCommentCode" column="key_id" jdbcType="VARCHAR" />
+			<result property="ticketCommentDesc" column="key_value" jdbcType="VARCHAR" />			
+		</collection>
+	</resultMap>
+	
+	<select id="getKeyForACategory" resultMap ="getKeyForACategoryMap" parameterType = "java.lang.String">
+		SELECT
+			key_id,
+			key_value,
+			category_code,
+			category_name
+		FROM
+			category_key_mapping ckm
+		JOIN
+			category c ON (ckm.category = c.rec_id AND c.is_active = true)
+		WHERE
+			category_code = #{category}
+		AND
+			ckm.is_active = true;
+	</select>
+	
+	<select id="getAllCategoryWithKeys" resultType ="com.qts.icam.model.ticket.Ticket" parameterType = "java.lang.String">
+		SELECT
+			DISTINCT category_code as ticketCode,
+			category_name as ticketDesc
+		FROM
+			category_key_mapping ckm
+		JOIN
+			category c ON (ckm.category = c.rec_id AND c.is_active = true)
+		AND
+			ckm.is_active = true;
+	</select>
+	
+	<select id="getAllKeysList" resultType ="com.qts.icam.model.erp.JobType" >
+		SELECT
+			key_id as jobTypeCode,
+			key_value as jobTypeName
+		FROM
+			category_key_mapping ckm
+		WHERE
+			ckm.is_active = true;
+	</select>
+	
+	<update id="inactiveCategoryKeyMapping" parameterType="com.qts.icam.model.erp.JobType">
+		UPDATE category_key_mapping
+		SET 
+			is_active = false
+		WHERE
+			category = (SELECT rec_id FROM category WHERE category_code = #{jobTypeObjectId}AND is_active = true)
+		AND
+			is_active = true;
+	</update>
+	
+	<select id="selecInactivetCategoryKeyMapping" resultMap ="getCategoryListForRecipientMappingMap" >
+		SELECT
+			category_code,
+			category_name,
+			key_id as approver_group_code,
+			key_value as approver_group_name
+		FROM
+			category c
+		JOIN
+			category_key_mapping ckm ON (c.rec_id = ckm.category AND ckm.is_active = false)
+		AND
+			c.is_active = true
+		WHERE
+			category_code = #{jobTypeObjectId}
+		AND
+			key_value =  #{jobTypeCode};
+		
+
+	</select>
+	
+	<update id="updateIntoCategoryKeyMapping" parameterType="com.qts.icam.model.erp.JobType">
+		UPDATE category_key_mapping
+		SET 
+			is_active = true
+		WHERE
+			category = (SELECT rec_id FROM category WHERE category_code = #{jobTypeObjectId}AND is_active = true)
+		AND
+			key_value = #{jobTypeCode}
+		AND
+			is_active = false;
+	</update>
+	
+	
+	<!-- Added By Naimisha 09042018 -->
+	
+	<insert id="insertCategoryDepartmentMapping" parameterType="com.qts.icam.model.erp.JobType">
+	
+		INSERT INTO category_department_mapping(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            department, category)
+    	VALUES (
+    	uuid_generate_v4(), 
+		#{jobTypeObjectId},
+		(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+		(SELECT extract(epoch FROM now())),
+		(SELECT extract(epoch FROM now())),
+        (SELECT rec_id FROM department WHERE department_code = #{department} AND is_active = true ),
+        (SELECT rec_id FROM category WHERE category_code = #{jobTypeCode} AND is_active = true));
+		
+
+	</insert>
+	<select id="getAllCategoryMappedWithDepartment" resultType="com.qts.icam.model.common.Department">
+		SELECT
+			DISTINCT department_code as departmentCode,
+			department_name as departmentName
+		FROM
+			category_department_mapping cdm
+		JOIN
+			department d ON (cdm.department = d.rec_id AND d.is_active = true)
+		AND
+			cdm.is_active = true
+	</select>
+	
+	<resultMap id="getCategoryListForADepartmentMap" type="com.qts.icam.model.erp.JobType">
+		<id property="jobTypeCode" column="department_code" jdbcType="VARCHAR" />
+		<id property="jobTypeName" column="department_name" jdbcType="VARCHAR" />
+		<collection property="taskList" ofType="com.qts.icam.model.common.Task">
+			<id property="taskCode" column="category_code" jdbcType="VARCHAR" />
+			<result property="taskName" column="category_name" jdbcType="VARCHAR" />			
+		</collection>
+	</resultMap>
+	
+	<select id="getCategoryListForADepartment" resultMap ="getCategoryListForADepartmentMap" parameterType="java.lang.String">
+		SELECT
+			category_code,
+			category_name,
+			department_code,
+			department_name
+		FROM
+			category_department_mapping cdm
+		JOIN
+			category c ON (cdm.category = c.rec_id AND c.is_active = true)
+		JOIN
+			department d ON (cdm.department = d.rec_id AND d.is_active = true)
+		WHERE
+			department_code = #{departmentCode}
+		AND
+			cdm.is_active = true
+	</select>
+	
+	<select id="getDesignationListForDepartment" resultType="com.qts.icam.model.erp.Designation">
+		SELECT
+			DISTINCT designation_code as designationCode,
+			designation_name as designationName
+		FROM
+			designation d 
+		JOIN
+			employee_details ed ON (ed.designation = d.rec_id AND ed.is_active = true)
+		JOIN
+			department de ON (ed.department = de.rec_id AND de.is_active = true)
+		WHERE
+			department_code = #{department}
+		AND
+			d.is_active = true;
+	</select>
+	
+	<select id="getAllFunctionalityList" resultType="com.qts.icam.model.administrator.Functionality">
+		SELECT
+			functionality_name as functionalityName,
+			functionality_desc as  functionalityDesc
+		FROM
+			module_functionality
+		WHERE
+			is_active = true
+		ORDER BY functionality_name;
+	</select>
+	
+	<select id="selectTaskDetailsAgainstTaskCode" resultType="com.qts.icam.model.erp.JobType" parameterType="java.lang.String">
+		SELECT 
+			task_code as jobTypeCode,
+			task_name as jobTypeName,
+			task_desc as jobTypeDesc,
+			is_serial as serialApproval,
+			is_parallel as parallelApproval,
+			approval_required as approvalRequired,
+			is_finance as isFinance,
+			is_linked as isLinked,
+			task_assignee as taskAssignee,
+			functionality_name as functionality,
+			note as note,
+			department_name as department,
+			designation_name as designation,
+			designation_level_name as designationLevel
+			
+		 FROM
+			task t
+		LEFT JOIN
+			module_functionality mf ON (mf.rec_id = t.functionality AND mf.is_active = true)
+		LEFT JOIN 
+			department d ON (t.department = d.rec_id AND d.is_active = true)
+		LEFT JOIN
+			designation de ON (t.designation = de.rec_id AND de.is_active = true)
+		LEFT JOIN
+			designation_level dl ON (t.designation_level = dl.rec_id AND dl.is_active = true)
+		
+		WHERE 
+			t.is_active = true
+		AND
+			task_code = #{taskCode};
+	</select>
+	
+	<select id="getTaskStatusForDuplicateCheck" resultType="com.qts.icam.model.ticket.TicketStatus" parameterType = "com.qts.icam.model.ticket.Ticket">
+		SELECT
+				task_status_code as ticketStatusCode,
+				task_status as ticketStatusName
+			FROM
+				task_status tas
+			JOIN
+				ticket_status tis ON (tas.ticket_status = tis.rec_id AND tis.is_active = true)
+			WHERE
+				tas.is_active = true
+			AND
+				ticket_status_code ilike #{status}
+			AND
+				tas.type ilike #{type}
+			AND
+				task_type ilike #{ticketDesc};
+	</select>
+</mapper>

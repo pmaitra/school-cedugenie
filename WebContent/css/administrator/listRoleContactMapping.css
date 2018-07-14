@@ -1,0 +1,121 @@
+@charset "utf-8";
+
+/*For Text Box */
+.textfield1{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:100%;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+.midsec {
+	margin:0 auto 15px;
+	border:1px solid orange;
+	background-color:#99FF66;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	overflow:hidden;
+	overflow-x:scroll;
+	min-height:20px;
+	margin-top: 20px;
+	align: center;
+	white-space: nowrap;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.midsec tr{
+	padding:0 2%;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+	text-align:left;
+	border-bottom: 1px solid #C4C4C4;
+	text-transform:capitalize;
+}
+.midsec tr td{
+	width: 230px;
+	padding:0 10px;
+	color: orange;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.midsec tr th{
+	width: 120px;
+	padding:0 10px;
+	color: #000080;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+/* for list */
+
+.midsec1 {
+	margin:0 auto 15px;
+	border:1px solid #c4c4c4;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	min-height:20px;
+	margin-top: 20px;
+	align: center;
+	white-space: nowrap;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.midsec1 tr{
+	padding:0 2%;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+	color: #000080;
+	text-align:left;
+	border-bottom: 1px solid #C4C4C4;
+	text-transform:capitalize;
+}
+.midsec1 tr td{
+	padding:0 10px;
+	border-bottom: 1px solid #C4C4C4;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.midsec1 tr th{
+	color:black;
+	font-weight: bold;
+	font-style: oblique;
+	text-align: center;
+	padding:0 10px;
+	border-bottom: thick;
+	border-bottom-style: double;
+	border-bottom-color: black;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.midsec1 tr:nth-child(odd){
+	background-color: #99FF66;
+}
+
+.midsec1 tr:nth-child(even){
+	background-color: #66CC33;
+}
+.textfield{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:100%;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+select.defaultselect {
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+    height: 27px;
+    line-height: 22px;
+    padding: 3px 5px;
+    width: 100%;
+    font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.defaultselect option {
+    color: orange;
+    font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}

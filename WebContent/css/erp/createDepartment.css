@@ -1,0 +1,274 @@
+@charset "utf-8";
+
+/*For Text Box */
+.textfield1{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:100%;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.textfield2{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:100px;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+.textfield3{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:350px;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+.midsec {
+	margin:0 auto 15px;
+	border:1px solid orange;
+	background-color:#99FF66;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	overflow:hidden;
+	overflow-x:scroll;
+	min-height:20px;
+	margin-top: 20px;
+	align: center;
+	white-space: nowrap;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+.midsec tr{
+	padding:0 2%;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+	text-align:left;
+	border-bottom: 1px solid #C4C4C4;
+	text-transform:capitalize;
+}
+.midsec tr td{
+	width: 230px;
+	padding:0 10px;
+	color: orange;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.midsec tr th{
+	width: 120px;
+	padding:0 10px;
+	color: blue;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.multipleSelectDiv{
+	width: auto;
+	background-color: powderblue;
+	position:absolute;
+	display: none;
+	margin-top: -0.9%;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.multipleSelectDiv span{
+	display: block;
+	line-height: 15px;
+	width: 210px;
+	font-weight: bold;
+	color: black;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+
+select.defaultselect {
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+    height: 27px;
+    line-height: 22px;
+    padding: 3px 5px;
+    width: 100%;
+    font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.defaultselect option {
+    color: orange;
+    font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+.midsec1 {
+	margin:0 auto 15px;
+	border:1px solid #c4c4c4;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	min-height:20px;
+	margin-top: 20px;
+	align: center;
+	white-space: nowrap;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.midsec1 tr{
+	padding:0 2%;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+	color: #000080;
+	text-align:left;
+	border-bottom: 1px solid #C4C4C4;
+	text-transform:capitalize;
+}
+.midsec1 tr td{
+	padding:0 10px;
+	border-bottom: 1px solid #C4C4C4;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.midsec1 tr th{
+	color:blue;
+	font-weight: bold;
+	font-style: oblique;
+	text-align: center;
+	padding:0 10px;
+	border-bottom: thick;
+	border-bottom-style: double;
+	border-bottom-color: black;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.midsec1 tr:nth-child(odd){
+	background-color: #99FF66;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+.midsec1 tr:nth-child(even){
+	background-color: #66CC33;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+@media (max-width: 1000px){
+	.multipleSelectDiv{
+		margin-top: -1.5%;
+	}
+	.textfield3{
+		width:200px;
+	}
+	.textfield2{
+		width:50px;
+	}
+}
+
+@media (max-width: 720px){
+	.multipleSelectDiv{
+		margin-top: -1.5%;
+	}
+	.textfield3{
+		width:200px;
+	}
+	.textfield2{
+		width:50px;
+	}
+}
+
+
+@media (max-width: 480px){
+	.multipleSelectDiv{
+		margin-top: -4%;
+	}
+	.textfield3{
+		width:100px;
+	}
+	.textfield2{
+		width:50px;
+	}
+	
+}
+
+
+/* For Calculator */
+.box{
+	display: none;
+    position:absolute;  
+    _position:absolute;
+    left: 867px;
+    top: 150px; 
+    background-color:black;
+    z-index:100; /* Layering ( on-top of others), if you have lots of layers: I just maximized, you can change it yourself */
+    margin-left : 15px; 
+   // margin-top :0%; 
+}
+
+.keys
+{
+position:relative;
+top:15px;
+}
+.button
+{
+width:40px;
+height:30px;
+border:none;
+border-radius:8px;
+margin-left:17px;
+cursor:pointer;
+border-top:2px solid transparent;
+}
+.button.gray
+{
+color:white;
+background-color:#6f6f6f;
+border-bottom:black 2px solid;
+border-top:2px #6f6f6f solid;
+}
+.button.pink
+{
+color:black;
+background-color:#ff4561;
+border-bottom:black 2px solid;
+}
+.button.black
+{
+color:black;
+background-color:303030;
+border-bottom:black 2px solid;
+border-top:2px 303030 solid;
+}
+.button.orange
+{
+color:black;
+background-color:FF9933;
+border-bottom:black 2px solid;
+border-top:2px FF9933 solid;
+}
+.gray:active
+{
+border-top:black 2px solid;
+border-bottom:2px #6f6f6f solid;
+}
+.pink:active
+{
+border-top:black 2px solid;
+border-bottom:#ff4561 2px solid;
+}
+.black:active
+{
+border-top:black 2px solid;
+border-bottom:#303030 2px solid;
+}
+.orange:active
+{
+border-top:black 2px solid;
+border-bottom:FF9933 2px solid;
+}
+p
+{
+line-height:10px;
+}
+
+.labelClass{
+	
+}

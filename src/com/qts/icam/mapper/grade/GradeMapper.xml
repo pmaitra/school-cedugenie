@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.mapper.grade.GradeMapper">
+	<select id="selectGradingSystemListForCourse" resultType="com.qts.icam.model.grade.GradingSystem" parameterType="java.lang.String">
+		SELECT
+			marks_grade_range as range,
+			grade as grade,
+			grade_point as gradePoint
+		FROM
+			grading_point gp
+		JOIN 
+			subject s ON (gp.subject=s.rec_id AND s.is_active=true)
+		WHERE
+			s.subject_code = #{course}
+		AND
+			gp.is_active=true;
+	</select>
+	
+	<insert id="insertGradingSystem" parameterType="java.util.List">
+	 	<foreach item="grades" collection="list" index="index" open="" close="" separator=";">
+			INSERT INTO grading_point(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation,
+			marks_grade_range, grade, grade_point, subject)
+			VALUES ( uuid_generate_v4(), #{grades.objectId},
+			(SELECT rec_id FROM resource WHERE user_id  ilike #{grades.updatedBy} AND is_active = true),
+			 extract(epoch FROM now()),extract(epoch FROM now()),
+			#{grades.range}, #{grades.grade}, #{grades.gradePoint},
+			(SELECT rec_id FROM subject WHERE subject_code =#{grades.course} AND is_active = true))
+		</foreach>
+	</insert>
+	
+	<update id="updateGradingSystem" parameterType="java.util.List">
+	 	<foreach item="grades" collection="list" index="index" open="" close="" separator=";">
+			UPDATE grading_point SET
+				updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{grades.updatedBy} AND is_active = true),
+				updated_on=extract(epoch FROM now()),
+				grade=#{grades.grade},
+				grade_point=#{grades.gradePoint}
+			WHERE
+				subject =(SELECT rec_id FROM subject WHERE subject_code =#{grades.course} AND is_active = true)
+				AND
+				marks_grade_range=#{grades.range}
+				AND
+				is_active=true;
+		</foreach>
+	</update>
+</mapper>

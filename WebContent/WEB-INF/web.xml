@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
+  <display-name>cEduGenie</display-name>
+  <welcome-file-list>
+    <welcome-file>login.html</welcome-file>
+  </welcome-file-list>  
+  
+	<error-page>
+		<error-code>500</error-code>
+		<location>/WEB-INF/jsp/common/errorpage/error500.jsp</location>
+	</error-page>
+	
+	<error-page>
+		<error-code>404</error-code>
+		<location>/WEB-INF/jsp/common/errorpage/error404.jsp</location>
+	</error-page>
+	
+	<error-page>
+		<error-code>400</error-code>
+		<location>/WEB-INF/jsp/common/errorpage/error400.jsp</location>
+	</error-page>
+	
+	<error-page>
+		<error-code>403</error-code>
+		<location>/WEB-INF/jsp/common/errorpage/error403.jsp</location>
+	</error-page>
+	
+	<error-page>
+		<error-code>405</error-code>
+		<location>/WEB-INF/jsp/common/errorpage/error405.jsp</location>
+	</error-page>
+    
+  <servlet>
+    <servlet-name>cedugenie</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>cedugenie</servlet-name>
+    <url-pattern>*.html</url-pattern>
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>  
+
+  
+    
+  
+  
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>  
+   			/WEB-INF/conf/dbconfig/db-configuration.xml
+        	/WEB-INF/conf/cedugenie-service.xml
+        	/WEB-INF/conf/cedugenie-dao.xml
+        	/WEB-INF/conf/aspect/cedugenie-aspect.xml
+    	</param-value>
+  </context-param>
+  <context-param>
+    <param-name>icamfolderpath</param-name>
+    <param-value>C:/icam/</param-value>
+  </context-param>
+  <context-param>
+    <param-name>automailtemplatesubjectpath</param-name>
+    <param-value>template/velocity/emailSubject.vm</param-value>
+  </context-param>
+  <context-param>
+    <param-name>automailtemplatebodypath</param-name>
+    <param-value>template/velocity/emailBody.vm</param-value>
+  </context-param>
+  <context-param>
+    <param-name>com.sun.faces.writeStateAtFormEnd</param-name>
+    <param-value>false</param-value>
+  </context-param>
+  <context-param>
+    <param-name>icamConfigPropertiesPath</param-name>
+    <param-value>/WEB-INF/configuration.properties</param-value>
+  </context-param>
+  <context-param>
+    <param-name>icamLog4jPath</param-name>
+    <param-value>/WEB-INF/log4j.xml</param-value>
+  </context-param>
+  <listener>
+    <listener-class>com.qts.icam.listner.ConfigurationListener</listener-class>
+  </listener>
+ <listener>
+	  <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+ </listener>
+  <context-param>
+        <param-name>log4jConfigLocation</param-name>
+        <param-value>/WEB-INF/log4j.xml</param-value>
+    </context-param>
+  <session-config>
+    <!-- <session-timeout>5</session-timeout> -->
+  </session-config>
+</web-app>

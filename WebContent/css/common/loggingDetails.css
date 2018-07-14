@@ -1,0 +1,39 @@
+div{
+  text-rendering: optimizeLegibility;
+}
+.pollSlider{
+    position:fixed;
+    height:450px;
+    background:#5a5856;
+    width:800px;
+    right:0px;
+    margin-right: -800px;
+    overflow: scroll;
+    z-index:10;
+}
+
+#pollSlider-button{
+    position:fixed;
+    width:100px;
+    height:30px;
+    right:0px;
+    background: #1f262d;
+    /* margin-top: -290px; */
+    z-index: 1;
+}
+#pollSlider-button #dataFetch{
+	float: left;
+	height: 30px;
+	width: 93px;
+/* 	background:#1595ce; */
+	background: none repeat scroll 0 0 #27a9e3;
+    border: 0 none;
+    border-radius: 2px;
+    color: #fff;
+    font: bold 12px/28px "Arial",Helvetica,sans-serif;
+    
+    outline: medium none;
+    padding: 0;
+    text-align: center;
+    text-transform: uppercase;
+}

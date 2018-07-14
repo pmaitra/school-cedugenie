@@ -1,0 +1,4247 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.mapper.erp.ERPMapper">
+
+	<insert id="insertIntoDepartment" parameterType="com.qts.icam.model.common.Department">
+		INSERT INTO department(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            department_code, department_name, department_desc,parent_department)
+		VALUES (uuid_generate_v4(), 
+				#{objectId},
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())), 
+				(SELECT extract(epoch FROM now())), 				
+				upper(#{departmentName}),
+				upper(#{departmentName}),
+				upper(#{departmentName}),
+				(SELECT rec_id FROM department WHERE department_code = #{parentDepartment} AND is_active = true));
+	</insert>
+	
+	<update id="updateDepartment" parameterType="com.qts.icam.model.common.Department">
+		UPDATE
+			department
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			department_code = upper(#{departmentName}),
+			department_name = upper(#{departmentName}),
+			department_desc = upper(#{departmentName})
+		WHERE
+			department_code = #{departmentCode}
+		AND
+			is_active = true;
+	</update>	
+
+	<select id="selectAllDesignation" resultType="com.qts.icam.model.erp.Designation" >
+		SELECT
+			designation_code as designationCode,
+			designation_name as designationName,
+			dt.designation_type_code as "designationType.designationTypeCode",
+			dt.designation_type_name as "designationType.designationTypeName"
+		FROM
+			designation d	
+			JOIN designation_type dt ON (d.designation_type=dt.rec_id AND dt.is_active=true)	
+		WHERE
+			d.is_active = true;
+	</select>
+	
+	
+	<insert id="insertIntoDesignation" parameterType="com.qts.icam.model.erp.Designation">
+		INSERT INTO designation(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            designation_code, designation_name, designation_desc, designation_type)   
+		VALUES (uuid_generate_v4(), 
+				#{designationObjectId},
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())), 
+				(SELECT extract(epoch FROM now())), 	
+				upper(#{designationName}),			
+				upper(#{designationName}),
+				upper(#{designationName}),
+				(SELECT rec_id FROM designation_type WHERE designation_type_code = #{designationType.designationTypeName} AND is_active = true));
+	</insert>
+	
+	<update id="updateDesignation" parameterType="com.qts.icam.model.erp.Designation">
+		UPDATE
+			designation
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			designation_code = upper(#{designationName}),
+			designation_name = upper(#{designationName}),
+			designation_desc = upper(#{designationName}),
+			designation_type = (SELECT rec_id FROM designation_type WHERE designation_type_code= #{designationType.designationTypeName} AND is_active=true)
+		WHERE
+			designation_code = #{designationCode}
+		AND
+			is_active = true;	
+	</update>	
+	
+<!-- 	<select id="selectAllResourceType" resultType="com.qts.icam.model.common.ResourceType" >	 -->
+<!-- 		SELECT -->
+<!-- 		 	rt.resource_type_name as resourceTypeName, -->
+<!-- 		 	rt.resource_type_code as resourceTypeCode -->
+<!-- 		FROM  -->
+<!-- 			resource_type rt			 -->
+<!-- 		WHERE		 -->
+<!-- 			is_active = true -->
+<!-- 		AND resource_type_code NOT IN ('STUDENT','SUPERADMIN'); -->
+<!-- 	</select> -->
+	
+<!-- 	<insert id="insertIntoEmployeeType" parameterType="com.qts.icam.model.erp.EmployeeType"> -->
+<!-- 		INSERT INTO employee_type( -->
+<!--             rec_id, obj_id, updated_by, updated_on, date_of_creation, -->
+<!--             employee_type_code, employee_type_name, employee_type_desc) -->
+<!--     	VALUES ((select uuid_generate_v4()),  -->
+<!--     			#{employeeTypeObjectId}, -->
+<!--     			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),  -->
+<!--     			(SELECT extract(epoch FROM now())), -->
+<!--              	(SELECT extract(epoch FROM now())),  -->
+<!--              	(SELECT ('ET-' ||(select COALESCE((SELECT MAX(employee_type_id) FROM employee_type), 0 )+1))),  -->
+<!--              	upper(#{employeeTypeName}), -->
+<!-- 				upper(#{employeeTypeName}));		 -->
+<!-- 	</insert> -->
+	
+<!-- 	<update id="updateEmployeeType" parameterType="com.qts.icam.model.erp.EmployeeType"> -->
+<!-- 		UPDATE  -->
+<!-- 			employee_type -->
+<!--    		SET    			 -->
+<!--    			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), -->
+<!-- 			updated_on = (SELECT extract(epoch FROM now())), -->
+<!--    			employee_type_name=upper(#{employeeTypeName}),  -->
+<!--    			employee_type_desc=upper(#{employeeTypeName})       -->
+<!--  		WHERE  -->
+<!--  			employee_type_code = #{employeeTypeCode} -->
+<!-- 		AND -->
+<!-- 			is_active = true;			 -->
+<!-- 	</update>	 -->
+	
+	<select id="selectAllDesignationType" resultType="com.qts.icam.model.erp.DesignationType" >	
+		SELECT
+		 	dt.designation_type_name as designationTypeName,
+		 	dt.designation_type_code as designationTypeCode
+		FROM 
+			designation_type dt			
+		WHERE		
+			is_active = true;
+	</select>
+	
+	<insert id="insertIntoDesignationType" parameterType="com.qts.icam.model.erp.DesignationType">
+		INSERT INTO designation_type(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation,
+            designation_type_code, designation_type_name, designation_type_desc)  
+   	 	VALUES ((select uuid_generate_v4()), 
+    		#{designationTypeObjectId}, 
+    		(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+    		(SELECT extract(epoch FROM now())),
+            (SELECT extract(epoch FROM now())), 
+            upper(#{designationTypeName}),
+            upper(#{designationTypeName}),
+			upper(#{designationTypeName}));		
+	</insert>
+	
+	
+	<update id="updateDesignationType" parameterType="com.qts.icam.model.erp.DesignationType">
+		UPDATE 
+			designation_type
+   		SET 
+   			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())), 
+			designation_type_code=upper(#{designationTypeName}),      		
+       		designation_type_name=upper(#{designationTypeName}),
+       		designation_type_desc=upper(#{designationTypeName})	
+ 		WHERE 
+ 			designation_type_code= #{designationTypeCode}
+ 		AND
+			is_active = true;		
+	</update>	
+
+	<select id="selectAllJobType" resultType="com.qts.icam.model.erp.JobType" >	
+		SELECT
+		 	jt.job_type_name as jobTypeName,
+		 	jt.job_type_code as jobTypeCode
+		FROM 
+			job_type jt			
+		WHERE		
+			is_active = true;
+	</select>
+	
+	<insert id="insertIntoJobType" parameterType="com.qts.icam.model.erp.JobType">
+		INSERT INTO job_type(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation,
+            job_type_code, job_type_name, job_type_desc)
+   	 	VALUES ((select uuid_generate_v4()), 
+    		#{jobTypeObjectId}, 
+    		(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+    		(SELECT extract(epoch FROM now())),
+            (SELECT extract(epoch FROM now())), 
+            upper(#{jobTypeName}),
+            upper(#{jobTypeName}),
+			upper(#{jobTypeName}));		
+	</insert>
+	
+	<update id="updateJobType" parameterType="com.qts.icam.model.erp.JobType">
+		UPDATE 
+			job_type
+   		SET 
+   			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())), 
+			job_type_code=upper(#{jobTypeName}),      		
+       		job_type_name=upper(#{jobTypeName}),
+       		job_type_desc=upper(#{jobTypeName})	
+ 		WHERE 
+ 			job_type_code= #{jobTypeCode}
+ 		AND
+			is_active = true;		
+	</update>	
+	
+	<select id="selectAllDesignationLevel" resultType="com.qts.icam.model.erp.DesignationLevel" >	
+		SELECT
+		 	dl.designation_level_name as designationLevelName,
+		 	dl.designation_level_code as designationLevelCode
+		FROM 
+			designation_level dl		
+		WHERE		
+			is_active = true;
+	</select>
+	
+	<insert id="insertIntoDesignationLevel" parameterType="com.qts.icam.model.erp.DesignationLevel">
+		INSERT INTO designation_level(
+            rec_id, obj_id, updated_by, updated_on, 
+            date_of_creation, designation_level_code, designation_level_name, 
+            designation_level_desc)
+    VALUES ((select uuid_generate_v4()), 
+    		#{designationLevelObjectId}, 
+    		(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+    		(SELECT extract(epoch FROM now())),
+            (SELECT extract(epoch FROM now())), 
+            upper(#{designationLevelName}),
+            upper(#{designationLevelName}),
+			upper(#{designationLevelName}));			
+	</insert>
+	
+	<update id="updateDesignationLevel" parameterType="com.qts.icam.model.erp.DesignationLevel">
+		UPDATE 
+			designation_level
+   		SET 
+   			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())), 
+			designation_level_code=upper(#{designationLevelName}),      		
+       		designation_level_name=upper(#{designationLevelName}),
+       		designation_level_desc=upper(#{designationLevelName})	
+ 		WHERE 
+ 			designation_level_code= #{designationLevelCode}
+ 		AND
+			is_active = true;		
+	</update>	
+	
+	<insert id="addDesignationLevelMapping"  parameterType="com.qts.icam.model.erp.DesignationLevel">
+		INSERT INTO designation_level_mapping(
+			rec_id,
+			obj_id,
+			updated_by, 
+			updated_on, 
+			date_of_creation,
+			designation_level_mapping_code, 
+			designation_level_mapping_name, 
+			designation_level_mapping_desc, 
+			designation,
+			designation_level)
+	    VALUES (
+		(SELECT uuid_generate_v4()),
+		#{designationLevelObjectId},
+		(SELECT rec_id 	FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+		(SELECT extract(epoch FROM now())),
+		(SELECT extract(epoch FROM now())),	
+		#{designationLevelName},
+		#{designationLevelName},
+		#{designationLevelName},
+		(SELECT rec_id FROM designation WHERE designation_code =#{designationLevelDesc} AND is_active = true),
+		(SELECT rec_id FROM designation_level WHERE designation_level_code = #{designationLevelCode} AND is_active = true)
+		)
+	</insert>	
+	
+	<select id="getAllMappedDesignation" resultType="com.qts.icam.model.erp.Designation">
+		SELECT DISTINCT
+			d.designation_code as designationCode,  
+			d.designation_name as designationName			
+		FROM 
+			designation_level_mapping dlm		
+		JOIN 
+			designation d ON (d.is_active = true) AND (dlm.designation=d.rec_id) AND (dlm.is_active = true)		
+	</select>	
+	
+	<select id="getAllMappedLevelForDesignation" resultType="com.qts.icam.model.erp.DesignationLevel" parameterType="com.qts.icam.model.erp.Designation">
+		SELECT 
+			l.designation_level_name as designationLevelName,
+			l.designation_level_code as designationLevelCode			
+		FROM 
+			designation_level_mapping dlm			
+		JOIN 
+			designation_level l ON (l.is_active = true) AND (dlm.designation_level=l.rec_id)
+		JOIN 
+			designation d ON (d.is_active = true) AND (dlm.designation=d.rec_id)
+		WHERE 				
+			d.designation_code=#{designationCode}	
+		AND 		
+			dlm.is_active = true		
+	</select>
+	
+	<insert id="insertEmployeeBasicDetails" parameterType="com.qts.icam.model.erp.Employee">
+		INSERT INTO resource(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            resource_type, gender, user_id, 
+            first_name, middle_name, last_name, initial_name, date_of_birth, 
+            father_first_name, father_middle_name, father_last_name, father_occupation,
+            mother_first_name, mother_middle_name, mother_last_name, mother_occupation, 
+            email_address, mobile_no, blood_group, mother_tongue, religion, nationality, social_category, 
+            passport_id, voter_id, pan_no, aadhar_card_no, voting_constituency, parliamentary_constituency,           
+            bank_name, branch, bank_account_number, account_type, account_holder_name, medical_status, bank_ifsc_code)
+   		VALUES ((select uuid_generate_v4()), 
+    		#{objectId}, 
+    		(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+    		(SELECT extract(epoch FROM now())),
+            (SELECT extract(epoch FROM now())),              
+            (SELECT rec_id from resource_type WHERE resource_type_code = #{employeeType.employeeTypeName} AND is_active = true),
+            #{resource.gender},
+            LOWER(#{resource.userId}), 
+            UPPER( #{resource.firstName}), 
+            UPPER( #{resource.middleName}), 
+            UPPER( #{resource.lastName}),
+            UPPER( #{resource.initialName}),
+            (SELECT extract(epoch from (SELECT to_timestamp(#{resource.dateOfBirth},'DD-MM-YYYY')))),
+            UPPER(#{resource.fatherFirstName}), 
+            UPPER(#{resource.fatherMiddleName}), 
+            UPPER(#{resource.fatherLastName}), 
+            UPPER(#{fatherOccupation}), 
+            
+            UPPER(#{resource.motherFirstName}), 
+            UPPER(#{resource.motherMiddleName}), 
+            UPPER( #{resource.motherLastName}), 
+            UPPER( #{motherOccupation}), 
+            
+            #{resource.emailId}, 
+            #{resource.mobile}, 
+            
+            #{resource.bloodGroup},
+            UPPER(#{resource.motherTongue}), 
+            UPPER(#{resource.religion}), 
+            UPPER(#{resource.nationality}), 
+                        
+            (SELECT rec_id FROM social_category WHERE social_category_code = #{resource.category} AND is_active = true), 
+            
+            #{resource.passportNo}, 
+            #{resource.voterCardNo}, 
+            #{resource.panCardNo},
+            #{resource.aadharCardNo},            
+            #{resource.votingConstituency},
+            #{resource.parliamentaryConstituency}, 			               
+            UPPER(#{bankName}),
+            UPPER(#{branchCode}),
+            UPPER(#{accountNumber}),
+            UPPER(#{accountType}),       
+            UPPER(#{accountHolderName}),
+            #{resource.medicalStatus},
+            UPPER(#{branchIFSCCode}));		
+            
+            <foreach item="attachment" collection="attachmentList" open="" close="" separator=";">
+				INSERT INTO attachment(
+							            rec_id, obj_id, updated_by, updated_on, 
+							            date_of_creation,attachment_code, 
+							            attachment_type, attachment_location, attachment_size, 
+							            attached_file_name, resource)
+		    	VALUES (
+		    			uuid_generate_v4(),
+			   			#{objectId}, 
+			  			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			  			extract(epoch FROM now()),
+		          		extract(epoch FROM now()), 
+		          		(SELECT 'ATTCH-' ||COALESCE((SELECT MAX(attachment_id) FROM attachment), 0 )+1),
+		          		(SELECT rec_id FROM attachment_type WHERE attachment_type_name = #{attachment.attachmentType} AND is_active = true), 
+		          		#{attachment.storageRootPath}, 
+		          		#{attachment.attachmentSize},
+		          		#{attachment.attachmentName},
+		          		(SELECT rec_id FROM resource WHERE user_id = LOWER(#{resource.userId}) AND is_active = true)
+		  		 );
+		</foreach>
+	</insert>
+	
+	<insert id="insertAdditionalAttachmentsForResource" parameterType="com.qts.icam.model.erp.Employee">
+		<foreach item="attachment" collection="attachmentList" open="" close="" separator=";">
+				INSERT INTO attachment(
+							            rec_id, obj_id, updated_by, updated_on, 
+							            date_of_creation,attachment_code, 
+							            attachment_type, attachment_location, attachment_size, 
+							            attached_file_name, resource)
+		    	VALUES (
+		    			uuid_generate_v4(),
+			   			#{objectId}, 
+			  			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			  			extract(epoch FROM now()),
+		          		extract(epoch FROM now()), 
+		          		(SELECT 'ATTCH-' ||COALESCE((SELECT MAX(attachment_id) FROM attachment), 0 )+1),
+		          		(SELECT rec_id FROM attachment_type WHERE attachment_type_name = #{attachment.attachmentType} AND is_active = true), 
+		          		#{attachment.storageRootPath}, 
+		          		#{attachment.attachmentSize},
+		          		#{attachment.attachmentName},
+		          		(SELECT rec_id FROM resource WHERE user_id = LOWER(#{resource.userId}) AND is_active = true)
+		  		 );
+		</foreach>
+	</insert>
+	
+	<insert id="insertEmployeeOfficialDetails"  parameterType="com.qts.icam.model.erp.Employee" >
+		INSERT INTO employee_details(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation,
+            erp_code, doj, job_type, designation, 
+            department, 
+            qualification_summary, marital_status, spouse_name, date_of_retirement, confidential_information,
+            resource, designation_level_mapping, teaching_level, reporting_manager)
+      	VALUES ((select uuid_generate_v4()), 
+    		#{objectId}, 
+    		(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+    		(SELECT extract(epoch FROM now())),
+            (SELECT extract(epoch FROM now())),              
+            <!-- UPPER(#{employeeCode}), -->
+            (SELECT ('ERPCODE-' ||(select COALESCE((SELECT MAX(employee_details_id) FROM employee_details), 0 )+1))),
+            (SELECT extract(epoch from (SELECT to_timestamp(#{dateOfJoining},'DD-MM-YYYY')))),            
+            (SELECT rec_id from job_type WHERE job_type_code = #{jobType.jobTypeName} AND is_active = true),
+            (SELECT rec_id from designation WHERE designation_code = #{designation.designationName} AND is_active = true),
+            (SELECT rec_id from department WHERE department_code = #{department.departmentName} AND is_active = true),   
+            #{qualificationSummary},           
+            #{maritalStatus},
+            UPPER(#{spouseName}),
+            (SELECT extract(epoch from (SELECT to_timestamp(#{dateOfRetirement},'DD-MM-YYYY')))),
+            #{confidentialInformation},
+            (SELECT rec_id FROM resource WHERE user_id = LOWER(#{resource.userId}) AND is_active = true),            
+            (SELECT dlm.rec_id FROM designation_level_mapping dlm 			
+			JOIN designation d ON (dlm.designation = d.rec_id) AND (d.is_active = true) 
+			JOIN designation_level dl ON (dlm.designation_level = dl.rec_id) AND (dl.is_active = true) 
+			WHERE d.designation_code = #{designation.designationName} 
+			AND dl.designation_level_code = #{designationLevel.designationLevelName}  
+			AND dlm.is_active = true),			
+            (SELECT rec_id FROM teaching_level WHERE teaching_level_name = #{teachingLevel.teachingLevelName}AND is_active= true),
+            (SELECT rec_id FROM resource WHERE user_id = #{reportingManger} AND is_active = true)          
+            );
+	</insert>	
+	
+	<select id = "selectEmployeeNomineeDetails" resultType="com.qts.icam.model.erp.NomineeDetails" parameterType="com.qts.icam.model.erp.Employee">
+		SELECT 
+			nominee_code as nomineeDetailsnCode, 
+			nominee_name as nomineeName, 
+			relationship as relationship, 
+			percentage as percentage
+		  FROM 
+		  	nominee_details nd
+		  	JOIN resource r ON (nd.resource = r.rec_id AND nd.is_active = true AND r.is_active = true)
+		  WHERE 
+		  	r.user_Id = #{resource.userId};		
+	</select>
+	
+	<select id = "selectEmployeeWorkShopDetails" resultType="com.qts.icam.model.erp.WorkShopAndTraining" parameterType="com.qts.icam.model.erp.Employee">
+		SELECT 
+       		workshop_training_details_code as workShopAndTrainingCode,  
+       		subject as subject,
+       		venue as venue, 
+       		organized_by as organizedBy,
+       		duration as duration,
+       		(SELECT to_char((SELECT to_timestamp( wtd.training_to_date)), 'DD/MM/YYYY')) as trainingToDate,
+       		(SELECT to_char((SELECT to_timestamp( wtd.training_from_date)), 'DD/MM/YYYY')) as trainingFromDate
+  		FROM workshop_training_details wtd
+  		JOIN resource r ON (wtd.resource = r.rec_id AND wtd.is_active = true AND r.is_active = true)
+		  WHERE 
+		  	r.user_Id = #{resource.userId};		
+	</select>
+	
+	<select id = "selectEmployeeAwardsDetails" resultType="com.qts.icam.model.erp.AwardsAndRecognization" parameterType="com.qts.icam.model.erp.Employee">
+		SELECT 
+			awards_and_recognization_code as awardsAndRecognizationCode, 
+			award_name as awardName, 
+			presented_by as presentedBy, 
+			presented_on as	presentedOn	       
+		FROM awards_and_recognization aar		  
+		  JOIN resource r ON (aar.resource = r.rec_id AND aar.is_active = true AND r.is_active = true)
+		WHERE 
+			r.user_Id = #{resource.userId};			
+	</select>	
+	
+	<insert id="insertNomineeDetails" parameterType="com.qts.icam.model.erp.Employee">
+		<foreach collection="nomineeDetailsList" item="nd" open="" close="" separator=";">	
+			INSERT INTO nominee_details(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            nominee_code, nominee_name, relationship, percentage, resource)
+		VALUES (
+			uuid_generate_v4(), 		 
+			#{nd.nomineeDetailsObjectId},
+	    	(SELECT rec_id FROM resource WHERE user_id = #{nd.updatedBy} AND is_active = true),
+		    extract(epoch FROM now()),
+		    extract(epoch FROM now()),		
+			(SELECT 'NOM-' ||COALESCE((SELECT MAX(nominee_details_id) FROM nominee_details), 0 )+1), 
+			#{nd.nomineeName},
+			#{nd.relationship},
+			#{nd.percentage},		 
+			(SELECT rec_id FROM resource WHERE user_id = LOWER(#{nd.userId}) AND is_active = true));
+		</foreach>
+	</insert>
+	
+	<insert id="insertWorkShopAndTrainingDetails" parameterType="com.qts.icam.model.erp.Employee">
+		<foreach collection="workShopAndTrainingList" item="wst" open="" close="" separator=";">	
+			INSERT INTO workshop_training_details(
+	            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+	            workshop_training_details_code, subject, venue, organized_by, 
+	            duration, resource, training_from_date, training_to_date)
+		    VALUES (
+		    	(SELECT uuid_generate_v4()),
+				#{wst.workShopAndTrainingObjectId},
+				(SELECT rec_id FROM resource WHERE user_id =#{wst.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())),				  
+				(SELECT ('WST-' ||(select COALESCE((SELECT MAX(workshop_training_details_id) FROM workshop_training_details), 0 )+1))),         
+		        #{wst.subject},
+				#{wst.venue},
+				#{wst.organizedBy},
+				#{wst.duration},
+				(SELECT rec_id FROM resource WHERE user_id =LOWER(#{wst.userId}) AND is_active = true),
+				(SELECT extract(epoch from (SELECT to_timestamp(#{wst.trainingFromDate},'DD/MM/YYYY')))),
+				(SELECT extract(epoch from (SELECT to_timestamp(#{wst.trainingToDate},'DD/MM/YYYY')))));			
+		</foreach>
+	</insert>	
+	
+	<insert id="insertAwardsAndRecognizationDetails" parameterType="com.qts.icam.model.erp.Employee">
+	<foreach collection="awardsAndRecognizationList" item="aar" open="" close="" separator=";">	
+		INSERT INTO awards_and_recognization(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation,
+            awards_and_recognization_code, award_name, presented_by, presented_on, resource)
+   		VALUES (
+   		(SELECT uuid_generate_v4()),
+			#{aar.awardsAndRecognizationObjectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{aar.updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),				  
+			(SELECT ('AAR-' ||(select COALESCE((SELECT MAX(awards_and_recognization_id) FROM awards_and_recognization), 0 )+1))),         
+			#{aar.awardName},
+			#{aar.presentedBy},
+			#{aar.presentedOn},
+			(SELECT rec_id FROM resource WHERE user_id =LOWER(#{aar.userId}) AND is_active = true))									
+		</foreach>
+	</insert>
+	
+		<update id = "deleteEmployeeNomineeDetails" parameterType="com.qts.icam.model.erp.Employee">
+			DELETE FROM nominee_details WHERE is_active = true AND resource = (SELECT rec_id FROM resource WHERE user_id = #{resource.userId}); 
+		</update>		
+		
+		<update id = "deleteEmployeeWorkShopAndTrainingDetails" parameterType="com.qts.icam.model.erp.Employee">
+			DELETE FROM workshop_training_details WHERE is_active = true AND resource = (SELECT rec_id FROM resource WHERE user_id = #{resource.userId}); 
+		</update>	
+		
+		<update id = "deleteEmployeeAwardsAndRecognizationDetails" parameterType="com.qts.icam.model.erp.Employee">
+			DELETE FROM awards_and_recognization WHERE is_active = true AND resource = (SELECT rec_id FROM resource WHERE user_id = #{resource.userId}); 
+		</update>	
+	
+	
+	<update id="updateEmployeeConfidentialDetails" parameterType="com.qts.icam.model.erp.Employee">
+		UPDATE 
+			employee_details
+	   	SET 	
+  			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),			
+			confidential_information=#{confidentialInformation}
+		WHERE  
+ 			resource= (SELECT rec_id FROM resource WHERE user_id = #{resource.userId} AND is_active = true);
+	</update>
+	
+	<insert id="insertResourcePresentAddressDetails" parameterType="com.qts.icam.model.common.Address" statementType="CALLABLE">
+		select insert_resource_address(
+			#{objectId, mode=IN, jdbcType=VARCHAR},
+			#{updatedBy, mode=IN, jdbcType=VARCHAR},
+			#{addressCode, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressLine, mode=IN, jdbcType=VARCHAR},
+			#{addressDesc, mode=IN, jdbcType=VARCHAR},			
+			#{presentAddressCityVillage, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressPinCode, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressState, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressCountry, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressPoliceStation, mode=IN, jdbcType=VARCHAR},			
+			#{presentAddressDistrict, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressPostOffice, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressLandmark, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressRailwayStation, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressPhone, mode=IN, jdbcType=VARCHAR},
+			#{addressType, mode=IN, jdbcType=VARCHAR},			
+			#{userId, mode=IN, jdbcType=VARCHAR});	
+	</insert>
+	
+	<insert id="insertResourcePermananentAddressDetails" parameterType="com.qts.icam.model.common.Address" statementType="CALLABLE">
+		select insert_resource_address(
+			#{objectId, mode=IN, jdbcType=VARCHAR},
+			#{updatedBy, mode=IN, jdbcType=VARCHAR},
+			#{addressCode, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressLine, mode=IN, jdbcType=VARCHAR},
+			#{addressDesc, mode=IN, jdbcType=VARCHAR},			
+			#{permanentAddressCityVillage, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressPinCode, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressState, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressCountry, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressPoliceStation, mode=IN, jdbcType=VARCHAR},			
+			#{permanentAddressDistrict, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressPostOffice, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressLandmark, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressRailwayStation, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressPhone, mode=IN, jdbcType=VARCHAR},
+			#{addressType, mode=IN, jdbcType=VARCHAR},			
+			#{userId, mode=IN, jdbcType=VARCHAR});	
+	</insert>
+	
+	
+	
+<insert id="insertResourceQualificationDetails" parameterType="com.qts.icam.model.erp.Employee">
+		<foreach collection="qualificationList" item="qua" open="" close="" separator=";">
+			<if test="qua.examName != null and qua.examName.trim().length()!=0 ">
+			INSERT INTO qualification(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            	qualification_code, qualification_name, qualification_desc, 
+            	year_of_passing, school_college_name, university_name, grade, 
+            	resource, subject_specilization, percent_of_marks_obtained, qualification_type)
+    		VALUES (
+    			(SELECT uuid_generate_v4()), 
+    			#{qua.qualificationObjectId},
+    			(SELECT rec_id FROM resource WHERE user_id =#{qua.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())),
+				(SELECT ('QUALI-' ||(select COALESCE((SELECT MAX(qualification_id) FROM qualification), 0 )+1))),
+				UPPER(#{qua.examName}),
+				UPPER(#{qua.examName}),
+				UPPER(#{qua.passingYear}),
+				UPPER(#{qua.schoolCollege}),
+				UPPER(#{qua.boardUniversity}),				
+				#{qua.grade},
+				(SELECT rec_id FROM resource WHERE user_id =LOWER(#{qua.userId}) AND is_active = true),
+				UPPER(#{qua.specialization}),             	
+				#{qua.marks},
+				(SELECT rec_id FROM qualification_type WHERE qualification_type_name=#{qua.qualificationType} AND is_active = true)
+            )	
+            </if>
+		</foreach>
+	</insert>
+	
+	
+	<insert id="insertResourceOtherQualificationDetails" parameterType="com.qts.icam.model.erp.Employee">
+		<foreach collection="otherQualificationList" item="qua" open="" close="" separator=";">
+			INSERT
+			INTO qualification(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation,
+			qualification_code, qualification_name, qualification_desc,
+			year_of_passing, school_college_name, university_name, percent_of_marks_obtained,
+			grade, subject_specilization, resource, qualification_type)
+			VALUES ((SELECT uuid_generate_v4()),
+			#{qua.otherQualificationDetailsObjectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{qua.updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			(SELECT ('QUALI-' ||(select COALESCE((SELECT MAX(qualification_id) FROM qualification), 0 )+1))),
+			UPPER(#{qua.othersExamName}),
+			UPPER(#{qua.othersExamName}),
+			UPPER(#{qua.othersPassingYear}),
+			UPPER(#{qua.othersSchoolCollege}),
+			UPPER(#{qua.othersBoardUniversity}),
+			#{qua.othersMarks},
+			#{qua.grade},
+			UPPER(#{qua.othersSpecialization}),
+			(SELECT rec_id FROM resource WHERE user_id =LOWER(#{qua.userId}) AND is_active = true),
+			(SELECT rec_id FROM qualification_type WHERE qualification_type_name=#{qua.otherQualificationDetailsType} AND is_active = true)
+			)
+		</foreach>
+	</insert>	
+	
+	
+	<insert id="insertResourceDependentsDetails" parameterType="com.qts.icam.model.erp.Employee"><!-- Naimisha 26052017 -->
+		<foreach collection="employeeDependentList" item="ed" open="" close="" separator=";">
+			INSERT INTO employee_dependents(
+	            rec_id, obj_id, updated_by, updated_on, date_of_creation,
+	            employee_dependents_code, 
+	            child_name, 
+	            child_gender, 
+	            child_date_of_birth,
+	            resource)
+  			VALUES ((SELECT uuid_generate_v4()),
+				#{ed.employeeDependentObjId},
+				(SELECT rec_id FROM resource WHERE user_id =#{ed.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())),
+	            (SELECT ('EMP_DEP-' ||(select COALESCE((SELECT MAX(employee_dependents_id) FROM employee_dependents), 0 )+1))),
+	            UPPER(#{ed.childName}),
+	            #{ed.childGender},
+	            (SELECT extract(epoch from (SELECT to_timestamp(#{ed.childDOB},'DD/MM/YYYY')))),
+	            (SELECT rec_id FROM resource WHERE user_id =LOWER(#{ed.userId}) AND is_active = true))	            
+		</foreach>
+	</insert>		
+	
+	<insert id="insertPublicationDetails" parameterType="com.qts.icam.model.erp.Employee">
+		<foreach collection="publicationList" item="pub" open="" close="" separator=";">	
+			INSERT INTO publication(
+	            rec_id, obj_id, updated_by, updated_on, date_of_creation,
+	            publication_code, publication_name, publication_desc, co_publisher, 
+	            date_of_publication, resource)
+		   	VALUES (
+				(SELECT uuid_generate_v4()),
+				#{pub.publicationObjId},
+				(SELECT rec_id FROM resource WHERE user_id =#{pub.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())),
+				(SELECT ('PUB-' ||(select COALESCE((SELECT MAX(publication_id) FROM publication), 0 )+1))),
+				UPPER(#{pub.publicationName}),
+				UPPER(#{pub.publicationDesc}),
+				UPPER(#{pub.coPublisher}),
+				UPPER(#{pub.dateOfPublication}),
+				(SELECT rec_id FROM resource WHERE user_id =LOWER(#{pub.userId}) AND is_active = true))		
+		</foreach>
+	</insert>
+	
+	<insert id="insertOrganizationDetails" parameterType="com.qts.icam.model.erp.Employee">
+		<foreach collection="organizationList" item="org" open="" close="" separator=";">	
+			INSERT INTO organization(
+           	 	rec_id, obj_id, updated_by, updated_on, date_of_creation,
+            	organization_code, organization_name, organization_desc, 
+            	organization_website, 
+            	school_contact_number, from_date, to_date, resource)
+    		VALUES (
+				(SELECT uuid_generate_v4()),
+				#{org.organizationObjectId},
+				(SELECT rec_id FROM resource WHERE user_id =#{org.updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())),				  
+				(SELECT ('ORG-' ||(select COALESCE((SELECT MAX(organization_id) FROM organization), 0 )+1))),         
+				UPPER(#{org.organizationName}),
+				UPPER(#{org.organizationDesc}),
+				#{org.organizationWebSite},
+				#{org.organizationContactNo},
+				#{org.fromDate},
+				#{org.toDate},
+				(SELECT rec_id FROM resource WHERE user_id =LOWER(#{org.userId}) AND is_active = true))		
+		</foreach>
+	</insert>
+	
+	<!-- 	/************modified By Naimisha22112016*************/ -->
+	<select id="selectStaffList" resultType="com.qts.icam.model.erp.Employee" parameterType="java.util.Map">
+		SELECT
+			r.user_id as "resource.userId",
+			ed.erp_code as employeeCode,
+			r.first_name as "resource.firstName",
+			r.middle_name as "resource.middleName",
+			r.last_name as "resource.lastName",
+			r.initial_name as "resource.initialName",
+			r.mobile_no as "resource.mobile",
+			r.email_address as "resource.emailId",			
+			d.designation_name as "designation.designationName",
+			rt.resource_type_name as "employeeType.employeeTypeName",
+			r.gender as "resource.gender",
+			r.photo as "resource.image.imageName"
+		FROM
+			resource r				
+		LEFT JOIN resource_type rt ON (r.resource_type = rt.rec_id AND rt.is_active=true)
+		JOIN employee_details ed ON (ed.resource = r.rec_id AND ed.is_active=true)		
+		JOIN designation d ON (ed.designation = d.rec_id AND d.is_active=true)		
+		WHERE			
+			ed.is_retired=false
+		AND
+			r.is_active=true		
+	</select>
+	
+	
+	<select id="selectStaffListForExaminer" resultType="com.qts.icam.model.common.Resource">
+		SELECT
+			r.user_id as userId,			
+			r.first_name firstName,
+			r.middle_name as middleName,
+			r.last_name as lastName,
+			r.mobile_no as mobile,
+			r.email_address as emailId			
+		FROM
+			resource r				
+		LEFT JOIN resource_type rt ON (r.resource_type = rt.rec_id AND rt.is_active=true)
+		JOIN employee_details ed ON (ed.resource = r.rec_id AND ed.is_active=true)		
+		JOIN designation d ON (ed.designation = d.rec_id AND d.is_active=true)		
+		WHERE			
+			ed.is_retired=false
+		AND
+			r.is_active=true	
+	</select>
+	
+	<resultMap id="selectEmployeeDetailsResultMap" type="com.qts.icam.model.erp.Employee">	
+		<id property="employeeCode" column="erp_code" jdbcType="VARCHAR" />
+		<result property="dateOfJoining" column="doj" jdbcType="VARCHAR" />		
+		<result property="dateOfRetirement" column="dor" jdbcType="VARCHAR" />
+		<result property="fatherOccupation" column="father_occupation" jdbcType="VARCHAR" />
+		<result property="motherOccupation" column="mother_occupation" jdbcType="VARCHAR" />						
+		<result property="qualificationSummary" column="qualification_summary" jdbcType="VARCHAR" />
+		<result property="maritalStatus" column="marital_status" jdbcType="VARCHAR" />			
+		<result property="spouseName" column="spouse_name" jdbcType="VARCHAR" />
+		<result property="confidentialInformation" column="confidential_information" jdbcType="VARCHAR" />
+		<result property="branchIFSCCode" column="bank_ifsc_code" jdbcType="VARCHAR" />
+		<result property="teachingLevelName" column="teaching_level_name" jdbcType="VARCHAR" />
+		<association property="resource" javaType="com.qts.icam.model.common.Resource">
+			<id property="userId" column="user_id" jdbcType="VARCHAR" />
+			<result property="firstName" column="first_name" jdbcType="VARCHAR" />
+			<result property="middleName" column="middle_name" jdbcType="VARCHAR" />
+			<result property="lastName" column="last_name" jdbcType="VARCHAR" />
+			<result property="initialName" column="initial_name" jdbcType="VARCHAR" />			
+			<result property="dateOfBirth" column="date_of_birth" jdbcType="VARCHAR" />			
+			<result property="firstName" column="first_name" jdbcType="VARCHAR" />
+			<result property="middleName" column="middle_name" jdbcType="VARCHAR" />
+			<result property="lastName" column="last_name" jdbcType="VARCHAR" />	
+			<result property="fatherFirstName" column="father_first_name" jdbcType="VARCHAR" />
+			<result property="fatherMiddleName" column="father_middle_name" jdbcType="VARCHAR" />
+			<result property="fatherLastName" column="father_last_name" jdbcType="VARCHAR" />
+			<result property="motherFirstName" column="mother_first_name" jdbcType="VARCHAR" />
+			<result property="motherMiddleName" column="mother_middle_name" jdbcType="VARCHAR" />
+			<result property="motherLastName" column="mother_last_name" jdbcType="VARCHAR" />			
+			<result property="mobile" column="mobile_no" jdbcType="VARCHAR" />
+			<result property="emailId" column="email_address" jdbcType="VARCHAR" />			
+			<result property="gender" column="gender" jdbcType="VARCHAR" />	
+			<result property="motherTongue" column="mother_tongue" jdbcType="VARCHAR" />
+			<result property="religion" column="religion" jdbcType="VARCHAR" />
+			<result property="nationality" column="nationality" jdbcType="VARCHAR" />
+			<result property="category" column="social_category_name" jdbcType="VARCHAR" />			
+			<result property="bloodGroup" column="blood_group" jdbcType="VARCHAR" />	
+			<result property="passportNo" column="passport_id" jdbcType="VARCHAR" />			
+			<result property="voterCardNo" column="voter_id" jdbcType="VARCHAR" />	
+			<result property="rationCardNo" column="ration_id" jdbcType="VARCHAR" />	
+			<result property="panCardNo" column="pan_no" jdbcType="VARCHAR" />	
+			<result property="aadharCardNo" column="aadhar_card_no" jdbcType="VARCHAR" />
+			<result property="bankName" column="bank_name" jdbcType="VARCHAR" />				
+			<result property="bankBranch" column="branch" jdbcType="VARCHAR" />	
+			<result property="accountNumber" column="bank_account_number" jdbcType="VARCHAR" />	
+			<result property="accountType" column="account_type" jdbcType="VARCHAR" />	
+			<result property="accountHolderName" column="account_holder_name" jdbcType="VARCHAR" />			
+			<result property="votingConstituency" column="voting_constituency" jdbcType="VARCHAR" />				
+			<result property="parliamentaryConstituency" column="parliamentary_constituency" jdbcType="VARCHAR" />						
+			<result property="medicalStatus" column="medical_status" jdbcType="VARCHAR" />						
+		</association>
+		<association property="designation" javaType="com.qts.icam.model.erp.Designation">
+			<id property="designationName" column="designation_name" jdbcType="VARCHAR" />
+			<result property="designationCode" column="designation_code" jdbcType="VARCHAR" />
+		</association>	
+		<association property="employeeType" javaType="com.qts.icam.model.erp.EmployeeType">
+			<id property="employeeTypeCode" column="resource_type_code" jdbcType="VARCHAR" />
+			<result property="employeeTypeName" column="resource_type_name" jdbcType="VARCHAR" />
+		</association>
+		<association property="jobType" javaType="com.qts.icam.model.erp.JobType">			
+			<id property="jobTypeCode" column="job_type_code" jdbcType="VARCHAR" />
+			<result property="jobTypeName" column="job_type_name" jdbcType="VARCHAR" />
+		</association>	
+		<association property="department" javaType="com.qts.icam.model.common.Department">
+			<id property="departmentCode" column="department_code" jdbcType="VARCHAR" />
+			<result property="departmentName" column="department_name" jdbcType="VARCHAR" />
+		</association>	
+		<association property="designationLevel" javaType="com.qts.icam.model.erp.DesignationLevel">
+			<id property="designationLevelName" column="designation_level_name" jdbcType="VARCHAR" />
+			<result property="designationLevelCode" column="designation_level_code" jdbcType="VARCHAR" />
+		</association>					
+	</resultMap>
+	<select id= "selectEmployeeDetails" resultMap="selectEmployeeDetailsResultMap" parameterType="com.qts.icam.model.erp.Employee">
+		SELECT
+		       gender, 
+		       r.user_id, 
+		       r.first_name, r.middle_name, r.last_name, r.initial_name,
+		       (SELECT to_char((SELECT to_timestamp( r.date_of_birth)), 'DD/MM/YYYY')) as date_of_birth,
+		       r.father_first_name, r.father_middle_name, r.father_last_name, r.father_occupation, 
+		       r.mother_first_name, r.mother_middle_name, r.mother_last_name, r.mother_occupation, 
+		       r.email_address, r.mobile_no, 
+			   blood_group,
+		       r.mother_tongue, r.religion, r.nationality, 
+		       sc.social_category_name, 
+		       r.passport_id, r.voter_id, r.ration_id, r.pan_no, r.aadhar_card_no, 
+		       r.bank_name, r.branch, r.bank_account_number, 
+		       r.account_type, r.account_holder_name, 
+		       r.voting_constituency, 
+		       r.parliamentary_constituency,
+		       r.medical_status,
+		       r.bank_ifsc_code,
+		       rt.resource_type_code,
+		       rt.resource_type_name,
+		       jt.job_type_code,
+		       jt.job_type_name,			
+		       d.designation_code,
+		       d.designation_name,
+		       dept.department_code,
+		       dept.department_name,
+		       ed.erp_code, 
+		       (SELECT to_char((SELECT to_timestamp(ed.doj)), 'DD/MM/YYYY')) as doj,
+		       (SELECT to_char((SELECT to_timestamp(ed.date_of_retirement)), 'DD/MM/YYYY')) as dor,		      
+		       ed.qualification_summary, 
+		       ed.marital_status, 
+		       ed.spouse_name, 
+		       ed.date_of_retirement,
+		       ed.confidential_information,
+		       designation_level_code,
+		       designation_level_name,
+		       teaching_level_name
+		FROM
+			resource r				
+		JOIN resource_type rt ON (r.resource_type = rt.rec_id AND rt.is_active = true)
+		JOIN employee_details ed ON (ed.resource = r.rec_id AND ed.is_active = true)		
+		JOIN job_type jt ON (ed.job_type = jt.rec_id AND jt.is_active = true)
+		JOIN designation d ON (ed.designation = d.rec_id AND d.is_active = true)
+		JOIN department dept ON (ed.department = dept.rec_id AND dept.is_active = true)
+		JOIN social_category sc ON (r.social_category = sc.rec_id AND sc.is_active = true)
+		JOIN designation_level_mapping dlm ON (ed.designation_level_mapping = dlm.rec_id AND dlm.is_active = true)
+		JOIN designation_level dl ON (dlm.designation_level = dl.rec_id AND dl.is_active = true)
+		JOIN teaching_level tl ON (ed.teaching_level = tl.rec_id AND tl.is_active = true)
+		WHERE			
+			ed.is_retired = false
+		AND
+			r.is_active = true
+		AND
+			r.user_id = #{resource.userId};		
+	</select>
+	
+	<select id= "selectEmployeeAddressDetails" resultType="com.qts.icam.model.common.Address" parameterType="com.qts.icam.model.erp.Employee">
+		SELECT  
+		       a1.address_code as presentAddressCode, 
+		       a1.address_line as presentAddressLine, 
+		       a1.land_mark as presentAddressLandmark, 
+		       ct1.city_name as presentAddressCityVillage, 
+		       dis1.district_name as presentAddressDistrict, 
+		       a1.postal_code as presentAddressPinCode, 
+		       st1.state_name as presentAddressState, 
+		       cty1.country_name presentAddressCountry, 
+		       a1.police_station as presentAddressPoliceStation, 
+		       a1.post_office as presentAddressPostOffice,		      
+		       a1.railway_station as presentAddressRailwayStation, 
+		       a1.phone as presentAddressPhone,
+		       a2.address_code as permanenentAddressCode, 
+		       a2.address_line as permanentAddressLine, 
+		       a2.land_mark as permanentAddressLandmark, 
+		       ct2.city_name as permanentAddressCityVillage, 
+		       dis2.district_name as permanentAddressDistrict, 
+		       a2.postal_code as permanentAddressPinCode, 
+		       st2.state_name as permanentAddressState, 
+		       cty2.country_name as permanentAddressCountry, 
+		       a2.police_station as permanentAddressPoliceStation, 
+		       a2.post_office as permanentAddressPostOffice, 		        
+		       a2.railway_station as permanentAddressRailwayStation, 
+		       a2.phone as permanentAddressPhone		 
+		  FROM address a1
+		  JOIN resource r1 ON (a1.resource = r1.rec_id AND a1.is_active = true AND r1.is_active = true)
+		  JOIN state st1 ON (a1.state = st1.rec_id AND st1.is_active = true)
+		  JOIN district dis1 ON (a1.district = dis1.rec_id AND dis1.is_active = true)
+		  JOIN city ct1 ON (a1.city = ct1.rec_id AND ct1.is_active = true)
+		  JOIN country cty1 ON (a1.country = cty1.rec_id AND cty1.is_active = true)  
+		  JOIN address a2 ON (a2.resource = r1.rec_id)
+		  JOIN state st2 ON (a2.state = st2.rec_id AND st2.is_active = true)
+		  JOIN district dis2 ON (a2.district = dis2.rec_id AND dis2.is_active = true)
+		  JOIN city ct2 ON (a2.city = ct2.rec_id AND ct2.is_active = true)
+		  JOIN country cty2 ON (a2.country = cty2.rec_id AND cty2.is_active = true)		  
+		  WHERE
+			r1.user_Id = #{resource.userId}
+		 AND
+			a1.address_type = 'PRESENT'
+		 AND
+			a2.address_type = 'PERMANENT';
+	</select>
+	
+	<select id="selectEmployeeAttachmentsDetails" resultType="com.qts.icam.model.common.Attachment" parameterType="com.qts.icam.model.erp.Employee">
+	  SELECT 
+       		attachment_code as attachmentCode,       		
+       		at.attachment_type_name as attachmentType, 
+       		attachment_location as storageRootPath, 
+       		attachment_size as attachmentSize, 
+       		attached_file_name as attachmentName
+       FROM 
+       		attachment a
+       JOIN resource r ON (a.resource = r.rec_id AND a.is_active = true AND r.is_active = true)
+        JOIN attachment_type at ON (a.attachment_type = at.rec_id AND at.is_active = true)
+       
+       WHERE
+			r.user_Id = #{resource.userId};		
+	</select>
+	
+	<select id="selectEmployeeQualificationDetails" resultType="com.qts.icam.model.erp.Qualification" parameterType="com.qts.icam.model.erp.Employee">
+			SELECT 
+				qualification_code as qualificationCode,
+			 	qualification_name as qualificationName, 
+			 	qualification_desc as qualificationName, 			 
+			 	year_of_passing as passingYear, 
+			    school_college_name as schoolCollege, 
+			    university_name as boardUniversity, 
+			    grade as grade, 	 
+			    subject_specilization as specialization, 
+			    percent_of_marks_obtained as marks, 
+			    qt.qualification_type_name as qualificationType
+			  FROM 
+			  	qualification q
+				JOIN resource r ON (q.resource = r.rec_id AND q.is_active = true AND r.is_active = true)
+				JOIN qualification_type qt ON (qt.rec_id = q.qualification_type AND qt.is_active = true)
+			  WHERE
+				r.user_Id = #{resource.userId};
+	</select>
+	
+	<select id= "selectEmployeePublicationDetails"  resultType="com.qts.icam.model.erp.Publication" parameterType="com.qts.icam.model.erp.Employee">
+		SELECT 
+		       publication_code as publicationCode, 
+		       publication_name as publicationName, 
+		       publication_desc as publicationDesc, 
+		       co_publisher as coPublisher, 
+		       date_of_publication as dateOfPublication
+		 FROM 
+		 	publication p
+		 JOIN resource r ON (p.resource = r.rec_id AND p.is_active = true AND r.is_active = true)
+		 WHERE
+			r.user_Id = #{resource.userId};
+	</select>
+	
+	<select id= "selectEmployeeDependentsDetails" resultType="com.qts.icam.model.erp.EmployeeDependent" parameterType="com.qts.icam.model.erp.Employee">
+			SELECT 
+		       employee_dependents_code as employeeDependentCode, 
+		       employee_dependents_name as employeeDependentName, 
+		       employee_dependents_desc as employeeDependentDesc, 
+		       child_name as childName, 
+		       child_gender as childGender, 
+		      (SELECT to_char((SELECT to_timestamp(child_date_of_birth)), 'DD/MM/YYYY')) as childDOB		       
+		  FROM 
+			employee_dependents ed
+		  JOIN resource r ON (ed.resource = r.rec_id AND ed.is_active = true AND r.is_active = true)
+		   WHERE
+			r.user_Id = #{resource.userId};
+	</select>
+	
+	<select id = "selectEmployeeOrganizationDetails" resultType="com.qts.icam.model.erp.Organization" parameterType="com.qts.icam.model.erp.Employee">
+		SELECT 
+	       organization_code as organizationCode, 
+	       organization_name as organizationName, 
+	       organization_website as organizationWebSite, 
+	       school_contact_number as organizationContactNo, 
+	       from_date as fromDate, 
+	       to_date as toDate
+	  FROM organization o
+	  JOIN resource r ON (o.resource = r.rec_id AND o.is_active = true AND r.is_active = true)
+	  WHERE
+		r.user_Id = #{resource.userId};	
+	</select>
+	
+	<update id= "editEmployeeBasicDetails" parameterType="com.qts.icam.model.erp.Employee">
+		UPDATE 
+			employee_details
+	   	SET 	
+  			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			doj=(SELECT extract(epoch from (SELECT to_timestamp(#{dateOfJoining},'DD-MM-YYYY')))),
+			date_of_retirement=(SELECT extract(epoch from (SELECT to_timestamp(#{dateOfRetirement},'DD-MM-YYYY')))),				        
+	       	job_type = (SELECT rec_id FROM job_type WHERE job_type_code = #{jobType.jobTypeName} AND is_active = true) , 
+	       	designation = (SELECT rec_id FROM designation WHERE designation_code = #{designation.designationName} AND is_active = true), 
+	       	department = (SELECT rec_id FROM department WHERE department_code = #{department.departmentName} AND is_active = true),       
+	       	qualification_summary = #{qualificationSummary},
+	       	teaching_level = (SELECT rec_id FROM teaching_level WHERE  teaching_level_name = #{teachingLevelName} AND is_active = true),
+	       	designation_level_mapping = (SELECT dlm.rec_id FROM designation_level_mapping dlm JOIN designation d ON (dlm.designation = d.rec_id AND d.is_active = true) JOIN designation_level dl ON (dlm.designation_level = dl.rec_id AND dl.is_active = true) WHERE designation_code = #{designation.designationName} AND designation_level_code = #{designationLevel.designationLevelName} AND dlm.is_active = true)
+ 		WHERE  
+ 			resource= (SELECT rec_id FROM resource WHERE user_id = #{resource.userId} AND is_active = true);
+ 		
+ 		UPDATE 
+ 			resource
+	   	SET 
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),			
+			date_of_birth  = (SELECT extract(epoch from (SELECT to_timestamp(#{resource.dateOfBirth},'DD-MM-YYYY')))),
+			resource_type = (SELECT rec_id FROM resource_type WHERE resource_type_code = #{employeeType.employeeTypeName} AND is_active = true) 
+		WHERE  
+	 		user_id = #{resource.userId}
+	 	AND
+	 		is_active = true; 		
+ 			
+	</update>
+
+ 	<update id= "updateEmployeePersonalDetails" parameterType="com.qts.icam.model.erp.Employee">            
+ 		UPDATE 
+ 			resource
+	   	SET 
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),			
+      	    first_name = UPPER(#{resource.firstName}), 
+	        middle_name = UPPER(#{resource.middleName}), 
+	        last_name  = UPPER(#{resource.lastName}),
+	        initial_name  = UPPER(#{resource.initialName}), 
+	        father_first_name = UPPER(#{resource.fatherFirstName}),
+	        father_middle_name = UPPER(#{resource.fatherMiddleName}), 
+	        father_last_name = UPPER(#{resource.fatherLastName}),  
+	        father_occupation = UPPER(#{fatherOccupation}),			 
+	        mother_first_name = UPPER(#{resource.motherFirstName}), 
+	        mother_middle_name = UPPER(#{resource.motherMiddleName}), 
+	        mother_last_name = UPPER(#{resource.motherLastName}), 	
+	        mother_occupation  = UPPER(#{motherOccupation}),       
+ 	        email_address = #{resource.emailId}, 
+	        mobile_no = #{resource.mobile},  
+	 	    blood_group = #{resource.bloodGroup},
+	        mother_tongue = UPPER(#{resource.motherTongue}),  
+	        religion  = UPPER(#{resource.religion}),
+	        nationality  = UPPER(#{resource.nationality}),
+	        social_category  = (SELECT rec_id FROM social_category WHERE social_category_code = #{resource.category} AND is_active = true), 
+	        passport_id  = #{resource.passportNo},
+	        voter_id  = #{resource.voterCardNo},
+	        ration_id  = #{resource.rationCardNo},
+		    pan_no  = #{resource.panCardNo},
+		    aadhar_card_no  = #{resource.aadharCardNo},  	            
+	        voting_constituency = #{resource.votingConstituency}, 
+	        parliamentary_constituency = #{resource.parliamentaryConstituency},
+	        medical_status = #{resource.medicalStatus}
+	        <!-- gender = #{resource.gender}	  -->      
+	 WHERE  
+	 	user_id = #{resource.userId}
+	 AND
+	 	is_active = true; 	
+ 	
+ 	
+		UPDATE 
+			employee_details
+	   	SET 	
+  			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),			
+			marital_status=#{maritalStatus}, 
+			spouse_name = UPPER(#{spouseName})	       
+ 		WHERE  
+ 			resource= (SELECT rec_id FROM resource WHERE user_id = #{resource.userId} AND is_active = true);
+	</update>
+	
+	<update id = "deleteEmployeeQualificationDetails" parameterType="com.qts.icam.model.erp.Employee">
+		DELETE FROM qualification WHERE is_active = true AND resource = (SELECT rec_id FROM resource WHERE user_id = #{resource.userId}); 
+	</update>	
+	
+	<update id="updateResourcePresentAddressDetails" parameterType="com.qts.icam.model.common.Address" statementType="CALLABLE">
+		select update_resource_address(	
+			#{objectId, mode=IN, jdbcType=VARCHAR},
+			#{updatedBy, mode=IN, jdbcType=VARCHAR},
+			#{addressCode, mode=IN, jdbcType=VARCHAR},					
+			#{presentAddressLine, mode=IN, jdbcType=VARCHAR},
+			#{addressDesc, mode=IN, jdbcType=VARCHAR},			
+			#{presentAddressCityVillage, mode=IN, jdbcType=VARCHAR},			
+			#{presentAddressPinCode, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressState, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressCountry, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressPoliceStation, mode=IN, jdbcType=VARCHAR},			
+			#{presentAddressDistrict, mode=IN, jdbcType=VARCHAR},			
+			#{presentAddressPostOffice, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressLandmark, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressRailwayStation, mode=IN, jdbcType=VARCHAR},
+			#{presentAddressPhone, mode=IN, jdbcType=VARCHAR},
+			#{addressType, mode=IN, jdbcType=VARCHAR},					
+			#{userId, mode=IN, jdbcType=VARCHAR});	
+	</update>
+	
+	<update id="updateResourcePermananentAddressDetails" parameterType="com.qts.icam.model.common.Address" statementType="CALLABLE">
+		select update_resource_address(		
+			#{objectId, mode=IN, jdbcType=VARCHAR},
+			#{updatedBy, mode=IN, jdbcType=VARCHAR},
+			#{addressCode, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressLine, mode=IN, jdbcType=VARCHAR},		
+			#{addressDesc, mode=IN, jdbcType=VARCHAR},			
+			#{permanentAddressCityVillage, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressPinCode, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressState, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressCountry, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressPoliceStation, mode=IN, jdbcType=VARCHAR},			
+			#{permanentAddressDistrict, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressPostOffice, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressLandmark, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressRailwayStation, mode=IN, jdbcType=VARCHAR},
+			#{permanentAddressPhone, mode=IN, jdbcType=VARCHAR},
+			#{addressType, mode=IN, jdbcType=VARCHAR},			
+			#{userId, mode=IN, jdbcType=VARCHAR});	
+	</update>	
+	
+	<update id = "deleteEmployeeDependentsDetails" parameterType="com.qts.icam.model.erp.Employee">
+		DELETE FROM employee_dependents WHERE is_active = true AND resource = (SELECT rec_id FROM resource WHERE user_id = #{resource.userId}); 
+	</update>	
+	
+	<update id = "deleteEmployeePublicationDetails" parameterType="com.qts.icam.model.erp.Employee">
+		DELETE FROM publication WHERE is_active = true AND resource = (SELECT rec_id FROM resource WHERE user_id = #{resource.userId}); 
+	</update>	
+	
+	<update id = "deleteEmployeeWorkingDetails" parameterType="com.qts.icam.model.erp.Employee">
+		DELETE FROM organization WHERE is_active = true AND resource = (SELECT rec_id FROM resource WHERE user_id = #{resource.userId}); 
+	</update>
+	
+	<update id = "updateEmployeeBankDetails" parameterType="com.qts.icam.model.erp.Employee">
+		UPDATE 
+			resource
+		SET 
+		   	updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			bank_name = UPPER(#{bankName}), 
+			branch = UPPER(#{branchCode}), 
+			bank_account_number = #{accountNumber},
+			bank_ifsc_code = UPPER(#{branchIFSCCode}),
+			account_type = UPPER(#{accountType}), 
+			account_holder_name = UPPER(#{accountHolderName})	 
+		WHERE  			
+			user_id = #{resource.userId};
+	</update>
+	
+	<delete id="deleteEmployeeImageDetails" parameterType="com.qts.icam.model.erp.Employee">
+		DELETE FROM attachment 
+		 WHERE attachment_type = (SELECT rec_id FROM attachment_type WHERE attachment_type_name = #{attachment.attachmentType}  AND is_active = true)
+				  AND resource = (SELECT rec_id FROM resource WHERE user_id = #{resource.userId}  AND is_active = true);
+	</delete>
+	
+	<insert id="insertImagesDetailsForResource" parameterType="com.qts.icam.model.erp.Employee">
+			INSERT INTO attachment(
+							            rec_id, obj_id, updated_by, updated_on, 
+							            date_of_creation,attachment_code, 
+							            attachment_type, attachment_location, attachment_size, 
+							            attached_file_name, resource)
+		    	VALUES (
+		    			uuid_generate_v4(),
+			   			#{objectId}, 
+			  			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			  			extract(epoch FROM now()),
+		          		extract(epoch FROM now()), 
+		          		(SELECT 'ATTCH-' ||COALESCE((SELECT MAX(attachment_id) FROM attachment), 0 )+1),
+		          		(SELECT rec_id FROM attachment_type WHERE attachment_type_name = #{attachment.attachmentType} AND is_active = true), 
+		          		#{attachment.storageRootPath}, 
+		          		#{attachment.attachmentSize},
+		          		#{attachment.attachmentName},
+		          		(SELECT rec_id FROM resource WHERE user_id = #{resource.userId} AND is_active = true)
+		  		 );
+	</insert>
+	
+	<select id="serverSideValidationOfUserId" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			user_id as usrName
+		FROM
+			resource
+		WHERE		
+			LOWER(user_id) = LOWER(#{strUserId});
+			
+	</select>
+	
+		<select id="serverSideValidationOfEmployeeCode" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT 
+			erp_code 
+		FROM 
+			employee_details 
+		WHERE 
+		UPPER(erp_code) =  UPPER(#{employeeCode});
+			
+	</select>
+
+
+<!-- 	leave -->
+
+	<select id="selectLeaveTypeList" resultType="com.qts.icam.model.erp.Leave">
+		SELECT
+			lt.leave_type_name as leaveType
+		FROM
+			leave_type lt
+		WHERE
+			lt.is_active = true;
+	</select>
+	
+	<select id = "selectResourceUtilizedLeave" parameterType="com.qts.icam.model.erp.Leave" resultType="Integer">
+		SELECT 
+			sum(available_leave) as remainingLeave	
+		FROM 
+			staff_leave_details sld		
+		JOIN resource r ON (r.rec_id = sld.resource) AND (r.is_active = true)
+		JOIN leave_type lt ON (lt.rec_id = sld.leave_type) AND (lt.is_active = true)
+		WHERE	
+			lt.leave_type_name = #{leaveType}
+		AND
+			r.user_id = #{userId}
+		AND 
+			sld.is_active = true;
+	</select>
+	
+	<parameterMap id="insertLeaveRequestParameterMap" type="com.qts.icam.model.common.Task">
+		<parameter property="taskCode" jdbcType="VARCHAR" mode="OUT" />				
+		<parameter property="objectId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="createdById" jdbcType="VARCHAR" mode="IN" />			
+		<parameter property="skipable" jdbcType="BOOLEAN" mode="IN" />		
+		<parameter property="createdById" jdbcType="VARCHAR" mode="IN" />		
+		<parameter property="taskName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="taskType" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="startDate" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="endDate" jdbcType="VARCHAR" mode="IN" />		
+		<parameter property="processStatus" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="activationTime" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="leave.totalRequestedLeave" jdbcType="INTEGER" mode="IN" />		
+		<parameter property="leave.remainingLeave" jdbcType="INTEGER" mode="IN"/>		
+	</parameterMap>
+	<insert id="insertLeaveRequest" parameterMap="insertLeaveRequestParameterMap" statementType="CALLABLE">
+		{? = call add_task_details_leave(?,?,?,?,?,?,?,?,?,?,?,?)}
+	</insert>	
+	
+	<insert id="insertLeaveDocuments" parameterType="com.qts.icam.model.common.Task">
+		<foreach item="attachment" collection="attachmentList" open="" close="" separator=";">
+				INSERT INTO attachment(
+							            rec_id, obj_id, updated_by, updated_on, 
+							            date_of_creation,attachment_code, 
+							            attachment_type, attachment_location, attachment_size, 
+							            attached_file_name, resource)
+		    	VALUES (
+		    			uuid_generate_v4(),
+			   			#{taskObjectId}, 
+			  			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			  			extract(epoch FROM now()),
+		          		extract(epoch FROM now()), 
+		          		(SELECT 'ATTCH-' ||COALESCE((SELECT MAX(attachment_id) FROM attachment), 0 )+1),
+		          		(SELECT rec_id FROM attachment_type WHERE attachment_type_name = #{attachment.attachmentType} AND is_active = true), 
+		          		#{attachment.storageRootPath}, 
+		          		#{attachment.attachmentSize},
+		          		#{attachment.attachmentName},
+		          		(SELECT rec_id FROM resource WHERE user_id = LOWER(#{createdById}) AND is_active = true)
+		  		 );
+		</foreach>
+	</insert>
+	
+	<resultMap id="selectRemainingLeaveTypeResultMap" type="com.qts.icam.model.erp.Leave">
+		<id property="remainingLeave" column="available_leave" jdbcType="INTEGER" />
+	</resultMap>
+
+	<select id="selectRemainingLeaveType" parameterType="com.qts.icam.model.erp.Leave" resultMap="selectRemainingLeaveTypeResultMap">
+		SELECT
+			sld.available_leave
+		FROM
+			staff_leave_details sld
+		JOIN
+			resource r ON(r.rec_id = sld.resource)
+		JOIN
+			leave_type ltp ON(ltp.rec_id = sld.leave_type)
+		WHERE
+			r.user_id = #{userId}
+		AND
+			ltp.leave_type_name = #{leaveType};
+
+	</select>
+	
+	<select id="selectRemainingLeaveTypeFromLeaveStructure" parameterType="com.qts.icam.model.erp.Leave" resultType="com.qts.icam.model.erp.Leave">
+		SELECT
+			ls.duration as remainingLeave
+		FROM
+			leave_structure ls
+		JOIN
+			leave_type ltp ON(ltp.rec_id = ls.leave_type)
+		WHERE
+			ltp.leave_type_name = #{leaveType};
+	</select>
+	
+	<parameterMap id="countWorkingDaysBetweenTwoDatesPM" type="com.qts.icam.model.common.Task">
+	<parameter property="startDate" jdbcType="VARCHAR" mode="IN" />
+	<parameter property="endDate" jdbcType="VARCHAR" mode="IN" />
+	<parameter property="taskId" jdbcType="INTEGER" mode="OUT" />
+	</parameterMap>
+	
+	<select id="countWorkingDaysBetweenTwoDates" parameterMap="countWorkingDaysBetweenTwoDatesPM" statementType="CALLABLE">
+		{? = call count_working_days_between_two_dates(?,?)}
+	</select>
+	
+	<select id="selectRoleResourceMapID" parameterType="com.qts.icam.model.common.Task" resultType="java.lang.Integer" >
+		SELECT
+			agrm.approver_group_resource_id as roleId
+		FROM
+			resource r
+		JOIN approver_group ag ON (ag.is_active = true) 
+ 		JOIN approver_group_resource_mapping agrm ON (ag.rec_id = agrm.approver_group) AND (r.rec_id = agrm.resource) AND (agrm.is_active = true) 
+		WHERE
+			r.is_active = true
+		AND
+			r.user_id = #{createdById}
+		AND
+			ag.approver_group_name = 'LEAVE APPROVER';
+	</select>
+
+	<select id="selectPendingTaskList" resultType="com.qts.icam.model.erp.Leave">
+		SELECT
+			l.leave_code as leaveCode,
+			l.leave_details_desc as title,
+			r1.user_id as userId,
+			(SELECT to_char((SELECT to_timestamp(l.date_of_creation)), 'DD/MM/YYYY'))as appliedOn,
+			lt.leave_type_name as leaveType, 	
+			sf.status_desc as status
+		FROM leave l
+		JOIN approval a ON (l.approve = a.rec_id and l.is_active = true)
+		JOIN leave_type lt ON(l.leave_type=lt.rec_id and lt.is_active = true)
+		JOIN resource r1 ON (r1.rec_id = a.requested_by and r1.is_active = true)
+		JOIN status_flag sf ON (a.status = sf.rec_id and sf.is_active = true)	
+	</select>
+
+	<select id="selectPendingLeaveDetails" parameterType="com.qts.icam.model.erp.Leave" resultType="com.qts.icam.model.erp.Leave">
+		SELECT
+			l.leave_code as leaveCode,
+			(SELECT to_char((SELECT to_timestamp(l.date_of_creation)), 'DD/MM/YYYY'))as appliedOn,
+			(SELECT to_char((SELECT to_timestamp(l.from_date)), 'DD/MM/YYYY'))as startDate,
+			(SELECT to_char((SELECT to_timestamp(l.to_date)), 'DD/MM/YYYY'))as endDate,
+			l.leave_details_desc as title,
+			r1.user_id as userId,			
+			lt.leave_type_name as leaveType, 
+			l.number_of_days as totalRequestedLeave			
+		FROM leave l
+		JOIN approval a ON (l.approve = a.rec_id and l.is_active = true)
+		JOIN leave_type lt ON(l.leave_type=lt.rec_id and lt.is_active = true)
+		JOIN resource r1 ON (r1.rec_id = a.requested_by and r1.is_active = true)
+		JOIN status_flag sf ON (a.status = sf.rec_id and sf.is_active = true)
+		WHERE l.leave_code=#{leaveCode};		
+	</select>
+	
+	<update id="insertLeaveResponse" parameterType="com.qts.icam.model.common.Task"	statementType="CALLABLE">
+		<!-- select update_task_details(
+			trim(#{updatedBy, mode=IN, jdbcType=VARCHAR}),
+			trim(#{userId, mode=IN, jdbcType=VARCHAR}),
+			trim(#{taskDesc, mode=IN, jdbcType=VARCHAR}),
+			#{taskId, mode=IN, jdbcType=INTEGER},
+			#{remainingLeave, mode=IN, jdbcType=INTEGER},
+			#{numberofDayRequestedFor, mode=IN, jdbcType=INTEGER},
+			trim(#{status, mode=IN, jdbcType=VARCHAR}),
+			trim(#{taskType, mode=IN, jdbcType=VARCHAR}),
+			trim(#{taskCode, mode=IN, jdbcType=VARCHAR}),
+			trim(#{taskApprover, mode=IN, jdbcType=VARCHAR})
+		); -->
+		
+		<foreach item="leave" collection="leaveList" open="" close="" separator=";">
+			UPDATE 
+				staff_leave_details
+			SET 
+				updated_by = (SELECT rec_id FROM resource WHERE user_id = #{leave.updatedBy} AND is_active = true),
+				updated_on = (SELECT extract(epoch FROM now())),
+				available_leave = available_leave - #{leave.totalRequestedLeave}
+			WHERE 
+				leave_type = (SELECT rec_id FROM leave_type WHERE leave_type_name = #{leave.leaveType} AND is_active = true)
+			AND
+				is_active = true
+			AND
+				resource = (SELECT rec_id FROM resource WHERE user_id = #{userId} AND is_active = true);
+		</foreach>
+	</update>
+	
+
+	
+	<resultMap id="getTaskHistoryListResultMap" type="com.qts.icam.model.common.Task">
+		<id property="createdById" column="user_id" jdbcType="VARCHAR" />
+		<result property="leave.leaveId" column="leave_id" jdbcType="INTEGER" />
+		<result property="taskCode" column="leave_code" jdbcType="VARCHAR" />
+		<result property="leave.title" column="leave_subject" jdbcType="VARCHAR" />
+		<result property="activationTime" column="creation_date" jdbcType="VARCHAR" />
+		<result property="leave.startDate" column="from" jdbcType="VARCHAR" />
+		<result property="leave.endDate" column="to" jdbcType="VARCHAR" />
+		<result property="leave.remarks" column="leave_remarks"	jdbcType="VARCHAR" />
+		<result property="leave.desc" column="leave_details_desc" jdbcType="VARCHAR" />
+		<result property="leave.leaveType" column="leave_type_name" jdbcType="VARCHAR" />
+		<result property="leave.status" column="status" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<select id="getTaskHistoryList" parameterType="com.qts.icam.model.common.Task" resultMap="getTaskHistoryListResultMap">
+		SELECT
+			r.user_id,
+			ld.leave_id,
+			ld.leave_code,
+			ld.leave_subject,
+			(SELECT to_char((SELECT to_timestamp(ld.date_of_creation)), 'DD/MM/YYYY')) as creation_date,
+			(SELECT to_char((SELECT to_timestamp(ld.from_date)), 'DD/MM/YYYY')) as from,
+			(SELECT to_char((SELECT to_timestamp(ld.to_date)), 'DD/MM/YYYY')) as to,
+			ld.leave_remarks,
+			ld.leave_details_desc,
+			lt.leave_type_name,
+			sf.status_desc as status
+		FROM
+			leave_details ld
+		JOIN	status_flag sf ON (sf.rec_id=ld.active)		
+		JOIN	resource r ON(ld.leave_requested_by = r.rec_id) AND (r.is_active = true) 			
+		JOIN 	leave_type lt ON (lt.rec_id = ld.leave_type) AND (lt.is_active = true) 
+		WHERE
+		 sf.status_desc NOT IN ('REQUESTED')
+		<if test="status != null">
+			AND sf2.status_desc ilike ('%'||#{status}||'%')
+		</if>
+		<if test="activationTime != null">
+			AND (SELECT extract(epoch from (SELECT to_timestamp((SELECT to_char((SELECT to_timestamp((td.date_of_creation))), 'DD/MM/YYYY')), 'DD/MM/YYYY')))) = (SELECT extract(epoch from (SELECT to_timestamp(#{activationTime}, 'DD/MM/YYYY'))))
+		</if>
+		<if test="startDate != null">
+			AND (SELECT extract(epoch from (SELECT to_timestamp((SELECT to_char((SELECT to_timestamp((ld.from_date))), 'DD/MM/YYYY')), 'DD/MM/YYYY')))) = (SELECT extract(epoch from (SELECT to_timestamp(#{startDate}, 'DD/MM/YYYY'))))
+		</if>
+		<if test="endDate != null">
+			AND (SELECT extract(epoch from (SELECT to_timestamp((SELECT to_char((SELECT to_timestamp((ld.to_date))), 'DD/MM/YYYY')), 'DD/MM/YYYY')))) = (SELECT extract(epoch from (SELECT to_timestamp(#{endDate}, 'DD/MM/YYYY'))))
+		</if>
+	</select>
+	
+	
+	
+	<select id="getPersonalTaskHistoryList" parameterType="com.qts.icam.model.common.Task" resultMap="getTaskHistoryListResultMap">
+		SELECT
+			r.user_id,
+			ld.leave_id,
+			ld.leave_code,
+			ld.leave_subject,
+			(SELECT to_char((SELECT to_timestamp(ld.date_of_creation)), 'DD/MM/YYYY')) as creation_date,
+			(SELECT to_char((SELECT to_timestamp(ld.from_date)), 'DD/MM/YYYY')) as from,
+			(SELECT to_char((SELECT to_timestamp(ld.to_date)), 'DD/MM/YYYY')) as to,
+			ld.leave_remarks,
+			ld.leave_details_desc,
+			lt.leave_type_name,
+			sf.status_desc as status
+		FROM
+			leave_details ld
+		JOIN	status_flag sf ON (sf.rec_id=ld.active)		
+		JOIN	resource r ON(ld.leave_requested_by = r.rec_id) AND (r.is_active = true) 			
+		JOIN 	leave_type lt ON (lt.rec_id = ld.leave_type) AND (lt.is_active = true) 
+		WHERE
+		 sf.status_desc NOT IN ('REQUESTED')		 
+		 AND 
+		 	r.user_id = #{createdById}
+		<if test="status != null">
+			AND sf2.status_desc ilike ('%'||#{status}||'%')
+		</if>
+		<if test="activationTime != null">
+			AND (SELECT extract(epoch from (SELECT to_timestamp((SELECT to_char((SELECT to_timestamp((td.date_of_creation))), 'DD/MM/YYYY')), 'DD/MM/YYYY')))) = (SELECT extract(epoch from (SELECT to_timestamp(#{activationTime}, 'DD/MM/YYYY'))))
+		</if>
+		<if test="startDate != null">
+			AND (SELECT extract(epoch from (SELECT to_timestamp((SELECT to_char((SELECT to_timestamp((ld.from_date))), 'DD/MM/YYYY')), 'DD/MM/YYYY')))) = (SELECT extract(epoch from (SELECT to_timestamp(#{startDate}, 'DD/MM/YYYY'))))
+		</if>
+		<if test="endDate != null">
+			AND (SELECT extract(epoch from (SELECT to_timestamp((SELECT to_char((SELECT to_timestamp((ld.to_date))), 'DD/MM/YYYY')), 'DD/MM/YYYY')))) = (SELECT extract(epoch from (SELECT to_timestamp(#{endDate}, 'DD/MM/YYYY'))))
+		</if>
+	</select>
+	
+	<select id="selectTeacherNameDesignation"  parameterType="String" resultType="com.qts.icam.model.erp.Employee">
+		SELECT
+			ed.erp_code as employeeCode,
+			rt.resource_type_name as "employeeType.employeeTypeName",
+			jt.job_type_name as "jobType.jobTypeName",
+			r.first_name as "resource.firstName",
+			r.middle_name as "resource.middleName",
+			r.last_name as "resource.lastName",
+			d.designation_name as "designation.designationName",
+			to_char((SELECT to_timestamp(ed.doj)), 'DD/MM/YYYY') as dateOfJoining,
+			to_char((SELECT to_timestamp(ed.date_of_retirement)), 'DD/MM/YYYY') as dateOfRetirement			
+		FROM
+			resource r
+		LEFT JOIN 
+			resource_type rt ON (r.resource_type = rt.rec_id AND rt.is_active = true)
+		LEFT JOIN 
+			employee_details ed ON (r.rec_id = ed.resource AND ed.is_active = true)			
+		LEFT JOIN
+			designation d ON (ed.designation = d.rec_id AND d.is_active = true)		
+		LEFT JOIN 
+			job_type jt ON (ed.job_type=jt.rec_id) AND (jt.is_active = true)
+		WHERE
+			r.user_id=#{strTeacherId}
+	</select>
+	
+	<update id="activeStaffRetirement" parameterType="com.qts.icam.model.erp.Employee">
+		UPDATE employee_details 
+		SET 
+			is_active = false,
+			reason_for_retirement = #{reasonOfRetirement},
+			mode_of_retirement = #{modeOfRetirement},
+			date_of_retirement = (SELECT extract(epoch from (SELECT to_timestamp(#{actualDateOfRetirement},'DD-MM-YYYY')))),
+			is_retired = true
+		WHERE 
+			resource = (select rec_id from resource where user_id = #{resource.userId});
+
+		update resource set is_active = false where user_id = #{resource.userId};
+	</update>
+	
+	<select id="selectRetiredStaffList" resultType="com.qts.icam.model.erp.Employee">	
+	SELECT
+			ed.erp_code as employeeCode,
+			rt.resource_type_name as "employeeType.employeeTypeName", 
+			d.designation_name as "designation.designationName",
+			r.first_name as "resource.firstName",
+			r.middle_name as "resource.middleName",
+			r.last_name as "resource.lastName",			
+			to_char((SELECT to_timestamp(ed.doj)), 'DD/MM/YYYY') as dateOfJoining,
+			to_char((SELECT to_timestamp(ed.date_of_retirement)), 'DD/MM/YYYY') as dateOfRetirement,
+			mode_of_retirement as modeOfRetirement			
+		FROM
+			resource r
+		LEFT JOIN 
+			resource_type rt ON (r.resource_type = rt.rec_id AND rt.is_active = true)
+		LEFT JOIN 
+			employee_details ed ON (r.rec_id = ed.resource AND ed.is_active = false)			
+		LEFT JOIN
+			designation d ON (ed.designation = d.rec_id AND d.is_active = true)			
+		WHERE
+			r.is_active=false
+		AND
+			ed.is_retired = true		
+	</select>
+		
+	<select id="getDesignationForResourceType" resultType="com.qts.icam.model.erp.Designation" parameterType="String">
+		SELECT
+			designation_code as designationCode,
+			designation_name as designationName
+		FROM
+			designation d	
+			JOIN resource_type rt ON (d.resource_type=rt.rec_id AND rt.is_active=true)	
+		WHERE
+			d.is_active = true
+		AND
+			rt.resource_type_code = #{resourceType};
+	</select>
+	
+		<insert id="insertStaffLeaveDetails" parameterType="com.qts.icam.model.erp.Employee" statementType="CALLABLE">
+		select insert_staff_leave_details(
+			#{objectId, mode=IN, jdbcType=VARCHAR},
+			#{updatedBy, mode=IN, jdbcType=VARCHAR},					
+			#{resource.userId, mode=IN, jdbcType=VARCHAR});	
+	</insert>
+	
+	<update id="insertManualLeaveResponse" parameterType="com.qts.icam.model.common.Task" >
+		INSERT INTO leave_details(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation,
+			from_date, to_date, leave_details_desc, number_of_days, leave_code, 
+			active,leave_requested_by,leave_approver_id, leave_subject, leave_remarks, leave_response)
+		VALUES (uuid_generate_v4(), 
+			#{taskObjectId}, 		
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),		
+			extract(epoch from (SELECT to_timestamp(#{startDate}, 'DD/MM/YYYY'))),
+			extract(epoch from (SELECT to_timestamp(#{endDate}, 'DD/MM/YYYY'))),				
+			#{processStatus},
+			#{numberofDayRequestedFor},			
+			(SELECT ('LR' ||(select COALESCE((SELECT MAX(leave_id) FROM leave_details), 0 )+1))),
+			(SELECT rec_id FROM status_flag WHERE status_desc='SCHEDULED'),
+			(SELECT rec_id FROM resource WHERE user_id = #{userId} AND is_active = true),
+			(SELECT rec_id FROM resource WHERE user_id = #{taskApprover} AND is_active = true),
+			#{taskName},
+			#{taskDesc},
+			'SCHEDULED');
+		
+		<foreach item="leave" collection="leaveList" open="" close="" separator=";">
+			UPDATE 
+				staff_leave_details
+			SET 
+				updated_by = (SELECT rec_id FROM resource WHERE user_id = #{leave.updatedBy} AND is_active = true),
+				updated_on = (SELECT extract(epoch FROM now())),
+				available_leave = available_leave - #{leave.totalRequestedLeave}
+			WHERE 
+				leave_type = (SELECT rec_id FROM leave_type WHERE leave_type_name = #{leave.leaveType} AND is_active = true)
+			AND
+				is_active = true
+			AND
+				resource = (SELECT rec_id FROM resource WHERE user_id = #{userId} AND is_active = true);
+		</foreach>
+	</update>
+	
+	<insert id="insertStaffLeaveHistory" parameterType="com.qts.icam.model.erp.Leave">
+		INSERT INTO staff_leave_history(
+	        rec_id, obj_id, updated_by, updated_on, 
+	        date_of_creation, leave_details, leave_type, no_of_days)
+	    VALUES ( uuid_generate_v4(), 
+			#{objId}, 		
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),		
+			(select rec_id from leave_details where leave_id=(select MAX(leave_id)from leave_details)), 
+			(SELECT rec_id from leave_type WHERE leave_type_name = #{leaveType} AND is_active = true), 
+			#{totalRequestedLeave});
+	</insert>
+	
+	<resultMap id="getLeaveHistoryListResultMap" type="com.qts.icam.model.common.Task">
+		<id property="taskId" column="leave_id" jdbcType="INTEGER" />
+		<result property="startDate" column="from_date" jdbcType="VARCHAR" />
+		<result property="endDate" column="to_date" jdbcType="VARCHAR" />
+		<result property="numberofDayRequestedFor" column="number_of_days" jdbcType="INTEGER" />
+		<result property="taskDesc" column="leave_details_desc" jdbcType="INTEGER" />
+		<collection property="leaveList" ofType="com.qts.icam.model.erp.Leave">
+			<id property="leaveId" column="leave_type_id" jdbcType="INTEGER" />
+			<result property="leaveType" column="leave_type_name" jdbcType="VARCHAR" />
+			<result property="totalRequestedLeave" column="no_of_days" jdbcType="INTEGER" />
+		</collection>	
+	</resultMap>
+	<select id="getLeaveHistoryList" parameterType="com.qts.icam.model.common.Task" resultMap="getLeaveHistoryListResultMap">
+		SELECT
+			ld.leave_id,
+			(SELECT to_char((SELECT to_timestamp(ld.from_date)), 'DD/MM/YYYY')) as from_date,
+			(SELECT to_char((SELECT to_timestamp(ld.to_date)), 'DD/MM/YYYY')) as to_date,
+			ld.number_of_days,
+			ld.leave_details_desc,
+			lt.leave_type_id,
+			lt.leave_type_name,
+			slh.no_of_days
+		FROM leave_details ld
+		JOIN staff_leave_history slh on(slh.leave_details = ld.rec_id)
+		JOIN leave_type lt on(lt.rec_id = slh.leave_type)
+		JOIN resource r on(r.rec_id = ld.leave_requested_by)
+		WHERE
+			r.user_id = #{createdById} ;
+	</select>
+	
+	<resultMap id="selectSalaryBreakUpIncludeSlabResultMap" type="com.qts.icam.model.erp.SalaryBreakUp">
+		<id property="salaryBreakUpCode" column="salarybreakup_code" jdbcType="VARCHAR" />
+		<result property="salaryBreakUpName" column="salarybreakup_name" jdbcType="VARCHAR" />
+		<result property="salaryBreakUpType" column="salarybreakup_type" jdbcType="VARCHAR" />
+		<result property="amount" column="amount" jdbcType="DOUBLE" />
+		<result property="percentageBased" column="percentage_on_basic" jdbcType="DOUBLE" />
+		<result property="salaryTemplate.salaryTemplateCode" column="salary_template_code" jdbcType="DOUBLE" />
+		<result property="slab" column="is_slab" jdbcType="BOOLEAN" />
+	</resultMap>
+	
+	<select id="selectSalaryBreakUpIncludeSlab" resultMap="selectSalaryBreakUpIncludeSlabResultMap">
+		SELECT
+		salarybreakup_code, salarybreakup_name, salarybreakup_type, is_slab
+		FROM
+		salary_break_up		
+		WHERE
+		is_active = true
+		AND
+		salarybreakup_code IS NOT NULL;
+	</select>
+	
+	<resultMap id="selectSalaryBreakUpTypeResultMap" type="java.lang.String">
+		<id property="salaryBreakUpTypelist" column="salarybreakup_type" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectSalaryBreakUpType" resultMap="selectSalaryBreakUpTypeResultMap">
+		SELECT
+		salarybreakup_type
+		FROM
+		salary_break_up		
+		WHERE
+		is_active = true
+		group by salarybreakup_type;
+	</select>
+	
+		<parameterMap id="insertSalaryBreakUpParameterMap" type="com.qts.icam.model.erp.SalaryBreakUp">
+		<parameter property="status" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="salaryBreakUpObjectId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="salaryBreakUpName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="salaryBreakUpType" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="slab" jdbcType="BOOLEAN" mode="IN" />
+	</parameterMap>
+	<insert id="insertSalaryBreakUp" parameterMap="insertSalaryBreakUpParameterMap"	statementType="CALLABLE">
+		{? = call insert_into_salary_breakup(?,?,?,?,?)}
+	</insert>
+	
+	<resultMap id="salaryBreakUpResultMap" type="com.qts.icam.model.erp.SalaryBreakUp">
+		<id property="salaryBreakUpCode" column="salarybreakup_code" jdbcType="VARCHAR" />
+		<result property="salaryBreakUpName" column="salarybreakup_name" jdbcType="VARCHAR" />
+		<result property="salaryBreakUpType" column="salarybreakup_type" jdbcType="VARCHAR" />
+		<result property="slab" column="is_slab" jdbcType="BOOLEAN" />
+		<result property="salaryBreakUpDesc" column="formula_for_head" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectSalaryBreakUp" resultMap="salaryBreakUpResultMap">
+		SELECT
+			salarybreakup_code, salarybreakup_name, salarybreakup_type, is_slab
+		FROM
+			salary_break_up		
+		WHERE
+			is_active = true
+		AND
+			salarybreakup_code IS NOT NULL
+		order by
+			salarybreakup_name;
+	</select>
+	
+	
+	
+	
+	<select id="selectSalaryTemplateList"  resultType="com.qts.icam.model.erp.SalaryTemplate">
+		SELECT
+			salary_template_code as salaryTemplateCode,
+			salary_template_name as salaryTemplateName,
+			salary_template_desc as salaryTemplateDesc,
+			d.designation_name as designation,
+			l.designation_level_name as designationLevel
+		FROM
+			salary_template st		
+		JOIN designation_level_mapping dlm ON (dlm.salary_template = st.rec_id AND dlm.is_active = true)
+		JOIN designation d ON (dlm.designation = d.rec_id AND d.is_active = true)
+		JOIN designation_level l ON (dlm.designation_level = l.rec_id AND l.is_active = true)
+		WHERE
+			st.is_active = true;
+	</select>
+	
+	<select id="getSalaryBreakUpNameForSlab" resultType="com.qts.icam.model.erp.SalaryBreakUp">		
+		SELECT 
+			DISTINCT
+			salarybreakup_name as salaryBreakUpName,
+			salarybreakup_code as salaryBreakUpCode,
+			salarybreakup_type as salaryBreakUpType,
+			is_slab as slab
+		FROM salary_break_up		
+		WHERE 
+			is_active = true
+		AND
+			is_slab = 'TRUE'
+	</select>
+	
+	<select id="getSalaryBreakUpNameForNonSlab" resultType="com.qts.icam.model.erp.SalaryBreakUp">	
+		SELECT 
+			DISTINCT
+			salarybreakup_name as salaryBreakUpName,
+			salarybreakup_code as salaryBreakUpCode
+		FROM salary_break_up		
+		WHERE 
+			is_active = true
+		AND
+			is_slab = 'FALSE'
+	</select>
+	
+	<select id="countSubmittedSlabTypeForMiscTax" parameterType="java.lang.String" resultType="java.lang.Integer">	
+		SELECT 
+			COUNT(mts.rec_id) as rowCount
+		FROM salary_break_up sbup		
+		JOIN miscellaneous_tax_slab mts ON (mts.is_active = true) AND (mts.salary_break_up = sbup.rec_id)
+		JOIN financial_year fy ON (fy.is_active = true) AND (fy.rec_id = mts.year)
+		JOIN status_flag sf1 ON (sf1.rec_id = fy.year_status)
+		WHERE 			
+			sbup.salarybreakup_code = #{taxTypeCode}
+		AND
+			sbup.is_active = true
+		AND
+			sf1.status_sym = 'C'			
+	</select>
+	
+	<insert id="insertIntoMiscTaxSlab" parameterType="com.qts.icam.model.erp.MiscellaneousTax">
+		INSERT INTO miscellaneous_tax_slab(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation,
+				miscellaneous_tax_slab_code, salary_break_up, start_slab_amount, 
+				end_slab_amount, figure, year, figure_type)
+		VALUES (uuid_generate_v4(), 
+				#{miscellaneousTaxSlabObjectId},
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+				(select #{miscellaneousTaxSlabCode}|| '-' || COALESCE((SELECT MAX(miscellaneous_tax_slab_id) FROM miscellaneous_tax_slab), 0)+1),
+				(SELECT sbup.rec_id FROM salary_break_up sbup WHERE sbup.is_active = true AND sbup.salarybreakup_code = #{miscellaneousTaxType}),
+				#{startSlabAmount},
+				#{endSlabAmount},
+				#{taxRate},
+				(SELECT fy.rec_id FROM financial_year fy JOIN status_flag sf ON (fy.year_status = sf.rec_id) WHERE sf.status_sym = 'C'),
+				#{taxFigureType}
+			);
+	</insert>
+	
+	<select id="getSalBreakUpForSubmittedMiscTaxSlab" resultType="com.qts.icam.model.erp.SalaryBreakUp">	
+		SELECT 
+			DISTINCT
+			sbup.salarybreakup_name as salaryBreakUpName,
+			sbup.salarybreakup_code as salaryBreakUpCode
+		FROM salary_break_up sbup		
+		JOIN miscellaneous_tax_slab mts ON (mts.is_active = true) AND (mts.salary_break_up = sbup.rec_id)
+		JOIN financial_year fy ON (fy.is_active = true) AND (fy.rec_id = mts.year)
+		JOIN status_flag sf1 ON (sf1.rec_id = fy.year_status)
+		WHERE 
+			sbup.is_active = true
+		AND
+			sf1.status_sym = 'C'
+	</select>
+	
+	<select id="getMiscTaxSlabForUpdate" parameterType="java.lang.String" resultType="com.qts.icam.model.erp.MiscellaneousTax">				
+		SELECT 
+			sbup.salarybreakup_name as miscellaneousTaxType,
+			sbup.salarybreakup_code as miscellaneousTaxSlabCode, 
+			mts.start_slab_amount as startSlabAmount,
+			mts.end_slab_amount as endSlabAmount,
+			mts.figure as taxRate,
+			mts.figure_type as taxFigureType,
+			sbup2.salarybreakup_name as taxBasedOn,
+			sbup2.salarybreakup_code as miscellaneousTaxSlabDesc
+		FROM salary_break_up sbup		
+		JOIN miscellaneous_tax_slab mts ON (mts.is_active = true) AND (mts.salary_break_up = sbup.rec_id)
+		JOIN financial_year fy ON (fy.is_active = true) AND (fy.rec_id = mts.year)
+		JOIN status_flag sf1 ON (sf1.rec_id = fy.year_status)
+		JOIN slab_calculation_parameter scp ON (scp.slab_calculated_for = sbup.rec_id) AND (scp.year = fy.rec_id) AND (scp.is_active = true)
+		JOIN salary_break_up sbup2 ON (scp.slab_calculated_on = sbup2.rec_id) AND (sbup2.is_active = true)
+		WHERE 
+			sbup.is_Active = true
+		AND 
+			sbup.salarybreakup_code = #{taxTypeCode}
+		AND
+			sf1.status_sym = 'C'
+		ORDER BY mts.start_slab_amount; 		
+	</select>
+	
+<!-- 	<update id="updateMiscTaxSlab" parameterType="com.qts.icam.model.erp.MiscellaneousTax">		 -->
+<!-- 		UPDATE -->
+<!-- 			slab_calculation_parameter -->
+<!-- 		SET -->
+<!-- 			updated_on = (SELECT extract(epoch FROM now())), -->
+<!-- 			is_active = false -->
+<!-- 		WHERE -->
+<!-- 			slab_calculated_for = (SELECT rec_id FROM salary_break_up WHERE salarybreakup_code = #{miscellaneousTaxType} AND is_active = true)		 -->
+<!-- 		AND -->
+<!-- 			year = (SELECT  -->
+<!-- 						fy.rec_id  -->
+<!-- 					FROM financial_year fy  -->
+<!-- 					JOIN status_flag sf ON (fy.year_status = sf.rec_id) 					 -->
+<!-- 					WHERE  -->
+<!-- 						sf.status_sym = 'CY'  -->
+<!-- 					AND  -->
+<!-- 						fy.is_active = true); -->
+						
+<!-- 		UPDATE -->
+<!-- 			miscellaneous_tax_slab -->
+<!-- 		SET -->
+<!-- 			updated_on = (SELECT extract(epoch FROM now())), -->
+<!-- 			is_active = true -->
+<!-- 		WHERE -->
+<!-- 			salary_break_up = (SELECT rec_id FROM salary_break_up WHERE salarybreakup_code = #{miscellaneousTaxType} AND is_active = true) -->
+<!-- 		AND -->
+<!-- 			year = (SELECT  -->
+<!-- 						fy.rec_id  -->
+<!-- 					FROM financial_year fy  -->
+<!-- 					JOIN status_flag sf ON (fy.year_status = sf.rec_id) 					 -->
+<!-- 					WHERE  -->
+<!-- 						sf.status_sym = 'CY'  -->
+<!-- 					AND  -->
+<!-- 						fy.is_active = true); -->
+				
+<!-- 	</update> -->
+	
+	<insert id="insertIntoSlabCalculation" parameterType="com.qts.icam.model.erp.MiscellaneousTax">
+		INSERT INTO slab_calculation_parameter(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            slab_calculated_for, slab_calculated_on, year)
+		VALUES (
+			uuid_generate_v4(), 
+			#{miscellaneousTaxSlabObjectId},
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			(SELECT extract(epoch FROM now())), 
+			(SELECT extract(epoch FROM now())), 			
+			(SELECT rec_id FROM salary_break_up WHERE salarybreakup_code = #{miscellaneousTaxType} AND is_active = true), 
+			(SELECT rec_id FROM salary_break_up WHERE salarybreakup_code = #{taxBasedOn} AND is_active = true), 
+			(SELECT fy.rec_id FROM financial_year fy JOIN status_flag sf ON (fy.year_status = sf.rec_id) 
+				WHERE sf.status_sym = 'C' AND fy.is_active = true));
+	</insert>
+	
+	<select id="submittedEmployerContribution" parameterType="java.lang.String" resultType="com.qts.icam.model.erp.MiscellaneousTax">	
+		SELECT 
+			ec.start_slab_amount as startSlabAmount,
+			ec.end_slab_amount as endSlabAmount,
+			ec.figure as taxRate,
+			ec.figure_type as taxFigureType,
+			sbup.salarybreakup_name as miscellaneousTaxType,
+			sbup.salarybreakup_code as miscellaneousTaxSlabCode,
+			sbu_on.salarybreakup_name as taxBasedOn,
+			sbu_on.salarybreakup_code as updatedBy
+		FROM salary_break_up sbup		
+		JOIN employer_contribution ec ON (ec.is_active = true) AND (ec.salary_break_up = sbup.rec_id)
+		JOIN financial_year fy ON (fy.is_active = true) AND (fy.rec_id = ec.year)
+		JOIN employer_slab_calculation_parameter escp ON (escp.is_active = true) AND (fy.rec_id = escp.year) AND (escp.slab_calculated_for = sbup.rec_id)
+		JOIN salary_break_up sbu_on ON (escp.slab_calculated_on = sbu_on.rec_id AND sbu_on.is_active = true)
+		JOIN status_flag sf1 ON (sf1.rec_id = fy.year_status)
+		WHERE 
+			sbup.is_active = true
+		AND 
+			sbup.salarybreakup_code = #{miscellaneousTaxSlabName}
+		AND
+			sf1.status_sym = 'C';
+	</select>
+	
+	<select id="countEmployerContribution" resultType="java.lang.Integer">
+		SELECT 
+			count(*) as countData
+		FROM salary_break_up sbup		
+		JOIN employer_contribution ec ON (ec.is_active = true) AND (ec.salary_break_up = sbup.rec_id)
+		JOIN financial_year fy ON (fy.is_active = true) AND (fy.rec_id = ec.year)
+		JOIN employer_slab_calculation_parameter escp ON (escp.is_active = true) AND (fy.rec_id = escp.year) AND (escp.slab_calculated_for = sbup.rec_id)
+		JOIN salary_break_up sbu_on ON (escp.slab_calculated_on = sbu_on.rec_id AND sbu_on.is_active =true)
+		JOIN status_flag sf1 ON (sf1.rec_id = fy.year_status)
+		WHERE 
+			sbup.is_active = true
+		AND
+			sf1.status_sym = 'C';
+	</select>
+	
+	<insert id="insertIntoEmployerSlabCalculation" parameterType="com.qts.icam.model.erp.MiscellaneousTax">
+		INSERT INTO employer_slab_calculation_parameter(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            slab_calculated_for, slab_calculated_on, year)
+		VALUES (
+			uuid_generate_v4(), 
+			#{miscellaneousTaxSlabObjectId},
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			(SELECT extract(epoch FROM now())), 
+			(SELECT extract(epoch FROM now())), 			
+			(SELECT rec_id FROM salary_break_up WHERE salarybreakup_code = #{miscellaneousTaxType} AND is_active = true), 
+			(SELECT rec_id FROM salary_break_up WHERE salarybreakup_code = #{taxBasedOn} AND is_active = true), 
+			(SELECT fy.rec_id FROM financial_year fy JOIN status_flag sf ON (fy.year_status = sf.rec_id) WHERE sf.status_sym = 'C' AND fy.is_active = true)
+			);
+	</insert>
+	
+	<update id="updateEmployerContribution" parameterType="com.qts.icam.model.erp.MiscellaneousTax">		
+		UPDATE
+			employer_slab_calculation_parameter
+		SET	
+			updated_on = (SELECT extract(epoch FROM now())),
+			is_active = false
+		WHERE
+			slab_calculated_for = (SELECT rec_id FROM salary_break_up WHERE salarybreakup_code = #{miscellaneousTaxType} AND is_active = true)		
+		AND
+			year = (SELECT 
+						fy.rec_id 
+					FROM financial_year fy 
+					JOIN status_flag sf ON (fy.year_status = sf.rec_id) 					
+					WHERE 
+						sf.status_sym = 'C' 
+					AND 
+						fy.is_active = true);
+						
+		UPDATE
+			employer_contribution
+		SET
+			updated_on = (SELECT extract(epoch FROM now())),
+			is_active = false
+		WHERE
+			salary_break_up = (SELECT rec_id FROM salary_break_up WHERE salarybreakup_code = #{miscellaneousTaxType} AND is_active = true)
+		AND
+			year = (SELECT 
+						fy.rec_id 
+					FROM financial_year fy 
+					JOIN status_flag sf ON (fy.year_status = sf.rec_id) 					
+					WHERE 
+						sf.status_sym = 'C' 
+					AND 
+						fy.is_active = true);
+				
+	</update>
+	
+	<insert id="insertIntoEmployerContribution" parameterType="com.qts.icam.model.erp.MiscellaneousTax">
+		INSERT INTO employer_contribution(
+				rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+				employer_contribution_code, salary_break_up, start_slab_amount, 
+				end_slab_amount, figure, year, figure_type)
+		VALUES (uuid_generate_v4(), 
+				#{miscellaneousTaxSlabObjectId},
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())),
+				(select #{miscellaneousTaxSlabCode}|| '-' || COALESCE((SELECT MAX(employer_contribution_id) FROM employer_contribution), 0)+1),
+				(SELECT sbup.rec_id FROM salary_break_up sbup WHERE is_active = true AND sbup.salarybreakup_code = #{miscellaneousTaxType}),
+				#{startSlabAmount},
+				#{endSlabAmount},
+				#{taxRate},
+				(SELECT fy.rec_id FROM financial_year fy JOIN status_flag sf ON (fy.year_status = sf.rec_id) 
+					WHERE sf.status_sym = 'C' AND fy.is_active = true),
+				#{taxFigureType}
+			);
+	</insert>
+	
+	<select id="getIncomeTaxBasedOnValue" parameterType="String" resultType="String">
+		SELECT 
+			sbu_on.salarybreakup_name as getIncomeTaxBasedOnValue
+		FROM 
+			 slab_calculation_parameter scp		
+		JOIN salary_break_up sbu_for ON (scp.slab_calculated_for = sbu_for.rec_id)
+		JOIN salary_break_up sbu_on ON (scp.slab_calculated_on = sbu_on.rec_id)
+		WHERE 
+			scp.is_active = true
+		AND 
+			sbu_for.salarybreakup_code = #{incomeTaxParamCode}
+	</select>
+	
+	<select id= "selectAllParameterSlabWise" parameterType="String" resultType="com.qts.icam.model.erp.IncomeTaxParameters">				
+			SELECT DISTINCT 
+				itp.income_tax_parameter_id as taxId, 
+				itp.it_parameter_name as incomeTaxParamName, 
+				itp.it_parameter_code as incomeTaxParamCode
+			FROM income_tax_slab its				
+			JOIN income_tax_parameter itp ON (its.it_parameter = itp.rec_id AND itp.is_active = true) 
+			JOIN financial_year fy ON (its.year = fy.rec_id AND fy.is_active = true) 
+			JOIN status_flag sf_cs ON(fy.year_status = sf_cs.rec_id)
+			JOIN income_age ia ON (its.income_age = ia.rec_id AND ia.is_active = true)
+			WHERE its.is_active = true
+			AND sf_cs.status_sym = 'C'
+			AND ia.income_age_code = #{incomeAge}				
+			ORDER BY 
+				itp.income_tax_parameter_id;
+	</select>
+	
+	<resultMap id="viewParameterOfIncomeTaxSalarySlabRM" type="com.qts.icam.model.erp.IncomeTaxSlabDetails">
+		<id property="financialYear" column="financial_year_code" jdbcType="VARCHAR" />	
+		<association property="incomeAge" javaType="com.qts.icam.model.common.IncomeAge">
+			<id property="incomeAgeCode" column="income_age_code" jdbcType="VARCHAR" />
+			<result property="incomeAgeName" column="income_age_name" jdbcType="VARCHAR" />		
+		</association>			
+ 		<collection property="incomeTaxSlabList" ofType="com.qts.icam.model.erp.IncomeTaxSlab"> 
+ 			<id property="incomeTaxSlabCode" column="income_tax_slab_code" jdbcType="VARCHAR" />		 
+ 			<collection property="incomeTaxParameterList" ofType="com.qts.icam.model.erp.IncomeTaxParameters"> 
+ 				<id property="incomeTaxParamCode" column="it_parameter_code" jdbcType="VARCHAR" /> 
+				<result property="incomeTaxParamName" column="it_parameter_name" jdbcType="VARCHAR" />
+				<result property="figure" column="figure" jdbcType="DOUBLE" />
+				<result property="figureType" column="figure_type" jdbcType="VARCHAR" />
+ 			</collection> 
+ 		</collection> 
+	</resultMap>
+	
+	 <select id= "viewParameterOfIncomeTaxSalarySlab" parameterType="String" resultMap="viewParameterOfIncomeTaxSalarySlabRM">			
+		SELECT 
+				fy.financial_year_code, 
+				ia.income_age_code,
+				ia.income_age_name, 				
+				income_tax_slab_code, 
+				itp.it_parameter_name, 
+				itp.it_parameter_code, 
+				its.figure,
+				its.figure_type
+			FROM income_tax_slab its
+			JOIN income_tax_parameter itp ON (its.it_parameter = itp.rec_id AND itp.is_active = true) 
+			JOIN financial_year fy ON (its.year = fy.rec_id AND fy.is_active = true) 
+			JOIN status_flag sf_cs ON(fy.year_status = sf_cs.rec_id)
+			JOIN income_age ia ON (its.income_age = ia.rec_id AND ia.is_active= true AND ia.financial_year = fy.rec_id)
+			WHERE its.is_active= true
+			AND sf_cs.status_sym = 'C'
+			AND ia.income_age_code = #{incomeAge}
+			ORDER BY 
+					itp.income_tax_parameter_id, income_tax_slab_code;
+	</select> 
+	
+<!-- 	<update id= "inActiveITParameterOfSlab" parameterType="com.qts.icam.model.erp.IncomeTaxSlabDetails">		 -->
+<!-- 		UPDATE income_tax_slab  -->
+<!-- 		SET  -->
+<!-- 			is_active = false, -->
+<!-- 			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), -->
+<!-- 			updated_on = (SELECT extract(epoch FROM now())) -->
+<!-- 		WHERE 			 -->
+<!-- 		income_age = (SELECT ia.rec_id FROM income_age ia								 -->
+<!-- 						JOIN financial_year fy ON (ia.financial_year = fy.rec_id AND fy.is_active = true)  -->
+<!-- 						JOIN status_flag sf_cs ON(fy.year_status = sf_cs.rec_id)			 -->
+<!-- 						WHERE ia.is_active = true -->
+<!-- 						AND sf_cs.status_sym = 'CY' -->
+<!-- 						AND ia.income_age_code = #{incomeAge.incomeAgeCode}); -->
+<!-- 	</update> -->
+	
+<!-- 	<update id="inActiveBasedParameterOfSlab" parameterType="com.qts.icam.model.erp.IncomeTaxSlabDetails"> -->
+<!-- 		UPDATE slab_calculation_parameter  -->
+<!-- 			SET  -->
+<!-- 				is_active = false, -->
+<!-- 				updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), -->
+<!-- 				updated_on = (SELECT extract(epoch FROM now())) -->
+<!-- 			WHERE   -->
+<!-- 				slab_calculated_for = (SELECT rec_id FROM salary_break_up WHERE salarybreakup_code = #{status} AND is_active = true) -->
+<!-- 			AND -->
+<!-- 				year = (SELECT ay.rec_id FROM financial_year ay JOIN status_flag sf ON (ay.year_status = sf.rec_id) WHERE sf.status_sym = 'CY' AND ay.is_Active = true) -->
+<!-- 	</update> -->
+	
+	<select id="countCalculationBase" parameterType="com.qts.icam.model.erp.IncomeTaxSlabDetails" resultType="com.qts.icam.model.erp.IncomeTaxSlabDetails">
+		SELECT 
+			COUNT(*) as incomeTaxSerialId
+		FROM 
+			slab_calculation_parameter 
+		WHERE
+          slab_calculated_for = (SELECT rec_id FROM salary_break_up WHERE salarybreakup_code=#{status} AND is_active = true)
+        AND
+          year = (SELECT ay.rec_id FROM financial_year ay JOIN status_flag sf ON (ay.year_status = sf.rec_id) WHERE sf.status_sym = 'C' AND ay.is_Active = true)
+        AND
+          is_active = true
+	</select>
+	
+	<insert id="insertIntoCalculationBase" parameterType="com.qts.icam.model.erp.IncomeTaxSlabDetails">
+		INSERT INTO slab_calculation_parameter(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation,
+			slab_calculated_for, slab_calculated_on,year)
+		VALUES (uuid_generate_v4(), 
+				#{incomeTaxSlabDetailsId},
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())), 
+				(SELECT extract(epoch FROM now())), 				 
+				(SELECT rec_id FROM salary_break_up WHERE salarybreakup_code=#{status} AND is_active = true),
+				(SELECT rec_id FROM salary_break_up WHERE salarybreakup_code=#{incomeTaxSlabDetailsName} AND is_active = true),
+				(SELECT ay.rec_id FROM financial_year ay JOIN status_flag sf ON (ay.year_status = sf.rec_id) WHERE sf.status_sym = 'C' AND ay.is_active = true)
+			);
+	</insert>
+	
+	<insert id="insertIntoSalaryTaxSlab" parameterType="com.qts.icam.model.erp.IncomeTaxParameters">
+		INSERT INTO income_tax_slab(
+			rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+			income_tax_slab_code, it_parameter, figure, year, figure_type, income_age)
+		VALUES (uuid_generate_v4(), 
+				#{incomeTaxParameterObjectId},
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+				(SELECT extract(epoch FROM now())), 
+				(SELECT extract(epoch FROM now())),				 
+				#{incomeTaxParamDesc},				
+				(SELECT rec_id FROM income_tax_parameter WHERE it_parameter_code = #{incomeTaxParamCode} AND is_active = true),
+				#{amount},
+				(SELECT ay.rec_id FROM financial_year ay JOIN status_flag sf ON (ay.year_status = sf.rec_id) WHERE sf.status_sym = 'C' AND ay.is_active= true),
+				#{figureType},
+				(SELECT ia.rec_id FROM income_age ia 				
+				JOIN financial_year fy ON (ia.financial_year = fy.rec_id AND fy.is_active = true) 
+				JOIN status_flag sf_cs ON(fy.year_status = sf_cs.rec_id)
+				WHERE ia.is_active = true AND sf_cs.status_sym = 'C' AND ia.income_age_code = #{incomeAge}));					
+	</insert>
+	
+<!-- 	<resultMap id="selectDesignationListResultMap" type="com.qts.icam.model.erp.Designation"> -->
+<!-- 		<id property="designationCode" column="designation_code" jdbcType="VARCHAR" /> -->
+<!-- 		<result property="designationName" column="designation_name" jdbcType="VARCHAR" /> -->
+<!-- 	</resultMap> -->
+<!-- 	<select id="selectDesignationList" parameterType="String" resultMap="selectDesignationListResultMap"> -->
+<!-- 		SELECT -->
+<!-- 		designation_code, -->
+<!-- 		designation_name -->
+<!-- 		FROM -->
+<!-- 		designation d		 -->
+<!-- 		JOIN -->
+<!-- 		designation_type dt ON (dt.rec_id = d.designation_type) AND (dt.is_active = true) -->
+<!-- 		WHERE		 -->
+<!-- 		dt.designation_type_code= #{designationTypeCode}; -->
+<!-- 	</select> -->
+	
+<!-- 	<resultMap id="getLevelListForDesignationResultMap" type="com.qts.icam.model.erp.DesignationLevel"> -->
+<!-- 		<id property="designationLevelCode" column="designation_level_code" jdbcType="VARCHAR" /> -->
+<!-- 		<result property="designationLevelName" column="designation_level_name" jdbcType="VARCHAR" /> -->
+<!-- 	</resultMap> -->
+<!-- 	<select id="getLevelListForDesignation" parameterType="String" resultMap="getLevelListForDesignationResultMap"> -->
+<!-- 	SELECT -->
+<!-- 			lvl.designation_level_code, -->
+<!-- 			lvl.designation_level_name -->
+<!-- 		FROM -->
+<!-- 			designation_level lvl -->
+<!-- 		JOIN 			 -->
+<!-- 			designation d ON (d.is_active = true)  -->
+<!-- 		JOIN -->
+<!-- 			designation_level_mapping dlm ON (dlm.is_active=true) AND (d.rec_id = dlm.designation) AND (lvl.rec_id = dlm.designation_level)   -->
+<!-- 		WHERE -->
+<!-- 			d.designation_code = #{designation} -->
+<!-- 		AND -->
+<!-- 			lvl.is_active = true; -->
+<!-- 	</select> -->
+	
+	<select id="getsalaryTemplateName" parameterType="java.lang.String" resultType="java.lang.String">		
+		SELECT
+			salary_template_name as strSalaryTemplateName
+		FROM
+			salary_template		
+		WHERE
+			is_active = true
+		AND
+			salary_template_name ILIKE (#{getsalaryTemplateName});
+	</select>
+	
+	<insert id="salaryTemplate"  parameterType="com.qts.icam.model.erp.SalaryTemplate">
+		INSERT INTO salary_template(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation,
+            salary_template_code, salary_template_name, salary_template_desc)
+	    VALUES (uuid_generate_v4(), 
+		    #{salaryTemplateObjectId},   
+		    (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),   
+		    (SELECT extract(epoch FROM now())), 
+            (SELECT extract(epoch FROM now())), 
+            (SELECT ('TEMPLATE-' ||(select COALESCE((SELECT MAX(salary_template_id) FROM salary_template), 0 )+1))),
+            #{salaryTemplateName}, 
+            #{salaryTemplateDesc});          
+	</insert>
+	
+		<select id= "selectMaxTemplateId" resultType="String">
+		SELECT 
+			salary_template_code as salaryTemplateCode
+		FROM 
+			salary_template 
+		WHERE 
+			salary_template_id = (SELECT 
+									max(salary_template_id)
+								  FROM 
+								  	salary_template);
+	</select>
+	
+	<update id="updateDesignationLevelMappingForTemplate"  parameterType="com.qts.icam.model.erp.SalaryTemplate">
+		UPDATE designation_level_mapping SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			salary_template=(SELECT rec_id FROM salary_template WHERE salary_template_code=#{salaryTemplateCode} AND is_active=true)
+		 WHERE
+			designation=(SELECT rec_id FROM designation WHERE designation_code=#{designation} AND is_active=true)
+		 AND
+			designation_level=(SELECT rec_id FROM designation_level WHERE designation_level_code=#{designationLevel} AND is_active=true)
+		 AND
+			is_active=true
+	</update>
+	
+	<insert id="insertSalaryTemplateDetails"  parameterType="com.qts.icam.model.erp.SalaryTemplateDetails">
+		INSERT INTO salary_template_details(
+            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            salary_template_details_code, salary_template, salary_break_up)
+	    VALUES (uuid_generate_v4(), 
+		   		 #{salaryTemplateDetailsObjectId},    
+		    	(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),      
+		    	(SELECT extract(epoch FROM now())), 
+	            (SELECT extract(epoch FROM now())), 
+	            (SELECT ('TEMP-DETAILS-' ||(select COALESCE((SELECT MAX(salary_template_details_id) FROM salary_template_details), 0 )+1))),
+	            (SELECT rec_id FROM salary_template WHERE salary_template_code = #{salaryTemplate} AND is_active = true),
+	            (SELECT rec_id FROM salary_break_up WHERE salarybreakup_code = #{salaryBreakUpCode} AND is_active = true));
+	</insert>
+	
+	
+	<resultMap id="salaryTemplateDetailsListRM" type="com.qts.icam.model.erp.SalaryTemplate">
+		<id property="salaryTemplateCode" column="salary_template_code" jdbcType="VARCHAR" />
+		<result property="salaryTemplateName" column="salary_template_name" jdbcType="VARCHAR" />
+		<result property="salaryTemplateDesc" column="salary_template_desc" jdbcType="VARCHAR" />
+		<result property="designationLevel" column="designation_level_name" jdbcType="VARCHAR" />
+		<result property="designation" column="designation_name" jdbcType="VARCHAR" />
+		<collection property="salaryTemplateDetailsList" ofType="com.qts.icam.model.erp.SalaryTemplateDetails">
+			<id property="salaryBreakUpCode" column="salarybreakup_code" jdbcType="VARCHAR" />
+			<result property="salaryBreakUpName" column="salarybreakup_name" jdbcType="VARCHAR" />
+			<result property="salaryBreakUpType" column="salarybreakup_type" jdbcType="VARCHAR" />
+			<result property="salaryHeadFormula" column="formula_for_head" jdbcType="VARCHAR" />
+			<result property="salaryHeadFormula" column="formula_for_head" jdbcType="VARCHAR" />
+			<result property="slab" column="is_slab" jdbcType="BOOLEAN" />
+		</collection>
+	</resultMap>
+	<select id="salaryTemplateDetailsList" parameterType="String" resultMap="salaryTemplateDetailsListRM">
+SELECT 
+			salary_template_code,  
+			salary_template_name, 
+			salary_template_desc, 
+			salarybreakup_code, 
+			salarybreakup_name, 
+			salarybreakup_type,
+			formula_for_head,
+			is_slab,
+			d.designation_name,
+			l.designation_level_name
+		FROM 
+			salary_template_details std		
+		JOIN salary_template st ON (st.is_active = true AND std.salary_template=st.rec_id)
+		JOIN salary_break_up sbu ON (std.salary_break_up = sbu.rec_id AND sbu.is_active = true)
+		JOIN designation_level_mapping dlm ON (dlm.salary_template = st.rec_id AND dlm.is_active = true)
+		JOIN designation d ON (dlm.designation = d.rec_id AND d.is_active = true)
+		JOIN designation_level l ON (dlm.designation_level = l.rec_id AND l.is_active = true)
+		WHERE 
+			st.salary_template_code = #{templateCode}
+			AND
+			std.is_active=true
+		ORDER BY 
+			salarybreakup_code;
+	</select>
+	
+	<update id="updateSalaryTemplateDetails" parameterType="com.qts.icam.model.erp.SalaryTemplateDetails">		
+		UPDATE 
+			salary_template_details
+		SET 
+			updated_by = (SELECT rec_id 
+						  FROM resource WHERE user_id = #{updatedBy} 
+						  AND is_active = true), 
+			updated_on = (SELECT extract(epoch FROM now())),
+			formula_for_head = #{salaryHeadFormula} 
+		WHERE 
+			is_active = true
+		AND
+			salary_template = (SELECT rec_id 
+							   FROM salary_template 
+							   WHERE salary_template_code = #{salaryTemplate} 
+							   AND is_active = true)
+		AND
+			salary_break_up = (SELECT rec_id 
+							   FROM salary_break_up 
+							   WHERE salarybreakup_name = #{salaryBreakUpName} 
+							   AND is_active = true);
+	</update>	
+
+<!-- TEACHER INTERVIEW SCHEDULED -->
+	<parameterMap id="insertTeacherInterviewScheduleParameterMap" type="com.qts.icam.model.erp.Employee">
+		<parameter property="employeeCode" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="objectId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="resource.firstName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="resource.middleName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="resource.lastName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="qualification.qualificationName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="qualification.specialization" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="experience" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="dateOfInterview" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="timeOfInterview" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="roomNumber" jdbcType="VARCHAR" mode="IN" />
+	<!-- 	<parameter property="venue" jdbcType="VARCHAR" mode="IN" /> -->
+		<parameter property="resource.gender" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="resource.dateOfBirth" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="teachingLevel.teachingLevelName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="referredBy" jdbcType="VARCHAR" mode="IN" />
+		
+	</parameterMap>
+	<insert id="insertTeacherInterviewSchedule" parameterMap="insertTeacherInterviewScheduleParameterMap" statementType="CALLABLE">
+		{? = call insert_into_teacher_interview(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}
+	</insert>
+	
+	<insert id="mapExaminerForInterview" parameterType="com.qts.icam.model.erp.Employee">
+		INSERT INTO 
+			teacher_interview_examinar_mapping(
+				rec_id, obj_id, teacher_interview_examinar_mapping_code, date_of_creation, updated_by, updated_on, resource, teacher_interview)
+		VALUES(
+			(SELECT uuid_generate_v4()),
+			#{objectId},
+			(SELECT ('TIEMAP-' ||(select COALESCE((SELECT MAX(teacher_interview_examinar_mapping_id) FROM teacher_interview_examinar_mapping), 0 )+1))),
+			(SELECT extract(epoch FROM now())),
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			(SELECT extract(epoch FROM now())),			
+			(SELECT rec_id FROM resource WHERE user_id =#{employeeName} AND is_active=true),
+			(SELECT rec_id FROM teacher_interview WHERE teacher_interview_code = #{employeeCode} AND is_active=true)
+		);
+	</insert>
+	
+	<resultMap id="getTeacherInterviewListResultMap" type="com.qts.icam.model.erp.Employee">
+		<id property="employeeCode" column="teacher_interview_code" jdbcType="VARCHAR"/>
+		<result property="resource.firstName" column="first_name" jdbcType="VARCHAR"/>
+		<result property="resource.middleName" column="middle_name" jdbcType="VARCHAR"/>
+		<result property="resource.lastName" column="last_name" jdbcType="VARCHAR"/>
+		<result property="qualification.qualificationName" column="highest_qualification" jdbcType="VARCHAR"/>
+		<result property="qualification.specialization" column="subject_specialization" jdbcType="VARCHAR"/>
+		<result property="experience" column="experience" jdbcType="VARCHAR" />
+		<result property="dateOfInterview" column="dateOfInterview" jdbcType="VARCHAR"/>
+		<result property="interviewStatus" column="status_desc" jdbcType="VARCHAR"/>
+		<result property="status" column="status" jdbcType="VARCHAR"/>
+		<result property="designation" column="teaching_level_desc" jdbcType="VARCHAR" />
+		<result property="roomNumber" column="room_no" jdbcType="VARCHAR"/>
+		<result property="venue" column="venue" jdbcType="VARCHAR"/>
+		<result property="timeOfInterview" column="time_of_interview" jdbcType="VARCHAR"/>
+		<result property="resource.gender" column="gender" jdbcType="VARCHAR"/>
+		<result property="resource.dateOfBirth" column="dateOfBirth" jdbcType="VARCHAR"/>
+		<result property="comment" column="comment" jdbcType="VARCHAR"/>
+		<result property="referredBy" column="referred_by" jdbcType="VARCHAR"/>
+		<result property="employeeName" column="name" jdbcType="VARCHAR"/>
+	</resultMap>
+
+	<select id="selectTeacherInterviewScheduleList" resultMap="getTeacherInterviewListResultMap">
+		SELECT 
+			teacher_interview_code,
+			first_name,
+			middle_name,
+			last_name,
+			highest_qualification,
+			room_no,
+			venue,
+			(SELECT to_char((SELECT to_timestamp(date_of_interview)), 'DD/MM/YYYY')) as dateOfInterview,
+			time_of_interview,
+			referred_by
+			FROM
+			teacher_interview			
+			WHERE
+			selection_status IS NULL
+			AND
+			is_active = true			
+	</select>
+	
+	
+	<resultMap id="staffDetailsListResultMap" type="com.qts.icam.model.common.Resource">
+		<id property="userId" column="user_id" jdbcType="VARCHAR" />
+		<result property="firstName" column="first_name" jdbcType="VARCHAR" />
+		<result property="middleName" column="middle_name" jdbcType="VARCHAR" />
+		<result property="lastName" column="last_name" jdbcType="VARCHAR" />
+		<result property="mobile" column="contact_number" jdbcType="VARCHAR" />
+		<result property="emailId" column="email_address" jdbcType="VARCHAR" />
+		<result property="desc" column="image_name" jdbcType="VARCHAR" />
+		<result property="designation" column="designation_name" jdbcType="VARCHAR" />
+		<result property="gender" column="gender_code" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectedResourceListForTeacherInterviewSchedule" parameterType="com.qts.icam.model.erp.Employee" resultMap="staffDetailsListResultMap">
+		SELECT
+			r.user_id
+		FROM
+			resource r			
+			JOIN resource_type rt ON (r.resource_type = rt.rec_id) AND (rt.is_active = true)
+			JOIN teacher_interview_examinar_mapping tiem ON (tiem.resource = r.rec_id) AND (tiem.is_active = true)
+			JOIN teacher_interview ti ON (tiem.teacher_interview = ti.rec_id) AND (ti.is_active = true)
+		WHERE		
+			rt.resource_type_code NOT IN ('SUPERADMIN', 'STUDENT')
+		AND
+			ti.teacher_interview_code=#{employeeCode}
+		AND 
+			r.is_active=true
+	</select>
+	
+	<select id="getCandidateDetailsForTeacherInterview" resultMap="getTeacherInterviewListResultMap" parameterType="com.qts.icam.model.erp.Employee">
+		SELECT 
+			ti.teacher_interview_code,
+			ti.first_name,
+			ti.middle_name,
+			ti.last_name,
+			ti.gender,
+			(SELECT to_char((SELECT to_timestamp(ti.date_of_birth)), 'DD/MM/YYYY')) as dateOfBirth,
+			ti.highest_qualification,
+			ti.subject_specialization,
+			ti.experience,
+			(SELECT to_char((SELECT to_timestamp(ti.date_of_interview)), 'DD/MM/YYYY'))
+			as dateOfInterview ,
+			ti.time_of_interview,
+			ti.room_no,
+			ti.venue,
+			ti.comment,
+			ti.referred_by,
+			sf1.status_desc,
+			tl.teaching_level_desc,
+			r.user_id as name
+		FROM
+			teacher_interview ti			
+			LEFT JOIN status_flag sf1 ON (sf1.rec_id = ti.selection_status AND sf1.is_active = true)
+			LEFT JOIN teaching_level tl ON (tl.rec_id = ti.teaching_level) AND (tl.is_active=true)
+			JOIN teacher_interview_examinar_mapping tiem ON (tiem.teacher_interview = ti.rec_id AND tiem.is_active = true)
+			LEFT JOIN resource r ON (r.rec_id = tiem.resource AND r.is_active = true)
+		WHERE
+			ti.teacher_interview_code=#{employeeCode}
+		AND
+			ti.is_active=true
+	</select>
+	
+	<update id="updateTeacherInterviewSchedule" parameterType="com.qts.icam.model.erp.Employee">
+		UPDATE 
+			teacher_interview
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			first_name=#{resource.firstName},
+			middle_name=#{resource.middleName},
+			last_name=#{resource.lastName},
+			highest_qualification=#{qualification.qualificationName},
+			subject_specialization=#{qualification.specialization},
+			experience=#{experience},
+			date_of_interview=(SELECT extract(epoch from (SELECT to_timestamp(#{dateOfInterview},'DD/MM/YYYY')))),
+			time_of_interview=#{timeOfInterview},
+			room_no=#{roomNumber},
+			venue=#{venue},
+			gender=#{resource.gender},
+			date_of_birth=(SELECT extract(epoch from (SELECT to_timestamp(#{resource.dateOfBirth},'DD/MM/YYYY')))),
+			teaching_level=(SELECT rec_id FROM teaching_level WHERE teaching_level_name=#{teachingLevel.teachingLevelName}),
+			referred_by=#{referredBy}
+		WHERE
+			teacher_interview_code=#{employeeCode}
+		AND
+			is_active=true;
+	</update>
+	
+	<update id="inactiveTeacherInterviewExaminarMapping" parameterType="com.qts.icam.model.erp.Employee">
+		UPDATE
+			teacher_interview_examinar_mapping
+		SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			updated_on=(SELECT extract(epoch FROM now())),
+			is_active=false
+		WHERE
+			teacher_interview=(SELECT rec_id FROM teacher_interview WHERE teacher_interview_code=#{employeeCode} AND is_active=true)
+		AND
+			is_active=true
+	</update>
+	
+	<select id="getCandidateId" resultType="com.qts.icam.model.erp.Employee">
+		SELECT teacher_interview_code as employeeCode
+		FROM
+		teacher_interview	
+		WHERE
+		selection_status IS NULL
+		AND
+		is_active = true
+	</select>
+	
+	<select id="getCandidateName" resultType="com.qts.icam.model.common.Resource" parameterType="com.qts.icam.model.erp.Employee">
+		SELECT
+			ti.first_name as firstName,
+			ti.middle_name as middleName,
+			ti.last_name as lastName,
+			ti.highest_qualification as code,
+			ti.subject_specialization as desc,
+			(SELECT to_char((SELECT to_timestamp(ti.date_of_birth)), 'DD/MM/YYYY')) as
+			dateOfBirth,
+			ti.gender as gender,
+			tl.teaching_level_desc as objectId,
+			ti.referred_by as status
+		FROM
+			teacher_interview ti			
+			LEFT JOIN
+			teaching_level tl ON (ti.teaching_level=tl.rec_id) AND (tl.is_active=true)
+		WHERE
+			ti.teacher_interview_code=#{employeeCode}
+		AND
+			ti.is_active=true;
+	</select>
+	
+	<update id="updateSubmitTeacherInterviewStatus" parameterType="com.qts.icam.model.erp.Employee">
+		UPDATE
+		teacher_interview
+		SET
+		updated_by=(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+		updated_on=(SELECT extract(epoch FROM now())),
+		selection_status=(SELECT rec_id FROM status_flag WHERE status_desc=#{status}), 
+		comment=#{comment}
+		WHERE
+		teacher_interview_code=#{employeeCode}
+		AND
+		is_active=true;
+	</update>
+	
+	<insert id="insertSubmitTeacherInterviewMarks" parameterType="com.qts.icam.model.erp.Employee">
+		INSERT INTO teacher_interview_marks_details(
+		rec_id, obj_id, teacher_interview_marks_details_code,
+		date_of_creation, updated_by, updated_on, 
+		subject, marks,teacher_interview)
+		VALUES(
+		uuid_generate_v4(),
+		#{objectId},
+		(SELECT ('TIMD-' ||(select COALESCE((SELECT	MAX(teacher_interview_marks_details_id) FROM teacher_interview_marks_details), 0 )+1))),
+		(SELECT extract(epoch FROM now())),
+		(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+		(SELECT extract(epoch FROM now())),
+		#{subject},
+		#{marks},
+		(SELECT rec_id FROM teacher_interview WHERE teacher_interview_code=#{employeeCode} AND is_active=true));
+	</insert>
+	
+	<select id="getTeacherInterviewList" resultMap="getTeacherInterviewListResultMap">
+		SELECT
+		ti.teacher_interview_code,
+		ti.first_name,
+		ti.middle_name,
+		ti.last_name,
+		ti.highest_qualification,
+		ti.subject_specialization,
+		ti.experience,
+		(SELECT to_char((SELECT to_timestamp(ti.date_of_interview)), 'DD-MM-YYYY'))	as dateOfInterview,
+		sf1.status_desc,
+		ti.status,
+		tl.teaching_level_desc,
+		ti.referred_by
+		FROM teacher_interview ti		
+		JOIN status_flag sf1 ON (ti.selection_status = sf1.rec_id)
+		LEFT JOIN
+		teaching_level tl ON (ti.teaching_level = tl.rec_id) AND (tl.is_active=true)
+		WHERE
+		sf1.status_sym IN ('CS','CNS')
+		AND
+		ti.is_active=true;		
+	</select>
+	
+	<!-- naimisha 22062017 -->
+	
+	<select id="getCandidateDetails" resultType="com.qts.icam.model.common.Resource" parameterType="java.lang.String">
+		SELECT
+			ti.first_name as firstName,
+			ti.middle_name as middleName,
+			ti.last_name as lastName,
+			ti.highest_qualification as code,
+			ti.subject_specialization as desc,
+			(SELECT to_char((SELECT to_timestamp(ti.date_of_birth)), 'DD/MM/YYYY')) as
+			dateOfBirth,
+			ti.gender as gender,
+			tl.teaching_level_desc as objectId,
+			ti.referred_by as status
+		FROM
+			teacher_interview ti			
+			LEFT JOIN
+			teaching_level tl ON (ti.teaching_level=tl.rec_id) AND (tl.is_active=true)
+		WHERE
+			ti.teacher_interview_code=#{strStaffCode};
+	<!-- 	AND
+			sf.status_sym='A'; -->
+	</select>
+	
+	<select id="getCandidateDetailsForTeachetInterview" resultMap="getTeacherInterviewListResultMap" parameterType="com.qts.icam.model.erp.Employee">
+		SELECT 
+		ti.teacher_interview_code,
+		ti.first_name,
+		ti.middle_name,
+		ti.last_name,
+		ti.gender,
+		(SELECT to_char((SELECT to_timestamp(ti.date_of_birth)), 'DD/MM/YYYY')) as dateOfBirth,
+		ti.highest_qualification,
+		ti.subject_specialization,
+		ti.experience,
+		(SELECT to_char((SELECT to_timestamp(ti.date_of_interview)), 'DD/MM/YYYY'))	as dateOfInterview,
+		ti.time_of_interview,
+		ti.room_no,
+		ti.venue,
+		ti.comment,
+		sf1.status_desc,
+		tl.teaching_level_desc,
+		ti.referred_by
+		FROM
+		teacher_interview ti		
+		LEFT JOIN status_flag sf1 ON (sf1.rec_id = ti.selection_status)
+		LEFT JOIN teaching_level tl ON (tl.rec_id = ti.teaching_level) AND (tl.is_active=true)
+		WHERE
+		ti.teacher_interview_code=#{employeeCode}
+		AND
+		ti.is_active=true
+	</select>
+	<select id="selectTeacherInterviewMarks" parameterType="com.qts.icam.model.erp.Employee" resultType="com.qts.icam.model.common.Marks">
+		SELECT
+		timd.subject as subjectName,
+		timd.marks as avgMarks
+		FROM
+		teacher_interview_marks_details timd		
+		JOIN teacher_interview ti ON (timd.Teacher_Interview = ti.rec_id) AND (ti.is_active=true)
+		WHERE
+		timd.is_active=true
+		AND
+		ti.teacher_interview_code=#{employeeCode};
+	</select>
+	
+	<resultMap id="selectStaffUserIdListByAjaxResultMap" type="java.lang.String">
+		<id property="staffUserIdList" column="user_id" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectStaffUserIdListByAjax" parameterType="java.lang.String" resultMap="selectStaffUserIdListByAjaxResultMap">
+		SELECT
+			r.user_id
+		FROM
+			resource r		
+		JOIN 
+			resource_type rt ON (r.resource_type = rt.rec_id) AND (rt.is_active=true)
+		JOIN 
+			employee_details erp ON (erp.resource = r.rec_id) AND (erp.is_active=true)
+		JOIN 
+			designation d ON (d.is_active=true)
+		JOIN 
+			designation_level lvl ON (lvl.is_active=true)
+		JOIN 
+			designation_level_mapping dlm ON (dlm.is_active=true) AND (d.rec_id =  dlm.designation) AND (lvl.rec_id = dlm.designation_level) AND (erp.designation_level_mapping = dlm.rec_id)
+		WHERE
+			r.is_active = true
+		AND
+			rt.resource_type_name NOT IN ('TEACHER')
+		AND
+			erp.is_retired=false
+		AND
+			user_id ilike (#{strQuery}||'%')
+	</select>
+	
+	<resultMap id="getReportingPersonResultMap" type="com.qts.icam.model.common.Resource">
+		<id property="userId" column="user_id" jdbcType="VARCHAR" />
+		<result property="designation" column="designation_name" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getReportingPerson" parameterType="String" resultMap="getReportingPersonResultMap">
+		 <![CDATA[ 
+		 SELECT 
+			user_id,
+			d.designation_name 
+		FROM 
+			resource r		
+		JOIN 
+			employee_details erp ON (r.rec_id = erp.resource) AND (erp.is_active = true)
+		JOIN 
+			 designation d ON (d.is_active=true)
+		JOIN 
+			designation_level lvl ON (lvl.is_active=true)
+		JOIN
+			designation_level_mapping dlm ON (dlm.is_active=true) AND (d.rec_id =  dlm.designation) AND (lvl.rec_id = dlm.designation_level) AND (erp.designation_level_mapping = dlm.rec_id)
+		WHERE 
+ 			d.number_of_designation < (SELECT number_of_designation FROM designation WHERE designation_code = #{designation} AND is_active = true)
+ 		AND  
+			r.is_active=true;
+		]]>
+	</select>
+	
+	<resultMap id="getLevelListForDesignationResultMap" type="com.qts.icam.model.erp.DesignationLevel">
+		<id property="designationLevelCode" column="designation_level_code" jdbcType="VARCHAR" />
+		<result property="designationLevelName" column="designation_level_name" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getLevelListForDesignation" parameterType="String" resultMap="getLevelListForDesignationResultMap">
+		SELECT
+			lvl.designation_level_code,
+			lvl.designation_level_name
+		FROM
+			designation_level lvl		
+		JOIN
+			designation d ON (d.is_active=true) 
+		JOIN
+			designation_level_mapping dlm ON (dlm.is_active=true) AND (d.rec_id = dlm.designation) AND (lvl.rec_id = dlm.designation_level) 
+		WHERE
+			d.designation_code = #{designation}
+		AND
+			lvl.is_active=true;
+	</select>
+	
+	<select id="getSalaryTemplateForMapp" parameterType="com.qts.icam.model.common.Resource" resultType="com.qts.icam.model.erp.SalaryTemplate">
+		SELECT
+			st.salary_template_name as salaryTemplateName,
+			st.salary_template_code as salaryTemplateCode,
+			st.ledger_mapping_status as status
+		FROM
+			salary_template st		
+		JOIN designation_level_mapping dlm ON (dlm.is_active = true) AND (dlm.salary_template = st.rec_id)	
+		JOIN designation des ON (des.is_active = true) AND (dlm.designation = des.rec_id)
+		JOIN designation_level lev ON (lev.is_active = true) AND (dlm.designation_level = lev.rec_id)	
+		WHERE
+			st.is_active=true
+		AND
+			des.designation_code = #{designationCode}
+		AND
+			lev.designation_level_name = #{designationLevel}
+	</select>
+	
+	<!-- changes ranita.sur 08062017 -->
+	
+	<select id="getSalaryBreakUpForShow" parameterType="com.qts.icam.model.erp.SalaryTemplate" resultType="com.qts.icam.model.erp.SalaryBreakUp">
+		SELECT
+			sbup.salarybreakup_type as salaryBreakUpType,
+			sbup.salarybreakup_name as salaryBreakUpName,
+			sbup.is_slab as slab,
+			stdet.formula_for_head as salaryBreakUpDesc,
+			st.ledger_mapping_status as status
+		FROM
+			salary_template st					
+		JOIN designation_level_mapping dlm ON (dlm.is_active = true) AND (dlm.salary_template = st.rec_id)		
+		JOIN designation des ON (des.is_active = true) AND (dlm.designation = des.rec_id)
+		JOIN designation_level lev ON (lev.is_active = true) AND (dlm.designation_level = lev.rec_id)	
+	 	JOIN salary_break_up sbup ON (sbup.is_active = true)
+	 	JOIN salary_template_details stdet ON (stdet.is_active = true) AND (stdet.salary_template = st.rec_id) AND (stdet.salary_break_up = sbup.rec_id)
+		WHERE
+			st.is_active=true
+		AND
+			des.designation_code = #{designation}
+		AND
+			lev.designation_level_name = #{designationLevel}
+		AND
+			st.salary_template_code = #{salaryTemplateCode}
+		ORDER BY sbup.salarybreakup_name;
+	</select>
+	
+	<resultMap id="selectStaffSpecificDetailsResultMap" type="com.qts.icam.model.erp.Employee">
+		<id property="dateOfJoining" column="DOJ" jdbcType="VARCHAR" />
+		<result property="totWorkExpYear" column="total_work_exp_year" jdbcType="VARCHAR" />
+		<result property="totWorkExpMonth" column="total_work_exp_month" jdbcType="VARCHAR" />
+		<result property="jobType" column="job_type_name" jdbcType="VARCHAR" />
+		<result property="bedQualification" column="bed_qualification" jdbcType="BOOLEAN" />
+		<result property="dedQualification" column="ded_qualification" jdbcType="BOOLEAN" />
+		<result property="ttcQualification" column="ttc_qualification" jdbcType="BOOLEAN" />
+		<result property="teachingLevel.teachingLevelName" column="teaching_level_desc" jdbcType="BOOLEAN" />
+		<collection property="publicationList" ofType="com.qts.icam.model.erp.Publication">
+			<id property="publicationName" column="publication_name" jdbcType="VARCHAR" />
+			<result property="dateOfPublication" column="date_of_publication" jdbcType="VARCHAR" />
+			<result property="coPublisher" column="co_publisher" jdbcType="VARCHAR" />
+			<result property="publicationDesc" column="publication_desc" jdbcType="VARCHAR" />
+		</collection>
+		<collection property="selectedWorkShiftList" ofType="com.qts.icam.model.common.WorkShift">
+			<id property="workShiftName" column="shift_name" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="selectStaffSpecificDetails" parameterType="com.qts.icam.model.common.Resource" resultMap="selectStaffSpecificDetailsResultMap">
+		SELECT
+			to_char((SELECT to_timestamp(doj)), 'DD/MM/YYYY') as DOJ,
+			jt.job_type_name
+			FROM
+			employee_details e		
+			LEFT JOIN job_type jt ON (e.job_type = jt.rec_id) AND (jt.is_active=true)
+			JOIN resource r ON (r.rec_id = e.resource) AND (r.is_active=true)			
+			LEFT JOIN teaching_level tl ON (tl.rec_id = e.teaching_level) AND (tl.is_active=true)
+		WHERE
+			r.user_id = #{userId}
+		AND
+			e.is_active=true;
+	</select>
+	
+	<resultMap id="editStudentDetailsListResultMap" type="com.qts.icam.model.common.Resource">
+		<id property="registrationId" column="registration_id" jdbcType="VARCHAR" />
+		<result property="resourceTypeName" column="resource_type_name" jdbcType="VARCHAR" />
+		<result property="userId" column="user_id" jdbcType="VARCHAR" />
+		<result property="dateOfAdmission" column="DOA" jdbcType="VARCHAR" />
+		<result property="klass" column="class_name" jdbcType="VARCHAR" />
+		<result property="section" column="section_name" jdbcType="VARCHAR" />
+		<result property="stream" column="stream_name" jdbcType="VARCHAR" />
+		<result property="lastName" column="last_name" jdbcType="VARCHAR" />
+		<result property="firstName" column="first_name" jdbcType="VARCHAR" />
+		<result property="middleName" column="middle_name" jdbcType="VARCHAR" />
+		<result property="userId" column="user_id" jdbcType="VARCHAR" />
+		<result property="desc" column="image_name" jdbcType="VARCHAR" />
+		<result property="fatherLastName" column="father_last_name" jdbcType="VARCHAR" />
+		<result property="fatherFirstName" column="father_first_name" jdbcType="VARCHAR" />
+		<result property="fatherMiddleName" column="father_middle_name" jdbcType="VARCHAR" />
+		<result property="fatherOccupation" column="father_occupation" jdbcType="VARCHAR" />
+		<result property="fatherAnnualIncome" column="father_annual_income" jdbcType="DOUBLE" />
+		<result property="motherLastName" column="mother_last_name" jdbcType="VARCHAR" />
+		<result property="motherFirstName" column="mother_first_name" jdbcType="VARCHAR" />
+		<result property="motherMiddleName" column="mother_middle_name" jdbcType="VARCHAR" />
+		<result property="motherOccupation" column="mother_occupation" jdbcType="VARCHAR" />
+		<result property="motherAnnualIncome" column="mother_annual_income" jdbcType="DOUBLE" />
+		<result property="dateOfBirth" column="DOB" jdbcType="VARCHAR" />
+		<result property="emailId" column="email_address" jdbcType="VARCHAR" />
+		<result property="mobile" column="contact_number" jdbcType="VARCHAR" />
+		<result property="gender" column="gender_code" jdbcType="VARCHAR" />
+		<result property="bloodGroup" column="blood_group" jdbcType="VARCHAR" />
+		<result property="motherTongue" column="mother_tongue" jdbcType="VARCHAR" />
+		<result property="category" column="social_category_name" jdbcType="VARCHAR" />
+		<result property="religion" column="religion" jdbcType="VARCHAR" />
+		<result property="nationality" column="nationality" jdbcType="VARCHAR" />
+		<result property="optingHostel" column="opting_hostel" jdbcType="VARCHAR" />
+		<result property="passportNo" column="passport_id" jdbcType="VARCHAR" />
+		<result property="panCardNo" column="pan_no" jdbcType="VARCHAR" />
+		<result property="aadharCardNo" column="aadhar_card_no" jdbcType="VARCHAR" />
+		<result property="rationCardNo" column="ration_id" jdbcType="VARCHAR" />
+		<result property="voterCardNo" column="voter_id" jdbcType="VARCHAR" />
+		<result property="designation" column="designation_name" jdbcType="VARCHAR" />
+		<result property="designationCode" column="designation_code" jdbcType="VARCHAR" />
+		<result property="designationType" column="designation_type_name" jdbcType="VARCHAR" />
+		<result property="admissionYear" column="admission_year" jdbcType="VARCHAR" />
+		<result property="admissionFromId" column="admission_drive_name" jdbcType="VARCHAR" />
+		<result property="admissionDriveNameId" column="admission_form_id" jdbcType="VARCHAR" />
+		<result property="reportingPerson" column="reporting_person" jdbcType="VARCHAR" />
+		<result property="department" column="department_code" jdbcType="VARCHAR" />
+		<result property="referredBy" column="referred_by" jdbcType="VARCHAR" />
+		<result property="designationLevel" column="designation_level_name" jdbcType="VARCHAR" />
+		<result property="salaryTemplate" column="salary_template_name" jdbcType="VARCHAR" />
+		<result property="salaryTemplateCode" column="salary_template_code" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectStaffDetailsForEdit" parameterType="com.qts.icam.model.common.Resource" resultMap="editStudentDetailsListResultMap">		
+		SELECT
+			rt.resource_type_name,			
+			r1.user_id,
+			r1.first_name,
+			r1.middle_name,
+			r1.last_name,
+			r1.email_address,
+			r1.blood_group,
+			r1.mother_tongue,
+			r1.religion, 
+			r1.nationality,
+			r1.pan_no, 
+			r1.aadhar_card_no, 
+			r1.ration_id,	
+			r1.passport_id,
+			r1.voter_id, 
+			to_char((SELECT to_timestamp(r1.date_of_birth)), 'DD/MM/YYYY') as DOB,
+			dt.designation_type_name,
+			d.designation_name,	
+			d.designation_code,	
+			lvl.designation_level_name,		
+			stemp.salary_template_name,
+			stemp.salary_template_code
+		FROM resource r1		 
+ 		JOIN resource_type rt ON (r1.resource_type = rt.rec_id) AND (rt.is_active = true)  
+ 		JOIN employee_details erp ON (r1.rec_id = erp.resource) AND (erp.is_active = true)	
+ 		JOIN designation d ON (d.rec_id = erp.designation AND d.is_active = true)
+ 		JOIN designation_type dt ON (d.designation_type = dt.rec_id) AND (dt.is_active = true)
+ 		JOIN designation_level lvl ON (lvl.is_active = true)
+		JOIN designation_level_mapping dlm ON (dlm.is_active = true) AND (d.rec_id = dlm.designation) AND (lvl.rec_id = dlm.designation_level) AND (erp.designation_level_mapping = dlm.rec_id)
+		JOIN salary_template stemp ON (stemp.rec_id = dlm.salary_template) AND (stemp.is_active = true)
+ 		WHERE
+ 			r1.is_active = true 	 			
+ 		AND
+ 			r1.user_id = #{userId};
+	</select>
+	
+	<resultMap id="selectDesignationListResultMap" type="com.qts.icam.model.erp.Designation">
+		<id property="designationCode" column="designation_code" jdbcType="VARCHAR" />
+		<result property="designationName" column="designation_name" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectDesignationList" parameterType="String" resultMap="selectDesignationListResultMap">
+		SELECT
+		designation_code,
+		designation_name
+		FROM
+		designation d		
+		JOIN designation_type dt ON (dt.rec_id = d.designation_type) AND (dt.is_active = true)
+		WHERE
+			d.is_active=true
+		AND
+			dt.designation_type_code= #{designationTypeCode};
+	</select>
+	
+	<select id="getDesignationSalaryMappingDetails" parameterType="com.qts.icam.model.erp.Employee" resultMap="salaryBreakUpResultMap">
+		SELECT
+			sbu.salarybreakup_code,
+			sbu.salarybreakup_name,
+			sbu.salarybreakup_type,
+			esa.amount,
+			st.salary_template_name,
+			st.salary_template_code,
+			std.formula_for_head,
+			sbu.is_slab
+		FROM
+			salary_break_up sbu		
+		JOIN 
+			employee_details_salary_amount esa ON (esa.is_active = true) AND (sbu.rec_id = esa.salary_break_up)
+		JOIN
+			resource r ON (r.is_active = true)
+		JOIN
+			salary_template st ON (st.is_active = true) AND (esa.salary_template = st.rec_id)
+		JOIN
+			status_flag sf1 ON(esa.promotion_status = sf1.rec_id)
+		JOIN
+			salary_template_details std ON (std.salary_template = st.rec_id) AND (std.salary_break_up = sbu.rec_id) AND (std.is_active=true)
+		JOIN
+			employee_details erp ON (r.rec_id = erp.resource) AND (erp.is_active = true) AND (esa.user_id = erp.rec_id)
+		WHERE
+			sbu.is_active = true
+		AND
+			sf1.status_sym='C'
+		AND
+			sbu.salarybreakup_code IS NOT NULL
+		AND
+			r.user_id = #{resource.userId}
+		ORDER BY
+			sbu.salarybreakup_name ;
+			
+		<!-- SELECT DISTINCT
+			sbu.salarybreakup_code,
+			sbu.salarybreakup_name,
+			sbu.salarybreakup_type,
+			st.salary_template_name,
+			st.salary_template_code,
+			std.formula_for_head,
+			sbu.is_slab
+		FROM
+			salary_break_up sbu		
+		JOIN
+			resource r ON (r.is_active = true)
+		JOIN
+			salary_template_details std ON (std.salary_break_up = sbu.rec_id) AND (std.is_active=true)	
+		JOIN
+			salary_template st ON (st.is_active = true) AND (std.salary_template = st.rec_id)
+		JOIN
+			employee_details erp ON (r.rec_id = erp.resource) AND (erp.is_active = true) 
+		WHERE
+			sbu.is_active = true
+		
+		AND
+			sbu.salarybreakup_code IS NOT NULL
+		AND
+			r.user_id = #{resource.userId}
+		ORDER BY
+			sbu.salarybreakup_name ; -->
+	</select>
+	
+	<select id="checkExistingStatusForErpSalaryMapping" parameterType="com.qts.icam.model.erp.Employee" resultType="Integer">
+		SELECT
+			count(*) as staffId
+		FROM
+			employee_details_salary_amount
+		WHERE
+			user_id=(SELECT rec_id FROM employee_details WHERE resource = (SELECT rec_id 
+																			 FROM resource 
+																			WHERE user_id = #{resource.userId} 
+																			  AND is_active = true) 
+															   AND is_active = true 
+															   AND is_retired = false)
+		AND
+			is_active = true;
+	</select>
+	
+	<insert id="insertErpSalaryMapping" parameterType="com.qts.icam.model.erp.SalaryBreakUp">
+		INSERT INTO employee_details_salary_amount(
+			rec_id, obj_id, updated_by, updated_on, 
+			date_of_creation, erp_salary_amount_code, erp_salary_amount_desc, 
+			salary_template, user_id, salary_break_up, amount, promotion_status)
+		VALUES (uuid_generate_v4(), 
+				#{salaryBreakUpObjectId},
+				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())), 
+			(SELECT (#{salaryBreakUpCode} ||(select COALESCE((SELECT MAX(erp_salary_amount_id) FROM employee_details_salary_amount), 0 )+1))),
+			(SELECT (#{salaryBreakUpCode} ||(select COALESCE((SELECT MAX(erp_salary_amount_id) FROM employee_details_salary_amount), 0 )+1))),
+			(SELECT rec_id FROM salary_template WHERE salary_template_code = #{salaryTemplate.salaryTemplateCode} AND is_active = true),			
+			(SELECT rec_id FROM employee_details WHERE resource = (SELECT rec_id FROM resource WHERE user_id = #{salaryBreakUpDesc} AND is_active = true) 
+															   AND is_active = true AND is_retired = false),
+			(SELECT rec_id FROM salary_break_up WHERE salarybreakup_name =#{salaryBreakUpName} AND is_active = true),			
+			#{amount}, 
+			(SELECT rec_id FROM status_flag WHERE status_sym = 'C'));
+	</insert>
+	<!-- modified by ranita.sur on 25082017 for salary update -->
+	<update id="updateStaffDetailsForErpSalaryMapping" parameterType="com.qts.icam.model.erp.Employee">
+		UPDATE employee_details SET
+			designation_level_mapping=(
+				SELECT dlm.rec_id FROM designation_level_mapping dlm				
+				JOIN designation d ON (dlm.designation = d.rec_id AND d.is_active = true)
+				JOIN designation_level l ON (dlm.designation_level = l.rec_id AND l.is_active = true)
+				WHERE
+				d.designation_code=#{resource.designation} AND l.designation_level_code=#{resource.designationLevel} AND dlm.is_active=true		
+			)
+			WHERE erp_code=(SELECT erp_code FROM employee_details  ed JOIN resource r ON (ed.resource = r.rec_id AND r.is_active = true)WHERE r.user_id = #{resource.userId} AND ed.is_active = true)
+			AND is_active = true;
+	</update>
+	
+	<update id="updateStaffDetailsForErpSalaryAmount" parameterType="com.qts.icam.model.erp.Employee">
+		UPDATE employee_details_salary_amount SET
+			is_active=false
+		WHERE
+			user_id=(SELECT ed.rec_id FROM employee_details ed JOIN resource r ON (ed.resource = r.rec_id AND r.is_active = true) WHERE r.user_id = #{resource.userId} AND ed.is_active = true);
+	</update>
+	
+	<update id="updateStaffDetailsForPromotion" parameterType="com.qts.icam.model.erp.Employee">
+		UPDATE employee_details_salary_amount SET
+			promotion_status=(SELECT rec_id FROM status_flag WHERE status_sym = 'P'),
+			is_active = false
+		WHERE
+			user_id=(SELECT ed.rec_id FROM employee_details ed JOIN resource r ON (ed.resource = r.rec_id AND r.is_active = true) WHERE r.user_id = #{resource.userId} AND ed.is_active = true);
+	</update>
+	
+	<select id="getCalculatedOnSalaryBreakUp" parameterType="java.lang.String" resultType="com.qts.icam.model.erp.SalaryBreakUp">	
+		SELECT 
+			sbu_on.salarybreakup_name as salaryBreakUpName,
+			sbu_on.salarybreakup_code as salaryBreakUpCode
+		FROM 
+			 slab_calculation_parameter scp		
+		JOIN financial_year fy ON (fy.is_active=true AND scp.year =fy.rec_id)
+		JOIN status_flag sf_cs ON (fy.year_status = sf_cs.rec_id)
+		JOIN salary_break_up sbu_for ON (scp.slab_calculated_for = sbu_for.rec_id AND sbu_for.is_active =true)
+		JOIN salary_break_up sbu_on ON (scp.slab_calculated_on = sbu_on.rec_id AND sbu_on.is_active =true)
+		WHERE 
+			scp.is_active=true
+		AND 
+			sbu_for.salarybreakup_code =#{salaryBreakUpCode};
+	</select>
+	
+	<parameterMap id="calculatePfOrEsiParameterMap" type="com.qts.icam.model.common.Resource">
+		<parameter property="salaryBreakUp.amount" jdbcType="DOUBLE" mode="OUT" />
+		<parameter property="userId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="endDate" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="startDate" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="salaryBreakUp.salaryBreakUpCode" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="salaryBreakUp.amount" jdbcType="DOUBLE" mode="IN" />
+		
+	</parameterMap>
+	<insert id="calculatePfOrEsi" parameterMap="calculatePfOrEsiParameterMap" statementType="CALLABLE">
+		{? = call misc_tax_calculation(?,?,?,?,?)}
+	</insert>
+	
+	<parameterMap id="calculateIncomeTaxParameterMap" type="com.qts.icam.model.common.Resource">
+		<parameter property="salaryBreakUp.amount" jdbcType="DOUBLE" mode="OUT" />
+		<parameter property="userId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="endDate" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="startDate" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="salaryBreakUp.amount" jdbcType="DOUBLE" mode="IN" />		
+	</parameterMap>
+	<insert id="calculateIncomeTax" parameterMap="calculateIncomeTaxParameterMap" statementType="CALLABLE">
+		{? = call calculate_income_tax(?,?,?,?)}
+	</insert>
+	
+	<select id= "getIncomeTaxParameter" resultType="com.qts.icam.model.erp.IncomeTaxParameters">
+		SELECT 
+			it_parameter_name as incomeTaxParamName, 
+			it_parameter_code as incomeTaxParamCode
+		FROM 
+			income_tax_parameter itp		
+		WHERE itp.is_active = true
+		ORDER BY income_tax_parameter_id;
+	</select>
+	
+	<select id="getSlabCalculationParameter" parameterType = "String" resultType="com.qts.icam.model.erp.IncomeTaxParameters">	
+		SELECT 
+			sbu_for.salarybreakup_name as incomeTaxSlabDetailsName, 
+			sbu_on.salarybreakup_name as incomeTaxbasedOn, 
+			fy.financial_year_code as financialYear
+		FROM slab_calculation_parameter scp		
+		JOIN financial_year fy ON (fy.is_active = true)
+		JOIN status_flag sf_cs ON (fy.year_status = sf_cs.rec_id)
+		JOIN salary_break_up sbu_for ON (scp.slab_calculated_for = sbu_for.rec_id AND sbu_for.is_active = true)
+		JOIN salary_break_up sbu_on ON (scp.slab_calculated_on = sbu_on.rec_id AND sbu_on.is_active = true)
+		WHERE 
+			scp.is_active = true
+		AND 
+			sf_cs.status_sym = 'C'
+		AND
+			sbu_for.salarybreakup_code = #{hidVal};
+	</select>
+	
+	<select id="selectExistingStatusForDisburseSalaryDetails" parameterType="com.qts.icam.model.common.Resource" resultType="String">
+		SELECT  
+	      to_char((SELECT to_timestamp(paid_date)), 'DD/MM/YYYY') as existingStatus
+	  	FROM 
+	       disburse_salary_details
+		WHERE
+			user_id=(SELECT
+						erp.rec_id
+					 FROM 
+					    resource r							
+					JOIN
+					    employee_details erp ON (r.rec_id = erp.resource) AND (erp.is_active = true) 
+					WHERE
+					   	r.is_active = true
+					AND
+					    r.user_id = #{userId}
+					)
+			AND 
+				salary_year = #{startDate}
+			AND
+				salary_month = #{endDate}
+			AND
+				is_active=true
+			AND
+				disburse_salary_details_code IS NOT NULL;
+	</select>
+	
+	<select id="selectIndividualDeduction" parameterType="com.qts.icam.model.common.Resource" resultType="com.qts.icam.model.erp.SalaryBreakUp">
+		SELECT 
+			spc.percent as percentageBased,
+			sbu.salarybreakup_name as salaryBreakUpName,
+			sbu.salarybreakup_code as salaryBreakUpCode
+		FROM
+			staff_pf_contribution spc 		
+		JOIN
+			salary_break_up sbu ON (spc.salary_breakup = sbu.rec_id) AND (sbu.is_active=true)
+		JOIN
+			resource r ON (r.is_active = true) AND (spc.resource = r.rec_id)
+		JOIN 	
+			financial_year fy ON (fy.is_active = true) AND (spc.financial_year = fy.rec_id)
+		JOIN 
+			status_flag sf_cs ON (fy.year_status = sf_cs.rec_id)
+		WHERE
+			spc.is_active = true
+		AND
+			r.user_id = #{userId}
+		AND 
+			sf_cs.status_sym = 'C';
+	</select>
+	
+<!-- 	<resultMap id="getExtraIncomeResultMap" type="com.qts.icam.model.erp.SalaryBreakUp"> -->
+<!-- 		<id property="salaryBreakUpCode" column="salarybreakup_code" jdbcType="VARCHAR" /> -->
+<!-- 		<result property="salaryBreakUpName" column="salarybreakup_name" jdbcType="VARCHAR" /> -->
+<!-- 		<result property="amount" column="head_amount" jdbcType="VARCHAR" /> -->
+<!-- 		<result property="status" column="disburse_salary_details_history_desc" jdbcType="VARCHAR" /> -->
+<!-- 	</resultMap> -->
+<!-- 	<select id="getExtraIncome" parameterType="com.qts.icam.model.common.Resource" resultMap="getExtraIncomeResultMap"> -->
+<!-- 			SELECT  -->
+<!-- 				sbu.salarybreakup_code, -->
+<!-- 				sbu.salarybreakup_name, -->
+<!-- 				dsdh.head_amount, -->
+<!-- 				dsdh.disburse_salary_details_history_desc -->
+<!-- 			FROM -->
+<!-- 			    disburse_salary_details dsd			    -->
+<!-- 			    JOIN disburse_salary_details_history dsdh ON (dsdh.is_active = true) AND (dsd.rec_id = dsdh.disburse_salary_details) -->
+<!-- 			    JOIN salary_break_up sbu ON (sbu.is_active = true) AND (sbu.rec_id = dsdh.salary_break_up_head) -->
+<!-- 			    JOIN resource r ON (r.is_active = true) -->
+<!-- 			    JOIN employee_details erp ON (r.rec_id = erp.resource) AND (erp.is_active = true)      -->
+<!-- 			WHERE -->
+<!-- 			    sbu.salarybreakup_type = 'EXTRA EARING' -->
+<!-- 		    AND -->
+<!-- 		    r.user_id = #{userId} -->
+<!-- 		    AND -->
+<!-- 		    dsd.salary_year = #{startDate} -->
+<!-- 		    AND  -->
+<!-- 		    dsd.salary_month = #{endDate} -->
+<!-- 		    AND -->
+<!-- 		    dsd.is_active = true; -->
+<!-- 	</select>	 -->
+	
+	<resultMap id="getSalaryBreakUpListForGrossOrNetResultMap" type="com.qts.icam.model.erp.SalaryBreakUp">
+		<id property="salaryBreakUpCode" column="salarybreakup_code" jdbcType="VARCHAR" />
+		<result property="salaryBreakUpName" column="salarybreakup_name" jdbcType="VARCHAR" />
+		<result property="salaryBreakUpType" column="salarybreakup_type" jdbcType="VARCHAR" />
+		<result property="amount" column="amount" jdbcType="DOUBLE" />
+	</resultMap>
+	<select id="getSalaryBreakUpListForGross" parameterType="com.qts.icam.model.erp.Employee" resultMap="getSalaryBreakUpListForGrossOrNetResultMap">
+		SELECT
+			sbu.salarybreakup_code,
+			sbu.salarybreakup_name,
+			sbu.salarybreakup_type,
+			esa.amount
+		FROM
+			salary_break_up sbu		
+		JOIN 
+			employee_details_salary_amount esa ON (esa.is_active = true) AND (sbu.rec_id = esa.salary_break_up)
+		JOIN
+			resource r ON (r.is_active = true)
+		JOIN
+			salary_template st ON (st.is_active = true) AND (esa.salary_template = st.rec_id)
+		JOIN
+			status_flag sf1 ON(esa.promotion_status = sf1.rec_id)
+		JOIN
+			salary_template_details std ON (std.salary_template = st.rec_id) AND (std.salary_break_up = sbu.rec_id) AND (std.is_active=true)
+		JOIN
+			employee_details erp ON (r.rec_id = erp.resource) AND (erp.is_active = true) AND (esa.user_id = erp.rec_id)
+		WHERE
+			sbu.is_active = true
+		AND
+			sf1.status_sym='C'
+		AND
+			sbu.salarybreakup_code IS NOT NULL
+		AND
+			r.user_id = #{resource.userId}
+		AND
+			sbu.salarybreakup_type = 'EARNING'
+		ORDER BY
+			sbu.salarybreakup_id;
+	</select>
+	
+	<select id="getSalaryBreakUpListForNet" parameterType="com.qts.icam.model.erp.Employee" resultMap="getSalaryBreakUpListForGrossOrNetResultMap">
+		SELECT
+			sbu.salarybreakup_code,
+			sbu.salarybreakup_name,
+			sbu.salarybreakup_type,
+			esa.amount
+		FROM
+			salary_break_up sbu		
+		JOIN 
+			employee_details_salary_amount esa ON (esa.is_active=true) AND (sbu.rec_id = esa.salary_break_up)
+		JOIN
+			resource r ON (r.is_active=true)
+		JOIN
+			salary_template st ON (st.is_active = true) AND (esa.salary_template = st.rec_id)
+		JOIN
+			status_flag sf1 ON(esa.promotion_status = sf1.rec_id)
+		JOIN
+			salary_template_details std ON (std.salary_template = st.rec_id) AND (std.salary_break_up = sbu.rec_id) AND (std.is_active = true)
+		JOIN
+			employee_details erp ON (r.rec_id = erp.resource)  AND (erp.is_active = true) AND (esa.user_id = erp.rec_id)
+		WHERE
+			sbu.is_active = true
+		AND
+			sf1.status_sym='C'
+		AND
+			sbu.salarybreakup_code IS NOT NULL
+		AND
+			r.user_id = #{resource.userId}
+		AND
+			sbu.salarybreakup_type = 'DEDUCTION'
+		ORDER BY
+			sbu.salarybreakup_id;
+	</select>
+	
+	<resultMap id="getExtraIncomeParameterListResultMap" type="com.qts.icam.model.erp.SalaryBreakUp">
+		<id property="salaryBreakUpCode" column="salarybreakup_code" jdbcType="VARCHAR" />
+		<result property="salaryBreakUpName" column="salarybreakup_name" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getExtraIncomeParameterList" resultMap="getExtraIncomeParameterListResultMap">
+		SELECT
+			sbu.salarybreakup_code, sbu.salarybreakup_name
+		FROM
+			salary_break_up sbu		
+		WHERE			
+			sbu.salarybreakup_code IS NOT NULL
+		AND
+			sbu.is_slab = false
+		AND
+			sbu.salarybreakup_type = 'EXTRA EARING'
+		AND sbu.is_active = true;
+	</select>
+	
+	<insert id="insertStaffSalaryDetails" parameterType="com.qts.icam.model.erp.Employee">
+		INSERT INTO disburse_salary_details(
+	            rec_id,
+	            obj_id,
+	            updated_by,
+	            updated_on, 
+	            date_of_creation,
+	            disburse_salary_details_code,  
+	            salary_template,
+	            user_id, 
+	            paid_date, 
+	            salary_year, 
+	            salary_month, 
+	            total_working_days,
+	            resource_working_days,
+	            gross_amount,
+	            paid_amount)
+	    VALUES (uuid_generate_v4(),
+		       #{objectId},
+		      (SELECT rec_id FROM resource WHERE user_id =#{resource.updatedBy} AND is_active=true),
+		       extract(epoch FROM now()), 
+	           extract(epoch FROM now()),	       
+	          (SELECT ('DSD-' ||(select COALESCE((SELECT MAX(disburse_salary_details_id) FROM disburse_salary_details), 0 )+1))),
+	          (SELECT rec_id FROM salary_template WHERE salary_template_code=#{resource.salaryTemplateCode} AND is_active = true),
+	          (SELECT ed.rec_id FROM employee_details ed				
+				JOIN  resource r ON (ed.resource=r.rec_id) AND (r.is_active = true) 
+				WHERE
+					ed.is_active = true
+				AND
+					r.user_id = #{resource.userId}					
+				   ),
+	            <!-- (SELECT extract(epoch from (SELECT to_timestamp(#{paymentDate}, 'DD/MM/YYYY')))), -->
+	             extract(epoch FROM now()),
+	            #{resource.startDate}, 
+	            #{resource.endDate},
+	            #{resourceAttendance.totalDays},
+	            #{resourceAttendance.presentDays},
+	           
+	            #{grossAmount},
+	            #{netAmount}
+	            );
+	</insert>
+	
+	<!-- changes ranita.sur 04072017 -->
+	
+	<insert id="insertIntoTransactionalWorkingAreaForStaffSalary" parameterType="com.qts.icam.model.erp.Employee">
+		<selectKey keyProperty="employeeCode" resultType="String" order="BEFORE">
+	   		SELECT('TWA' ||(SELECT COALESCE((SELECT MAX(transactional_working_area_id) FROM transactional_working_area), 0)+1));
+	 	</selectKey>
+			INSERT INTO transactional_working_area(
+			            rec_id,
+			            obj_id,
+			            updated_by,
+			            updated_on, 
+			            date_of_creation,
+			            transactional_working_area_code,
+			            transactional_working_area_name, 
+			            transactional_working_area_desc,
+			            resource_type,
+			            resource,
+			            transaction_date,
+			            gross_amount,
+			            net_amount,
+			           <!--  transaction_mode, -->
+			            reason_of_transaction,
+			            desc_of_transaction,
+			            transaction_status,
+			            academic_year,
+			            paid_against,
+			            transaction_year,
+			            transaction_month
+			            <choose>
+							<when test="paymentMode == 'BANK'">
+								,bank_amount
+							</when>
+							<otherwise>
+								,cash_amount
+							</otherwise>
+						</choose>
+						,department,
+						income_expense,
+						  ledger)
+  					VALUES(
+  						uuid_generate_v4(),
+	    				#{objectId},
+	    				(SELECT rec_id FROM resource WHERE user_id =#{resource.updatedBy} AND is_active= true),
+	    				extract(epoch FROM now()), 
+            			extract(epoch FROM now()),
+            			#{employeeCode},
+            			'STAFF SALARY', 
+            			'STAFF SALARY',
+            			(SELECT
+							rt.resource_type_name
+							FROM 
+								resource r 		
+							JOIN
+								resource_type rt ON (r.resource_type = rt.rec_id AND rt.is_active = true)
+							WHERE
+								r.user_id = #{resource.userId}   
+							AND 
+								r.is_active = true),
+           				(SELECT
+							r.user_id
+						FROM 
+							resource r 						
+						WHERE
+							r.user_id = #{resource.userId}
+						AND
+							r.is_active = true
+						),
+	   					extract(epoch FROM now()),
+	   					#{grossAmount},
+	   					#{netAmount}, 
+           				<!-- #{paymentMode}, -->
+           				'SALARY',
+           				'SALARY',
+            			'PENDING',
+            			(SELECT
+							academic_year_name
+						 FROM
+							academic_year
+						 WHERE
+							is_active = true
+						 AND
+							year_status = (SELECT rec_id FROM status_flag WHERE status_sym ='C')
+						 ),
+            			(SELECT			
+							 st.salary_template_name
+						 FROM
+							salary_template st
+						 JOIN 
+							employee_details_salary_amount esa ON (esa.is_active = true) AND (esa.salary_template = st.rec_id)
+						 JOIN
+							resource r ON (r.is_active = true)
+						 JOIN
+							status_flag sf1 ON(esa.promotion_status = sf1.rec_id)
+						 JOIN
+							salary_template_details std ON (std.salary_template = st.rec_id) AND (std.is_active = true)
+						 JOIN
+							employee_details erp ON (r.rec_id = erp.resource) AND (erp.is_active = true) AND (esa.user_id = erp.rec_id)
+						 WHERE	
+							sf1.status_sym='C'
+						 AND
+							r.user_id = #{resource.userId}
+						 GROUP BY 
+							st.salary_template_name
+						),
+            			#{resource.startDate},
+            			#{resource.endDate}
+            			<choose>
+							<when test="paymentMode == 'BANK'">
+								,#{netAmount}
+							</when>
+							<otherwise>
+								,#{netAmount}
+							</otherwise>
+						</choose>
+						,(SELECT
+								d.department_name
+							FROM
+								department d							
+							JOIN
+								employee_details ed ON (d.rec_id=ed.department) AND (ed.is_active = true)
+							JOIN
+								resource r ON (ed.resource=r.rec_id) AND (r.is_active = true)
+							WHERE
+								r.user_id = #{resource.userId}
+							AND
+								d.is_active = true),
+						'EXPENSE',
+						(SELECT ledger FROM salary_template_ledger_resource_mapping stlrm JOIN resource r ON (r.rec_id = stlrm.resource AND r.is_active = true) JOIN salary_template st ON (st.rec_id = stlrm.salary_template AND st.is_active = true) WHERE r.user_id = #{resource.userId} AND st.salary_template_code = #{resource.salaryTemplateCode} AND stlrm.is_active = true)
+           );
+	</insert>
+	
+	
+	<insert id="insertIntoTransactionalWorkingAreaDetailsForStaffSalary" parameterType="com.qts.icam.model.erp.Employee">
+        <foreach item="salaryBreakUp" collection="salaryBreakUpList"  open="" close="" separator=";">
+			INSERT INTO transactional_working_area_details(
+	            rec_id,
+	            obj_id,
+	            updated_by, 
+	            updated_on,
+	            date_of_creation,
+	            transactional_working_area_details_code, 
+	            transactional_working_area_details_name,
+	            transactional_working_area_details_desc, 
+	            transactional_working_area,
+	            transaction_head_name,
+	            transaction_head_amount)
+   		 VALUES (
+   		 		uuid_generate_v4(),
+	   			#{objectId}, 
+	   			(SELECT rec_id FROM resource WHERE user_id =#{resource.updatedBy} AND is_active=true),
+	   			extract(epoch FROM now()), 
+       			extract(epoch FROM now()),
+           		(SELECT('TWAD' ||(SELECT COALESCE((SELECT MAX(transactional_working_area_details_id) FROM transactional_working_area_details), 0)+1))),
+	   			#{employeeCode}, 
+           		#{employeeCode},
+           		(SELECT rec_id FROM transactional_working_area WHERE transactional_working_area_code = #{employeeCode} AND is_active=true), 
+           		upper(#{salaryBreakUp.salaryBreakUpName}),
+           		#{salaryBreakUp.amount}
+           );
+		</foreach>		
+	</insert>
+	
+	<insert id="insertIntoStaffSalaryDetails" parameterType="com.qts.icam.model.erp.Employee">
+        <foreach item="salaryBreakUp" collection="salaryBreakUpList"  open="" close="" separator=";">
+			INSERT INTO disburse_salary_details_history(
+	            rec_id,
+	            obj_id,
+	            updated_by, 
+	            updated_on,
+	            date_of_creation,
+	            disburse_salary_details_history_code, 
+	            disburse_salary_details_history_name,
+		        disburse_salary_details,
+		        disburse_salary_details_history_desc,
+	            salary_break_up_head,
+	            head_amount)
+   		 VALUES (
+   		 		uuid_generate_v4(),
+	   			#{objectId}, 
+	   			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+	   			extract(epoch FROM now()), 
+       			extract(epoch FROM now()),
+           		(SELECT('DSDH' ||(SELECT COALESCE((SELECT MAX(disburse_salary_details_history) FROM disburse_salary_details_history), 0)+1))),
+	   		    (SELECT('DSDH' ||(SELECT COALESCE((SELECT MAX(disburse_salary_details_history) FROM disburse_salary_details_history), 0)+1))),
+           		(SELECT rec_id FROM disburse_salary_details WHERE user_id = (SELECT
+						erp.rec_id
+					FROM 
+						resource r
+					JOIN
+						employee_details erp ON (r.rec_id = erp.resource) AND (erp.is_active = true) 
+					WHERE
+						r.is_active = true
+					AND
+						r.user_id = #{resource.userId}) AND is_active=true AND salary_year = #{resourceAttendance.year} AND salary_month = #{resourceAttendance.month}), 
+           		#{salaryBreakUp.status},
+           		(SELECT rec_id FROM salary_break_up WHERE salarybreakup_code = #{salaryBreakUp.salaryBreakUpCode} AND is_active = true),
+           		#{salaryBreakUp.amount}
+           );
+		</foreach>
+	</insert>
+	
+	<select id = "getDesignationLevelListForDesignation" resultType="com.qts.icam.model.erp.DesignationLevel" parameterType="java.lang.String">
+		SELECT 
+			designation_level_code as designationLevelCode, 
+			designation_level_name as designationLevelName
+		FROM designation_level dl
+		JOIN designation_level_mapping dlm ON (dlm.designation_level = dl.rec_id) AND (dl.is_active = true) 
+		JOIN designation d ON (dlm.designation = d.rec_id) AND (d.is_active = true) 
+		WHERE d.designation_code =#{designationName}
+		AND dlm.is_active = true			
+	</select>
+	
+	<select id= "selectStudentLoginDetails" resultMap="selectEmployeeDetailsResultMap" parameterType="com.qts.icam.model.erp.Employee">
+		SELECT
+		       gender, 
+		       r.user_id, 
+		       r.first_name, r.middle_name, r.last_name, 
+		       (SELECT to_char((SELECT to_timestamp( r.date_of_birth)), 'DD/MM/YYYY')) as date_of_birth,
+		       r.father_first_name, r.father_middle_name, r.father_last_name, r.father_occupation, 
+		       r.mother_first_name, r.mother_middle_name, r.mother_last_name, r.mother_occupation, 
+		       r.email_address, r.mobile_no, 
+			   blood_group,
+		       r.mother_tongue, r.religion, r.nationality, 
+		       sc.social_category_name, 
+		      
+		       r.medical_status,
+		       
+		       rt.resource_type_code,
+		       rt.resource_type_name	      
+		      
+		FROM
+			resource r				
+		JOIN resource_type rt ON (r.resource_type = rt.rec_id AND rt.is_active = true)
+		
+		JOIN social_category sc ON (r.social_category = sc.rec_id AND sc.is_active = true)
+		WHERE				
+			r.is_active = true	
+		AND
+			r.user_id = #{resource.userId};		
+	</select>
+	
+	<!-- /****Done by naimisha for ERP 10/11/2016*****/ -->
+	<resultMap id="selectTeacherIdResultMap" type="com.qts.icam.model.common.Resource">
+		<id property="userId" column="user_id" jdbcType="VARCHAR" />
+		<result property="name" column="name" jdbcType="VARCHAR" />
+	</resultMap>
+	
+
+	<select id="selectTeacherId" resultMap="selectTeacherIdResultMap">
+		SELECT
+		r.user_id,
+		r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as name
+		FROM
+		resource r
+		JOIN resource_type rt
+		ON (r.resource_type=rt.rec_id)
+		LEFT JOIN employee_details ed ON (r.rec_id =
+		ed.resource) AND ed.is_active = true
+		WHERE
+		rt.resource_type_code='TEACHING_STAFF'
+		AND
+		ed.is_retired=false
+		EXCEPT(
+		SELECT
+		r.user_id,
+		r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as name
+		FROM
+		resource r
+		JOIN teacher_subject_mapping tsm ON r.rec_id = tsm.resource
+		);
+	</select>
+	
+	<resultMap id="selectSubjectGroupResultMap" type="com.qts.icam.model.academics.SubjectGroup">
+		<id property="subjectGroupName" column="subject_group_name"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectAllSubjectGroup" resultMap="selectSubjectGroupResultMap">
+		SELECT
+		DISTINCT sgrp.subject_group_name
+		FROM
+		subject_group sgrp
+		WHERE
+		is_active = true;
+	</select>
+	
+	<insert id="insertIntoTeacherSubjectMapping" parameterType="com.qts.icam.model.academics.Subject">
+		INSERT INTO teacher_subject_mapping(
+		rec_id, obj_id, updated_by, updated_on,
+		date_of_creation, resource, subject)
+		VALUES (
+		(uuid_generate_v4()),
+		#{objectId},
+		(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+		(SELECT extract(epoch FROM now())),
+		(SELECT extract(epoch FROM now())),
+		(SELECT rec_id FROM resource WHERE user_id =#{status} AND is_active=true),
+		(SELECT rec_id FROM subject WHERE subject_code =#{subject} AND is_active = true)
+		);
+	</insert>
+	
+	<select id="selectSubjectsForATeacher" resultType="com.qts.icam.model.academics.Subject" parameterType="java.lang.String">
+		SELECT 
+			distinct sub.subject_code as subjectCode,
+			sub.subject_name as subjectName,
+			subject_group_code as subjectGroup,
+			subject_group_order as subject_group_order
+		FROM
+			teacher_subject_mapping tsm
+		JOIN 	subject sub ON(tsm.subject = sub.rec_id AND sub.is_active = true)
+		JOIN    subject_group sg ON(sub.subject_group=sg.rec_id AND sg.is_active=true)	
+		JOIN	resource r ON(tsm.resource = r.rec_id)
+		WHERE	 user_id = #{strStaffUserId}
+		AND
+			tsm.is_active=true
+		ORDER BY subject_group_order;
+	</select>
+	
+	<update id="inactiveTeacherSubjectMapping" parameterType="com.qts.icam.model.common.TeacherSubjectMapping">
+	 	<foreach item="oldSubject" collection="oldSubjectList" index="index" open="" close="" separator=";">
+			UPDATE teacher_subject_mapping SET
+				updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+				updated_on=extract(epoch FROM now()),
+				is_active=false
+			WHERE
+				resource =(SELECT rec_id FROM resource WHERE user_id =#{status} AND is_active = true)
+				AND
+				subject=(SELECT rec_id FROM subject WHERE subject_code =#{oldSubject} AND is_active = true)
+				AND
+				is_active=true;
+		</foreach>
+	</update>
+	
+	<select id="selectInactiveSubjectForTeacher" resultType="com.qts.icam.model.common.TeacherSubjectMapping" parameterType="com.qts.icam.model.common.TeacherSubjectMapping">
+		SELECT
+			sub.subject_code as subject
+			
+		FROM teacher_subject_mapping tsm
+		JOIN subject sub ON(tsm.subject=sub.rec_id AND sub.is_active=true)
+		JOIN resource r ON (r.rec_id = tsm.resource ANd r.is_active = true)
+		WHERE
+			r.user_id =#{status}
+			AND
+			sub.subject_code=#{subject}
+			AND
+			tsm.is_active=false;
+	</select>
+	
+	<update id="updateTeacherSubjectMapping" parameterType="com.qts.icam.model.common.TeacherSubjectMapping">
+		UPDATE teacher_subject_mapping SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			is_active = true
+		WHERE
+			resource =(SELECT rec_id FROM resource WHERE user_id =#{status} AND is_active = true)
+			AND
+			subject=(SELECT rec_id FROM subject WHERE subject_code =#{subject} AND is_active = true)
+			AND
+			is_active = false;
+
+	</update>
+	
+	<resultMap id="selectTeacherIdNameResultMap" type="com.qts.icam.model.common.Resource">
+		<id property="userId" column="user_id" jdbcType="VARCHAR" />
+		<result property="name" column="name" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectTeacherIdName" resultMap="selectTeacherIdNameResultMap" parameterType="java.util.Map">
+		SELECT
+			r.user_id,
+			(r.first_name||' '||r.middle_name||' '||r.last_name) as name
+		FROM
+			resource r
+		JOIN teacher_subject_mapping tsm ON (tsm.resource = r.rec_id)
+		WHERE
+			tsm.is_active = true
+		
+		GROUP BY 
+			r.user_id,
+			r.first_name,
+			r.middle_name,
+			r.last_name
+	</select>
+	
+	<resultMap id="selectTeacherQualificationResultMap" type="com.qts.icam.model.erp.Qualification">
+		<id property="qualificationName" column="qualification_name"
+			jdbcType="VARCHAR" />
+		<result property="subjectSpecilization" column="subject_specilization"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectTeacherQualification" parameterType="java.lang.String"
+		resultMap="selectTeacherQualificationResultMap">
+		SELECT
+			q.qualification_name,q.subject_specilization
+			FROM
+			resource r
+			JOIN
+			qualification q ON (r.rec_id = q.resource) 
+			JOIN qualification_type qt ON (q.qualification_type =
+			qt.rec_id) 
+
+		WHERE
+			qt.qualification_type_name IN('Graduation', 'PostGraduation', 'Others')
+		AND
+			r.user_id=#{strTeacherId}
+		AND
+			q.qualification_name NOT LIKE ''
+		AND
+			q.qualification_name IS NOT NULL;
+	</select>
+	
+	<insert id="insertIntoStandardTeacherSubjectMapping" parameterType="com.qts.icam.model.academics.Subject">
+		INSERT INTO standard_subject_teacher_mapping(
+		rec_id, obj_id, updated_by, updated_on,date_of_creation,
+		teacher, section, subject)
+		VALUES (
+		(uuid_generate_v4()),
+		#{objectId},
+		(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+		(SELECT extract(epoch FROM now())),
+		(SELECT extract(epoch FROM now())),
+		(SELECT rec_id FROM resource WHERE user_id =#{teacherName} AND is_active=true),
+		(SELECT s.rec_id FROM section s JOIN standard st ON(s.standard = st.rec_id AND st.is_active = true)JOIN course c ON(c.standard = st.rec_id AND c.is_active = true)WHERE course_code = #{standardName} AND section_code= #{sectionName} AND s.is_active = true),
+		(SELECT rec_id FROM subject WHERE subject_code =#{subject} AND is_active = true)
+		);
+	</insert>
+	
+	<select id="selectTeachertsFromStandardTeacherSubjectMapping" resultType="com.qts.icam.model.common.TeacherSubjectMapping" parameterType="com.qts.icam.model.common.TeacherSubjectMapping">
+		SELECT
+			sstm.standard_subject_teacher_mapping_id as serialId,
+			r.user_id as status,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ') as teacherName ,
+			subject_name as subject,
+			standard_name as standardName,
+			section_name as sectionName,
+			no_of_classes as noOfClass
+		FROM	
+			standard_subject_teacher_mapping sstm
+		JOIN
+			subject s ON(sstm.subject = s.rec_id and s.is_active = true)
+		JOIN
+			section sc ON(sstm.section = sc.rec_id and sc.is_active = true)
+		JOIN
+			standard st ON(st.rec_id = sc.standard and st.is_active = true)
+		JOIN
+			resource r ON(r.rec_id = sstm.teacher and r.is_active = true)
+		WHERE
+			sstm.is_active = true
+	</select>
+	
+	<update id="updateStandardTeacherSubjectMapping" parameterType="com.qts.icam.model.common.TeacherSubjectMapping">
+		UPDATE standard_subject_teacher_mapping SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			no_of_classes = #{noOfClass} 
+		WHERE
+			teacher =(SELECT rec_id FROM resource WHERE user_id = #{teacherName} AND is_active = true)
+			AND
+			subject=(SELECT rec_id FROM subject WHERE subject_code = #{subject} AND is_active = true)
+			AND
+			section = (SELECT s.rec_id FROM section s JOIN standard st ON(s.standard = st.rec_id)WHERE standard_code = #{standardName} AND section_code= #{sectionName} AND s.is_active = true) 
+			AND
+			is_active = true;
+	</update>
+	
+	<update id="deleteStandardTeacherSubjectMapping" parameterType="com.qts.icam.model.common.TeacherSubjectMapping">
+		UPDATE standard_subject_teacher_mapping SET
+			updated_by=(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+			updated_on=extract(epoch FROM now()),
+			is_active = false
+		WHERE
+			standard_subject_teacher_mapping_id = #{serialId}
+		AND
+			is_active = true;
+	</update>
+	<select id="selectAllEmployeeType" resultType="com.qts.icam.model.erp.EmployeeType" >	
+		SELECT
+		 	rt.resource_type_name as employeeTypeName,
+		 	rt.resource_type_code as employeeTypeCode
+		FROM 
+			resource_type rt			
+		WHERE		
+			is_active = true
+		AND resource_type_code NOT IN ('STUDENT','SUPERADMIN');
+	</select>
+
+	<select id="selectResourceLeaveDetailsFromStaffLeaveDetails" resultType="com.qts.icam.model.erp.Leave" parameterType="String">			
+		SELECT  
+			lt.leave_type_name as leaveType, 
+			used_leave  as totalAvailLeave,  
+			<!-- sld.encashment as encashable,  -->
+ 			sld.available_leave as remainingLeave 
+			
+ 		FROM  
+ 			staff_leave_details sld 
+ 		JOIN 	leave_type lt ON (sld.leave_type = lt.rec_id) AND (lt.is_active = true) 
+ 		JOIN 	resource r ON (r.rec_id = sld.resource) AND (r.is_active = true) 
+	<!-- 	JOIN	academic_year ay ON (ay.rec_id = sld.academic_year AND ay.is_active = true) 
+		JOIN 	status_flag sf ON (sf.rec_id = ay.year_status AND sf.is_active  = true)-->
+ 		WHERE 
+ 			r.user_id = #{userId} 
+		AND 
+			sld.is_active = true;
+		<!-- AND 
+			sf.status_sym = 'C';  -->
+	</select>
+	
+	<update id="editHodDetailsForDepartment" parameterType="com.qts.icam.model.common.Department">
+		UPDATE
+			department
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			department_head  = (SELECT rec_id FROM resource WHERE user_id = #{departmentHead} AND is_active = true)
+
+			
+		WHERE
+			department_code = #{departmentCode}
+		AND
+			is_active = true;
+	</update>	
+	
+	<select id="selectAllUserIdAgainstDepartmnet" resultType="com.qts.icam.model.common.Resource" parameterType="com.qts.icam.model.common.Resource">
+		SELECT 
+			r.user_id as userId,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as name
+		FROM 
+			resource r
+		JOIN 
+			resource_type rt ON (r.resource_type=rt.rec_id AND rt.is_active=true)
+		WHERE  
+			rt.resource_type_code=#{objectId}
+		AND 	
+			r.is_active=true;	
+	</select>
+	
+	<select id="selectAllMappedDepartmentHod" resultType="com.qts.icam.model.common.Department" parameterType="com.qts.icam.model.common.Department">
+		SELECT 
+				d.department_code as departmentCode,
+				d.department_head as departmentHead,
+				rt.resource_type_code as departmentDescription,
+				rt.resource_type_name as objectId,
+				r.user_id as departmentResource
+			FROM
+				department d
+			JOIN	
+				resource r ON (d.department_head=r.rec_id AND r.is_active=true)
+			JOIN
+				resource_type rt ON (rt.rec_id =r.resource_type AND rt.is_active=true)
+			WHERE
+				d.is_active=true;	
+	</select>
+	
+	
+	<update id="saveHodDetailsForDepartment" parameterType="com.qts.icam.model.common.Department">
+		UPDATE
+			department
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			department_head  = (SELECT rec_id FROM resource WHERE user_id = #{departmentHead} AND is_active = true)
+		WHERE
+			department_code = #{departmentCode}
+		AND
+			is_active = true;
+	</update>
+	
+	<!-- changes for ledgerParentGroup Delete ranita.sur 14082017 -->
+	
+	<insert id="insertinLedgerForEmployee" parameterType="com.qts.icam.model.common.Ledger">
+		INSERT INTO 
+				ledger
+					(
+						rec_id,
+						obj_id, 
+						updated_by,
+						updated_on,
+						date_of_creation, 
+						is_active,
+						ledger_code,
+						ledger_name,
+						parent_group,
+						subgroup,
+						ledger_holder <!--  added by ranita.sur for employeeLedgerMapping 01082017-->
+					)
+		VALUES
+					(
+						(uuid_generate_v4()), 
+					    #{objectId},
+						(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+						(SELECT extract(epoch FROM now())),
+						(SELECT extract(epoch FROM now())),
+						true,
+						#{ledgerName},
+						#{ledgerName},
+						(SELECT rec_id FROM group_for_ledger WHERE group_code ='CURRENT LIABILITIES' AND is_active =true),
+						(SELECT rec_id FROM group_for_ledger WHERE group_code='TRADE PAYABLES' AND is_active=true),
+						#{openingDrCr}::uuid <!--  added by ranita.sur for employeeLedgerMapping 01082017-->
+					);
+			
+	INSERT INTO 
+			ledger_balance
+					(
+						rec_id, 
+						obj_id, 
+						updated_by, 
+						updated_on,
+					    date_of_creation, 
+						is_active,
+					    ledger, 
+					    month, 
+					    year, 
+					    opening_balance, 
+					    current_balance, 
+					    is_current
+				    )
+	VALUES 
+					(
+						(select uuid_generate_v4()), 
+					    #{objectId},
+						(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+						(SELECT extract(epoch FROM now())), 
+						(SELECT extract(epoch FROM now())), 
+						true,
+						(SELECT rec_id FROM ledger WHERE ledger_code ilike #{ledgerName} AND is_active =true),
+						(SELECT EXTRACT(MONTH FROM (SELECT now()))), 
+						(SELECT EXTRACT(YEAR FROM (SELECT now()))),
+						#{openingBal}, 
+						#{openingBal}, 
+						true
+					);
+	</insert>
+	
+	<update id="updateLedgerBalanceForStaff" parameterType="com.qts.icam.model.erp.Employee">
+		UPDATE
+			ledger_balance
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			current_balance  = current_balance + #{grossAmount}+ #{netAmount}
+		WHERE
+			<!-- ledger = (SELECT rec_id FROM ledger WHERE ledger_code = #{comment}AND is_active =true) -->
+			ledger = (SELECT ledger FROM salary_template_ledger_resource_mapping stlrm JOIN resource r ON (r.rec_id = stlrm.resource AND r.is_active = true) JOIN salary_template st ON (st.rec_id = stlrm.salary_template AND st.is_active = true) WHERE r.user_id = #{resource.userId} AND st.salary_template_code = #{resource.salaryTemplateCode} AND stlrm.is_active = true)
+		AND
+			is_active = true;
+	</update>
+	
+	<!-- anup.roy 11072017 -->
+	
+	<select id="selectOneDesignation" resultType="java.lang.String" parameterType="com.qts.icam.model.erp.Designation">
+		SELECT 
+			d.designation_name as designationName
+		FROM
+			designation d
+		WHERE 
+			d.designation_name=#{designationName};
+	</select>
+	
+	<!-- naimisha.ghosh 06072017 -->
+	
+	<select id="selectAllUserIdAgainstResourceType" resultType="com.qts.icam.model.common.Resource" parameterType="java.lang.String">
+		SELECT 
+			r.user_id as userId,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ')  as name
+		FROM 
+			resource r
+		JOIN 
+			resource_type rt ON (r.resource_type=rt.rec_id AND rt.is_active=true)
+		WHERE  
+			rt.resource_type_code=#{resourceType}
+		AND 	
+			r.is_active=true;	
+	</select>
+	
+	<!-- Added By Naimisha 31072017 -->
+	<!-- Modified By Naimisha 18042017 -->
+	
+	<resultMap id="selectResourceDetailsForSalaryDisburseMap" type="com.qts.icam.model.common.Resource">
+		<id property="userId" column="user_id" jdbcType="VARCHAR" />
+		<result property="name" column="name" jdbcType="VARCHAR" />
+		<result property="salaryTemplateCode" column="salary_template_code" jdbcType="VARCHAR" />
+		<collection property="salaryTemplateList" ofType="com.qts.icam.model.erp.SalaryTemplate">
+			<id property="salaryTemplateCode" column="salarybreakup_code" jdbcType="VARCHAR" />
+			<result property="salaryTemplateName" column="salarybreakup_name" jdbcType="VARCHAR" />
+			<result property="salaryTemplateDesc" column="salarybreakup_type" jdbcType="VARCHAR" />
+		</collection>	
+	</resultMap>
+	<select id="selectResourceDetailsForSalaryDisburse" parameterType="com.qts.icam.model.common.Resource"  resultMap="selectResourceDetailsForSalaryDisburseMap">
+		<!-- SELECT
+			r.user_id as userId,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ') as  name,
+			st.salary_template_code as salaryTemplateCode
+		FROM
+			resource r
+		JOIN
+			resource_type rt ON (rt.rec_id = r.resource_type AND rt.is_active = true)
+		JOIN
+			salary_template_ledger_resource_mapping stlrm ON (stlrm.resource = r.rec_id AND stlrm.is_active = true)
+		JOIN
+			salary_template st ON (stlrm.salary_template = st.rec_id AND st.is_active = true)
+		WHERE 
+			rt.resource_type_code = #{resourceTypeName}; -->
+			
+		SELECT
+			r.user_id,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ') as  name,
+			salary_template_code,
+			salarybreakup_code,
+			salarybreakup_name,
+			salarybreakup_type
+		FROM
+			resource r
+		JOIN
+			resource_type rt ON (rt.rec_id = r.resource_type AND rt.is_active = true)
+		JOIN
+			salary_template_ledger_resource_mapping stlrm ON (stlrm.resource = r.rec_id AND stlrm.is_active = true)
+		JOIN
+			salary_template st ON (stlrm.salary_template = st.rec_id AND st.is_active = true)
+		JOIN
+			salary_template_details std ON (std.salary_template = st.rec_id AND std.is_active = true)
+		JOIN
+			salary_break_up sb ON (std.salary_break_up = sb.rec_id AND sb.is_active = true)
+		
+		WHERE 
+			rt.resource_type_code = #{resourceTypeName}
+		ORDER By r.user_id ;
+	</select>
+
+	<!--  added by ranita.sur for employeeLedgerMapping 01082017-->
+	<select id="selectEmpRecId" parameterType="com.qts.icam.model.erp.Employee"
+			resultType="com.qts.icam.model.erp.Employee">
+		SELECT
+	        r.rec_id as empRecId
+		FROM
+			 resource r
+		WHERE
+		     r.email_address  = #{resource.emailId} 
+        AND
+		     r.is_active=true;
+	
+	</select>
+	
+	<insert id="insertStaffSalaryBreakupDetails" parameterType="com.qts.icam.model.erp.Employee">
+        <foreach item="salaryBreakUp" collection="salaryBreakUpList"  open="" close="" separator=";">
+        	INSERT INTO disburse_salary_breakup_details(
+            rec_id, obj_id, 
+            updated_by, 
+            updated_on, date_of_creation, 
+            disburse_salary_breakup_details_code, 
+            salary_template, user_id, 
+            disburse_salary_details, salary_year, 
+            salary_month, salary_breakup, amount)
+	    VALUES (uuid_generate_v4(),
+		   		#{objectId}, 
+		   		(SELECT rec_id FROM resource WHERE user_id = #{resource.updatedBy} AND is_active=true),
+			    extract(epoch FROM now()), 
+			    extract(epoch FROM now()),
+	           (SELECT('CODE' ||(SELECT COALESCE((SELECT MAX(disburse_salary_breakup_details_id) FROM disburse_salary_breakup_details), 0)+1))),
+	           (SELECT rec_id FROM salary_template WHERE salary_template_code=#{resource.salaryTemplateCode} AND is_active = true),
+	           (SELECT 
+					ed.rec_id 
+				     FROM employee_details ed				
+				     JOIN  resource r ON (ed.resource=r.rec_id) AND (r.is_active = true) 
+				     WHERE
+					ed.is_active = true
+				     AND
+					r.user_id = #{resource.userId}					
+				  ), 
+	            (SELECT rec_id FROM disburse_salary_details WHERE disburse_salary_details_id = (SELECT MAX(disburse_salary_details_id)FROM disburse_salary_details WHERE is_active = true)), 
+	            #{resource.startDate}, 
+		        #{resource.endDate}, 
+		    	(SELECT rec_id FROM salary_break_up WHERE salarybreakup_code = #{salaryBreakUp.salaryBreakUpCode} AND is_active = true),
+	           #{salaryBreakUp.amount});
+        	
+        </foreach>
+    </insert>
+    
+    
+    <!-- Added By Naimisha 08082017 -->
+	 <select id="SelectLedgerCodeAgainstResource" parameterType="com.qts.icam.model.erp.Employee" resultType = "java.lang.String">
+			SELECT
+			ledger_code
+		FROM
+			ledger l
+		JOIN
+			salary_template_ledger_resource_mapping stlm ON (stlm.ledger = l.rec_id AND stlm.is_active = true)
+		JOIN
+			resource r ON (stlm.resource = r.rec_id AND r.is_active = true)
+		WHERE
+
+			user_id = #{resource.userId}
+		AND
+			l.is_active = true
+	</select> 
+	
+	<update id="updateSalaryTemplateResourceMappingForPromotion" parameterType="com.qts.icam.model.erp.Employee">
+		UPDATE salary_template_ledger_resource_mapping SET
+			is_active = false
+		WHERE
+			resource  = (SELECT rec_id FROM resource WHERE user_id = #{resource.userId} ANd is_active = true)
+		AND is_active = true;
+	</update>
+	
+	<update id="updateStaffDetailsForErpSalaryMappingForPromotion" parameterType="com.qts.icam.model.erp.Employee">
+		UPDATE employee_details SET
+			designation_level_mapping=(
+				SELECT dlm.rec_id FROM designation_level_mapping dlm				
+				JOIN designation d ON (dlm.designation = d.rec_id AND d.is_active = true)
+				JOIN designation_level l ON (dlm.designation_level = l.rec_id AND l.is_active = true)
+				WHERE
+				d.designation_code=#{resource.designation} AND l.designation_level_code=#{resource.designationLevel} AND dlm.is_active=true		
+			)
+			WHERE erp_code=(SELECT erp_code FROM employee_details ed JOIN resource r ON (ed.resource = r.rec_id AND r.is_active = true) WHERE user_id = #{resource.userId}) AND is_active = true;
+	</update>
+	<!-- //Added By Naimisha 09082017 -->
+	<select id="selectPaymentStatusForEmployeeForAYearAndMonth" parameterType="com.qts.icam.model.common.Resource"  resultType="com.qts.icam.model.common.Resource">
+		SELECT 
+			r.user_id as userId,
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,'  ') as  name
+		FROM 
+			disburse_salary_details dsd
+		JOIN
+			employee_details ed ON (dsd.user_id = ed.rec_id AND ed.is_active = true)
+		JOIN
+			resource r ON (ed.resource = r.rec_id AND r.is_active = true)
+		JOIN
+			resource_type rt ON (rt.rec_id = r.resource_type AND rt.is_active = true)
+		WHERE
+			resource_type_code = #{resourceTypeName}
+		AND
+			salary_year = #{startDate}
+		AND
+			salary_month = #{endDate};
+		
+	</select>
+	
+	<select id="selectTemplateForDesignationTypeAndDesignationAndLevel" parameterType="com.qts.icam.model.common.Resource"  resultType="com.qts.icam.model.erp.SalaryTemplate">
+		SELECT
+			salary_template_code as salaryTemplateCode,
+			salary_template_name as salaryTemplateName
+		FROM
+			salary_template st
+		JOIN
+			designation_level_mapping dlm ON (dlm.salary_template = st.rec_id AND dlm.is_active = true)
+		JOIN
+			designation d ON (dlm.designation = d.rec_id AND d.is_active = true)
+		JOIN
+			designation_level dl ON (dlm.designation_level = dl.rec_id AND dl.is_active = true)
+		JOIN
+			designation_type dt ON (d.designation_type = dt.rec_id AND dt.is_active = true)
+		WHERE
+			designation_type_code = #{designationType}
+		AND
+			designation_code = #{designation}
+		AND
+			designation_level_code = #{designationLevel}; 
+		
+	</select>
+	
+	<!-- //Added By Naimisha 16082017 -->
+	<select id="selectSalaryTemplateAgainstDesignationAndLevel" parameterType="com.qts.icam.model.erp.Designation"  resultType="com.qts.icam.model.erp.SalaryTemplate">
+		SELECT
+			salary_template_code as salaryTemplateCode,
+			salary_template_name as salaryTemplateName
+		FROM
+			salary_template st
+		JOIN
+			designation_level_mapping dlm ON (dlm.salary_template = st.rec_id AND dlm.is_active = true)
+		JOIN
+			designation d ON (dlm.designation = d.rec_id AND d.is_active = true)
+		JOIN
+			designation_level dl ON (dlm.designation_level = dl.rec_id AND dl.is_active = true)
+		AND
+			designation_code = #{designationCode}
+		AND
+			designation_level_code = #{designationLevel.designationLevelCode}
+		AND
+			st.is_active = true; 
+		
+	</select>
+	
+	<!-- //Modified by naimisha 16082017 -->
+	<update id="updateDesignationLevelMapping" parameterType="com.qts.icam.model.erp.Designation">
+		UPDATE designation_level_mapping
+		   SET 
+			is_active=false
+		 WHERE 
+			designation=(SELECT rec_id FROM designation WHERE designation_code =#{designationCode} AND is_active=true)
+		AND
+			designation_level = (SELECT rec_id FROM designation_level WHERE designation_level_code = #{designationLevel.designationLevelCode} AND is_active = true);
+			
+	</update>	
+	
+	<!-- /*modified by ranita.sur on 20092017 for getting unmapped designation*/ -->
+	<select id="selectAllUnMappedDesignation" resultType="com.qts.icam.model.erp.Designation" >	
+	SELECT 
+		d.designation_code as designationCode,
+		d.designation_name as designationName
+	 FROM designation d
+	  
+	 WHERE d.rec_id NOT IN (SELECT designation FROM designation_level_mapping WHERE is_active = true)
+	 AND
+		d.is_active = true;
+	</select>
+	
+	<select id="getEventEmployeeName" resultType="java.lang.String" parameterType="java.lang.String">
+	SELECT 
+		r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || r.last_name as "eventEmployeeName"
+	FROM
+			resource r
+	WHERE
+		r.is_active = true
+	AND
+		r.user_id=#{eventIncharge};	
+	</select>
+
+</mapper>

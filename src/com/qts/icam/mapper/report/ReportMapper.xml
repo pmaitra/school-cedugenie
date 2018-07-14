@@ -1,0 +1,1627 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.mapper.report.ReportMapper">
+
+
+	<resultMap id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearFAResultMap" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="student_roll" jdbcType="VARCHAR" />
+			<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">
+				<id property="subject" column="subject" jdbcType="VARCHAR" />
+				<collection property="examList" ofType="com.qts.icam.model.backoffice.Exam">
+					<id property="examName" column="exam" jdbcType="VARCHAR" />
+					<result property="grade" column="grade" jdbcType="VARCHAR" />
+					<result property="gradePoint" column="gradePoint" jdbcType="VARCHAR" />
+					<result property="weightage" column="weightage" jdbcType="DOUBLE" />
+					<result property="weightageObtained" column="weightage_obtained" jdbcType="DOUBLE" />
+					<result property="status" column="status" jdbcType="VARCHAR" />
+				</collection>
+			</collection>
+	</resultMap>		
+	<select id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearFA" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearFAResultMap">
+		SELECT
+			subject,
+			weightage,
+			(SELECT 
+				grade 
+			FROM 
+				grading_point
+			WHERE
+				((weightage_obtained/weightage)*100) BETWEEN split_part(marks_grade_range, '-',1)::integer AND split_part(marks_grade_range, '-',2)::integer 
+			AND
+				type = 'SCHOLASTIC'
+			AND
+				standard = (SELECT rec_id FROM standard WHERE standard_name=#{standard})
+			) as grade,
+			(SELECT 
+				grade_point 
+			FROM 
+				grading_point
+			WHERE
+				((weightage_obtained/weightage)*100) BETWEEN split_part(marks_grade_range, '-',1)::integer AND split_part(marks_grade_range, '-',2)::integer 
+			AND
+				type = 'SCHOLASTIC'
+			AND
+				standard = (SELECT rec_id FROM standard WHERE standard_name=#{standard})
+			) as weightage_obtained,
+			#{exam} as exam,
+			'FA' as status
+		FROM
+			student_marks
+		WHERE
+			student_roll= #{rollNumber}
+		AND
+			exam = #{exam};
+	</select>
+	
+	<select id="selectStudentsSubjectsAndMarksChartReportForCurrentAcademicYearFA" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.StudentResult">
+		(SELECT 
+			sm.subject as subject,
+			sm.total as marks,
+			'Total Marks' as marksType,
+			#{exam} as exam,
+			'FA' as  status			
+		FROM
+			student_marks sm
+		WHERE
+			sm.student_roll= #{rollNumber}
+		AND
+			sm.exam = #{exam}
+	UNION
+		SELECT 
+			sm.subject as subject,
+			sm.pass as marks,
+			'Pass Marks' as marksType,
+			#{exam} as exam,
+			'FA' as  status
+		FROM
+			student_marks sm
+		WHERE
+			sm.student_roll= #{rollNumber}
+		AND
+			sm.exam = #{exam}
+	UNION
+		SELECT 
+			sm.subject as subject,
+			sm.total_obtained as marks,
+			'Obtain Marks' as marksType,
+			#{exam} as exam,
+			'FA' as  status			
+		FROM
+			student_marks sm
+		WHERE
+			sm.student_roll= #{rollNumber}
+		AND
+			sm.exam = #{exam}
+	UNION
+		SELECT 
+			sm.subject as subject,
+			sum(sm.total_obtained)/COUNT(sm.student_roll) as marks,
+			'Class Average Marks' as marksType,
+			#{exam} as exam,
+			'FA' as  status			
+		FROM
+			student_marks sm
+		WHERE
+			sm.exam = #{exam} GROUP BY sm.subject)
+		ORDER BY marksType,subject;
+	</select>
+	
+	<select id="selectStudentsSubjectsAndMarksChartReportForCurrentAcademicYearSA1" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.StudentResult">
+		SELECT 
+			subject,
+			marks, 
+			exam_name  as exam, 
+			report as  status
+  		FROM 
+  			temp_table_chart_sa1
+  		WHERE
+  			roll_number = #{rollNumber}
+  		ORDER BY exam_name,id,subject;
+	</select>
+	
+	<select id="selectStudentsSubjectsAndMarksChartReportForCurrentAcademicYearSA2" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.StudentResult">
+		SELECT 
+			subject, 
+			marks, 
+			exam_name as exam, 
+			report as  status
+  		FROM 
+  			temp_table_chart_sa2
+  		WHERE
+  			roll_number = #{rollNumber}
+  		ORDER BY exam_name,id,subject;
+	</select>
+	
+	<delete id="deleteTempTableChartSa2Data" >
+		DELETE FROM temp_table_chart_sa2;
+	</delete>
+	<delete id="deleteTempTableChartSa1Data" >
+		DELETE FROM temp_table_chart_sa1;
+	</delete>
+	
+	<insert id="insertResultsIntoTempTableForReport" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+		<foreach item="rollNo" index="index" collection="stringList" open="" separator=";" close="">
+       			 select insert_into_temp_table_report_sa2(
+												#{rollNo, mode=IN, jdbcType=VARCHAR},
+												#{standard, mode=IN, jdbcType=VARCHAR},
+										        #{exam, mode=IN, jdbcType=VARCHAR}
+												)	
+ 	  </foreach>
+	</insert>
+	
+	<insert id="insertResultsIntoTempTableForReportForSA1" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+		<foreach item="rollNo" index="index" collection="stringList" open="" separator=";" close="">
+       			 select insert_into_temp_table_report_sa1(
+												#{rollNo, mode=IN, jdbcType=VARCHAR},
+												#{standard, mode=IN, jdbcType=VARCHAR}
+												)	
+ 	  </foreach>
+	</insert>
+	
+	<select id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearSA2" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearFAResultMap">
+		SELECT 
+			subject,
+			exam_name as exam,
+			exam_weightage as weightage_obtained,
+			grade  as grade,
+			roll_number as student_roll,
+			'SA2' as status
+	   FROM
+	   		temp_table_report_sa2
+	   	ORDER BY
+	   		id;
+	</select>
+	<select id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearSA1" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearFAResultMap">
+		SELECT
+			 subject,
+			 weightage, 
+			 student_roll,
+			 grade,
+			 grade_point as gradePoint,
+			 exam,
+			 report as status
+  		FROM 
+  			temp_table_report_sa1
+  		ORDER BY 
+  			id;
+	</select>
+	<delete id="deleteTempTableReportSA2Data" >
+		DELETE FROM temp_table_report_sa2;
+	</delete>	
+	<delete id="deleteTempTableReportSA1Data" >
+		DELETE FROM temp_table_report_sa1;
+	</delete>
+		
+	<select id="selectCoScholasticResultListForReport" parameterType="com.qts.icam.model.common.Student" resultType="com.qts.icam.model.academics.CoScholasticResult">
+		SELECT
+			head,
+			grade,
+			lower(indicator) as indicator
+		FROM
+			student_marks_co
+		WHERE
+			year = #{studentDesc}
+		AND
+			standard=#{standard}
+		AND
+			exam=#{status}
+		AND
+			student_roll=#{rollNumber}::text
+		AND
+			is_active=true
+		AND
+			indicator NOT LIKE '';
+	</select>
+	
+	
+	<resultMap id="selectStudentNominalRollRM" type="com.qts.icam.model.common.Standard">
+		<id property="standardName" column="standard_name" jdbcType="VARCHAR" />		
+		<collection property="sectionList" ofType="com.qts.icam.model.common.Section">
+			<id property="sectionName" column="section_name" jdbcType="VARCHAR" />			
+			<collection property="studentList" ofType="com.qts.icam.model.common.Student">
+				<id property="rollNumber" column="roll_number" jdbcType="INTEGER" />
+				<result property="secondLanguage" column="subject_name" jdbcType="VARCHAR" />
+				<result property="studentName" column="studentName" jdbcType="VARCHAR" />
+				<result property="stateOfDomicile" column="state_of_domicile" jdbcType="VARCHAR" />
+				<result property="dateOfAdmission" column="date_of_admission" jdbcType="VARCHAR" />
+				<result property="house" column="hostel_name" jdbcType="VARCHAR" />
+				<association property="resource" javaType="com.qts.icam.model.common.Resource">
+					<id property="category" column="category_name" jdbcType="VARCHAR" />
+					<result property="dateOfBirth" column="date_of_birth" jdbcType="VARCHAR" />					
+					<result property="fatherFirstName" column="fatherName" jdbcType="VARCHAR" />
+					<result property="motherTongue" column="mother_tongue" jdbcType="VARCHAR" />
+					<result property="fatherMobile" column="father_mobile" jdbcType="VARCHAR" />				
+				</association>				
+			</collection>
+		</collection>
+	</resultMap>
+		
+	<select id="selectStudentNominalRoll" resultMap="selectStudentNominalRollRM"  parameterType="com.qts.icam.model.common.Student">
+		SELECT
+		s.standard_name,
+		sec.section_name		
+		<if test="rollNumber != null">
+			 ,r.roll_number
+		</if>
+		<if test="studentName != null">
+			,r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || COALESCE(r.last_name,' ') as studentName
+		</if>
+		<if test="house != null">
+			--,substring(h.hostel_code,1,3) as hostel_name
+			 ,h.hostel_desc as hostel_name
+		</if>
+		<if test="resource.category != null">
+			,substring(sc.social_category_name,1,3) as category_name 
+		</if>
+		<if test="resource.dateOfBirth != null">
+			,to_char((SELECT to_timestamp(r.date_of_birth)), 'DD/MM/YYYY') as date_of_birth
+		</if>
+		<if test="stateOfDomicile != null">
+			, r.state_of_domicile
+		</if>
+		<if test="resource.fatherFirstName != null">
+			,r.father_first_name || ' ' || COALESCE(r.father_middle_name,' ') || ' ' || COALESCE(r.father_last_name,' ') as fatherName
+		</if>
+		<if test="resource.motherFirstName != null">
+			,r.mother_first_name || ' ' || COALESCE(r.mother_middle_name,' ') || ' ' || COALESCE(r.mother_last_name,' ') as motherName
+		</if>
+		<if test="dateOfAdmission != null">
+		,to_char((SELECT to_timestamp(r.date_of_admission)), 'DD/MM/YYYY') as date_of_admission
+		</if>
+		<if test="resource.mobile != null">
+			,r.father_mobile
+		</if>
+		<if test="secondLanguage != null">
+			,substring(sub.subject_name,1,4) as subject_name 
+		</if>		
+		
+	   	FROM resource r
+		  JOIN resource_type rt ON(rt.rec_id=r.resource_type AND rt.is_active=true)
+		  LEFT JOIN social_category sc ON(r.social_category=sc.rec_id AND sc.is_active=true) 
+		  LEFT JOIN section sec ON(r.section = sec.rec_id) AND (sec.is_active = true)
+		  LEFT JOIN subject sub ON(r.second_language = sub.rec_id) AND (sub.is_active = true)
+		  JOIN standard s ON(sec.standard = s.rec_id) AND (s.is_active = true)
+		  LEFT JOIN hostel h ON(r.hostel = h.rec_id) AND (h.is_active = true)
+		  AND
+			rt.resource_type_name='STUDENT'					
+		WHERE
+		s.standard_code=#{standard}
+		AND sec.section_code=#{section}
+		order by s.standard_id,sec.section_name,r.roll_number;
+	</select>
+		
+	
+	
+	<resultMap id="selectStaffDetailsListRM" type="com.qts.icam.model.erp.Employee">
+		<id property="employeeCode" column="erp_code" jdbcType="VARCHAR" />	
+		<result property="qualificationSummary" column="qualification_summary" jdbcType="VARCHAR" />
+		<result property="dateOfJoining" column="dateOfJoining" jdbcType="VARCHAR" />
+		<result property="dateOfRetirement" column="dateOfRetirement" jdbcType="VARCHAR" />	
+				
+		<association property="resource" javaType="com.qts.icam.model.common.Resource">
+			<id property="userId" column="user_id" jdbcType="VARCHAR" />
+			<result property="gender" column="gender" jdbcType="VARCHAR" />
+			<result property="dateOfBirth" column="dateOfBirth" jdbcType="VARCHAR" />
+			<result property="category" column="social_category_code" jdbcType="VARCHAR" />
+			<result property="religion" column="religion" jdbcType="VARCHAR" />
+			<result property="mobile" column="mobile_no" jdbcType="VARCHAR" />
+			<result property="name" column="name" jdbcType="VARCHAR" />	
+			<result property="resourceTypeName" column="resource_type_code" jdbcType="VARCHAR" />			
+		</association>				
+		
+		<association property="designation" javaType="com.qts.icam.model.erp.Designation">
+			<id property="designationCode" column="designation_code" jdbcType="VARCHAR" />						
+		</association>
+			
+		</resultMap>
+		
+		<select id="selectStaffDetailsList" resultMap="selectStaffDetailsListRM"  parameterType="com.qts.icam.model.erp.Employee">
+			SELECT
+				rt.resource_type_code 
+				<if test="resource.userId != null">, user_id </if>
+				<if test="resource.gender != null">, gender </if>
+				<if test="resource.dateOfBirth != null">, (to_char((SELECT to_timestamp(date_of_birth)), 'DD/MM/YYYY')) as dateOfBirth</if>
+				<if test="resource.category != null">, substring(social_category_code,1,3) as social_category_code</if>
+				<if test="resource.religion != null">,substring(religion,1,3) as religion </if>
+				<if test="resource.mobile != null">, mobile_no </if>
+				<if test="resource.name != null">, r.first_name || ' ' || COALESCE(r.middle_name ,'') || ' ' || COALESCE(r.last_name ,' ') as name</if>
+				<if test="employeeCode != null">, erp_code</if>
+				<if test="designation.designationCode != null">, designation_code </if>
+				<if test="qualificationSummary != null">, qualification_summary </if>
+				<if test="dateOfJoining != null">, (to_char((SELECT to_timestamp(doj)), 'DD/MM/YYYY')) as dateOfJoining</if>
+				<if test="dateOfRetirement != null">, (to_char((SELECT to_timestamp(date_of_retirement)), 'DD/MM/YYYY')) as dateOfRetirement</if>
+				FROM resource	r
+				JOIN employee_details ed ON (ed.resource=r.rec_id)
+				JOIN resource_type rt ON (r.resource_type=rt.rec_id)
+				LEFT JOIN social_category sc ON(r.social_category=sc.rec_id)
+				JOIN designation d ON (ed.designation=d.rec_id)	
+				WHERE
+					rt.resource_type_code=#{resource.resourceType.resourceTypeCode}
+					ORDER BY
+				(designation_code='PRINCIPAL') desc,(designation_code='VICE PRINCIPAL') desc,(designation_code='ADMINISTRATIVE OFFICER') desc,
+				(designation_code='QUARTER MASTER') desc,(designation_code='OFFICE SUPERINTENDENT') desc,(designation_code='ACCOUNTANT') desc,(designation_code='MESS MANAGER') desc,				
+				(designation_code='HOSTEL SUPERINTENDENT') desc,(designation_code='UPPER DIVISION CLERK') desc,(designation_code='LOWER DIVISION CLERK') desc,
+				(designation_code='MASTER') desc,(designation_code='ASSISTANT MASTER') desc,(designation_code='LIBRARIAN') desc,(designation_code='LAB ASSISTANT') desc,designation_code desc,doj;
+		</select>
+
+	
+	
+	<resultMap id="selectCondemnationReportRM" type="com.qts.icam.model.common.Condemnation">
+		<id property="year" column="inventory_session_code" jdbcType="VARCHAR" />
+		
+		<association property="department" javaType="com.qts.icam.model.common.Department">
+					<id property="departmentName" column="department_name" jdbcType="VARCHAR" />					
+		</association>	
+			
+		<collection property="condemnationDetailsList" ofType="com.qts.icam.model.common.CondemnationDetails">
+			<id property="itemName" column="item_name" jdbcType="VARCHAR" />
+			<result property="unit" column="unit" jdbcType="DOUBLE" />
+			<result property="qtyProducedForCB" column="qtyproducedforcb" jdbcType="DOUBLE" />
+			<result property="qtySentencedToSer" column="qtysentencedtoser" jdbcType="DOUBLE" />
+			<result property="qtySentencedToRep" column="qtysentencedtorep" jdbcType="DOUBLE" />
+			<result property="qtySentencedToUNS" column="qtysentencedtouns" jdbcType="DOUBLE" />
+			<result property="dateOfPurchase" column="dateOfPurchase" jdbcType="VARCHAR" />
+			<result property="rate" column="rate" jdbcType="DOUBLE" />
+			<result property="amount" column="amount" jdbcType="DOUBLE" />
+			<result property="remarks" column="remarks" jdbcType="VARCHAR" />
+		</collection>
+		
+	</resultMap>
+	
+	
+	<select id="selectCondemnationReport" parameterType="com.qts.icam.model.common.Condemnation" resultMap="selectCondemnationReportRM" >
+		SELECT 
+			i_s.inventory_session_code,
+			d.department_name,  
+			cd.item_name,
+			cd.unit,
+			cd.qtyproducedforcb,
+			cd.qtysentencedtoser,
+			cd.qtysentencedtorep,
+			cd.qtysentencedtouns,
+			(SELECT to_char((SELECT to_timestamp(cd.dateofpurchase)), 'DD/MM/YYYY')) as dateOfPurchase,
+			cd.rate, 
+			cd.amount, 
+			cd.remarks
+		FROM condemnation c 
+		JOIN department d ON (c.department=d.rec_id AND c.is_active=true AND d.is_active=true)
+		JOIN inventory_session i_s ON (c.inventory_session=i_s.rec_id)
+		JOIN condemnation_details cd on (c.rec_id=cd.condemnation AND cd.is_active=true)
+		WHERE d.department_code = #{department.departmentCode}
+		AND i_s.inventory_session_code=#{year}
+	  	ORDER BY
+	  	 c.date_of_creation;
+	</select>
+	
+	
+<insert id="insertIntoTempConsolidatedReportCurrentAcademicYearSA1" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+       			 select insert_into_temp_table_consolidated_report_sa1(
+												#{standard, mode=IN, jdbcType=VARCHAR},
+												#{section,mode=IN, jdbcType=VARCHAR}
+												)	
+</insert>
+	
+<insert id="insertIntoTempConsolidatedReportCurrentAcademicYearSA2" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+       			 select insert_into_temp_table_consolidated_report_sa2(
+												#{standard, mode=IN, jdbcType=VARCHAR},
+												#{section,mode=IN, jdbcType=VARCHAR}
+												)	
+</insert>
+
+<resultMap id="consolidatedReportForExamResultMap" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="roll_number" jdbcType="VARCHAR" />
+		<result property="studentName" column="student_name" jdbcType="VARCHAR" />
+		<result property="cgpa" column="cgpa" jdbcType="DOUBLE" />
+			<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">
+				<id property="subject" column="subject" jdbcType="VARCHAR" />
+				<result property="t1" column="t1" jdbcType="DOUBLE" />
+				<result property="fa1" column="fa1" jdbcType="DOUBLE" />
+				<result property="fa2" column="fa2" jdbcType="DOUBLE" />
+				<result property="sa1" column="sa1" jdbcType="DOUBLE" />
+				<result property="fa3" column="fa3" jdbcType="DOUBLE" />
+				<result property="fa4" column="fa4" jdbcType="DOUBLE" />
+				<result property="sa2" column="sa2" jdbcType="DOUBLE" />
+				<result property="totalTerm1" column="total" jdbcType="DOUBLE" />
+				<result property="grade" column="grade" jdbcType="VARCHAR" />
+				<result property="gradepoint" column="grade_point" jdbcType="DOUBLE" />
+			</collection>
+	</resultMap>
+	
+	<select id="selectConsolidatedReportForExamForCurrentAcademicYearSA1" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="consolidatedReportForExamResultMap">
+		SELECT 
+			roll_number,
+			student_name,
+			subject,
+			fa1,
+			fa2,
+			sa1,
+			total as totalTerm1,
+			grade,
+			grade_point
+  		FROM 
+  			temp_table_consolidated_report_sa1
+  		ORDER BY roll_number,id,subject;
+	</select>
+	
+	
+	<select id="selectConsolidatedReportForExamForCurrentAcademicYearSA2" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="consolidatedReportForExamResultMap">
+		SELECT 
+			roll_number,
+			student_name,
+			subject,
+			t1,
+			fa3,
+			fa4,
+			sa2,
+			total,
+			grade,
+			grade_point,
+			cgpa
+  		FROM 
+  			temp_table_consolidated_report_sa2
+  		ORDER BY roll_number,id,subject;
+	</select>
+	<delete id="deleteTempTableConsolidatedDataSA1" >
+		DELETE FROM temp_table_consolidated_report_sa1;
+	</delete>
+		<delete id="deleteTempTableConsolidatedDataSA2" >
+		DELETE FROM temp_table_consolidated_report_sa2;
+	</delete>	
+	
+
+<select id="selectClassWiseSubjectGroups" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.SubjectGroup">
+		SELECT 
+			sm.subject as subjectGroupName
+		FROM
+			student_marks sm
+		JOIN
+			subject_group sg ON (sm.subject = sg.subject_group_name)
+		WHERE
+			standard = #{standard}
+		AND
+			section = #{section}
+		AND
+			exam = #{exam}
+		GROUP BY
+			sm.subject,sg.subject_group_order
+		ORDER BY
+			sg.subject_group_order
+
+	</select>
+	
+	
+	
+	<select id="selectStudentAddressDetails" parameterType="com.qts.icam.model.common.Student" resultType="com.qts.icam.model.common.Student">
+		SELECT
+			address_line as "address.permanentAddressLine",
+			land_mark as "address.permanentAddressLandmark",
+			city_name as "address.permanentAddressCityVillage",
+			district_name as "address.permanentAddressDistrict",
+			postal_code as "address.permanentAddressPinCode",
+			state_name as "address.permanentAddressState",
+			country_name as "address.permanentAddressCountry",
+			police_station as "address.permanentAddressPoliceStation",
+			post_office as "address.permanentAddressPostOffice",
+			phone as "address.permanentAddressPhone",
+			father_mobile as "resource.fatherMobile",
+			mother_mobile as "resource.motherMobile",
+			guardian_mobile as guardianMobile,
+			COALESCE(r.first_name ,' ') || ' ' || COALESCE(r.middle_name ,'') || ' ' || COALESCE(r.last_name ,' ') as studentName,
+			COALESCE(r.father_first_name ,' ') || ' ' || COALESCE(r.father_middle_name ,'') || ' ' || COALESCE(r.father_last_name ,' ') as "resource.fatherFirstName",
+			COALESCE(r.mother_first_name ,' ') || ' ' || COALESCE(r.mother_middle_name ,'') || ' ' || COALESCE(r.mother_last_name ,' ') as "resource.motherFirstName",
+			COALESCE(r.guardian_first_name ,' ') || ' ' || COALESCE(r.guardian_middle_name ,'') || ' ' || COALESCE(r.guardian_last_name ,' ') as guardianFirstName
+		FROM address a
+		LEFT join city ct ON(a.city=ct.rec_id)
+		LEFT join district d ON(a.district=d.rec_id)
+		LEFT join state s ON(a.state=s.rec_id)
+		LEFT join country c ON(a.country=c.rec_id)
+		join resource r ON(a.resource=r.rec_id)
+		join resource_type rt ON(r.resource_type=rt.rec_id)
+		WHERE
+			resource_type_name='STUDENT'
+			AND
+			address_type='PERMANENT'
+			AND
+			roll_number=#{rollNumber}::integer;
+	</select>
+	
+	
+	<insert id="insertIntoTempConsolidatedReportCurrentAcademicYearfa1_fa2_fa3_fa4" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+	       			 select insert_into_temp_consolidated_fa1_fa2_fa3_fa4(
+													#{standard, mode=IN, jdbcType=VARCHAR},
+													#{section,mode=IN, jdbcType=VARCHAR},
+													#{exam,mode=IN, jdbcType=VARCHAR}
+													)	
+	</insert>
+
+
+	<select id="selectConsolidatedReportForExamForCurrentAcademicYearfa1_fa2_fa3_fa4" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="consolidatedReportForExamResultMap">
+		SELECT 
+			roll_number,
+			student_name,
+			subject,
+			grade,
+			grade_point,
+			exam
+  		FROM
+  			temp_table_consolidated_report_fa1_fa2_fa3_fa4
+  		ORDER BY roll_number,id,subject;
+	</select>
+
+	<delete id="deleteTempTableConsolidatedDatafa1_fa2_fa3_fa4" >
+		DELETE FROM temp_table_consolidated_report_fa1_fa2_fa3_fa4;
+	</delete>
+	
+
+
+    
+    <select id="selectMeritListForAdmisionReport"  parameterType="com.qts.icam.model.report.Report" resultType="com.qts.icam.model.common.Candidate">
+		SELECT  			
+			candidate_first_name || ' ' || COALESCE(candidate_middle_name ,'')  || ' ' ||candidate_last_name as "resource.name",
+			to_char((SELECT to_timestamp(date_of_birth)),'DD/MM/YYYY')as "resource.dateOfBirth",
+			category as "resource.category",
+			gender as "resource.gender",
+			form_id as admissionFormId,
+			present_address_state as "address.presentAddressState"
+		FROM 
+			admission_form 
+		WHERE
+			is_active = true
+		AND
+			<if test="candidate.meritListType.meritListTypeName == 'EXAM'">
+   		 		 exam_status=#{candidate.status}
+			</if>
+			<if test="candidate.meritListType.meritListTypeName == 'PI AND MEDICAL'">
+   		 		 pi_status=#{candidate.status}
+   		 		 AND
+   		 		 medical_status=#{candidate.status}
+			</if>
+		AND
+			standard like #{candidate.standard.standardName}
+		ORDER BY form_id;
+	</select>
+	
+	
+	
+	<select id="selectExamVenueWiseCandidatesReport"  parameterType="com.qts.icam.model.report.Report" resultType="com.qts.icam.model.common.Candidate">
+		SELECT  			
+			af.candidate_first_name || ' ' || COALESCE(af.candidate_middle_name ,'')  || ' ' ||COALESCE(af.candidate_last_name ,'')  as "resource.name",
+			to_char((SELECT to_timestamp(af.date_of_birth)),'DD/MM/YYYY')as "resource.dateOfBirth",
+			af.category as "resource.category",
+			af.gender as "resource.gender",
+			af.form_id as admissionFormId,
+			af.present_address_state as "address.presentAddressState",
+			af.standard as "standard.standardName"
+		FROM 
+			admission_form af
+		JOIN
+			admission_seat_allotment ast ON (ast.admission_form = af.rec_id) AND (ast.is_active = true)
+		JOIN
+			exam_venue ev ON (ast.exam_venue = ev.rec_id) AND (ast.is_active = true)
+		WHERE
+			af.is_active = true
+		AND
+			ev.exam_venue_id = #{venue.venueId}
+		ORDER BY af.form_id;
+	</select>
+	
+	
+	<insert id="insertIntoTempStudentStrength" statementType="CALLABLE">
+		select count_student_for_different_category();
+	</insert>
+	
+	<resultMap id="selectSocialCategoryWiseClassStrengthReportDataRM" type="com.qts.icam.model.common.Standard">
+		<result property="standardName" column="standard" jdbcType="VARCHAR" />
+		<result property="section" column="section" jdbcType="VARCHAR" />
+		<collection property="socialCategoriesList" ofType="com.qts.icam.model.common.SocialCategory">
+			<result property="amount" column="number_count" jdbcType="DOUBLE" />
+			<result property="socialCategoryName" column="category" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="selectSocialCategoryWiseClassStrengthReportData" parameterType="com.qts.icam.model.common.Standard"   resultMap="selectSocialCategoryWiseClassStrengthReportDataRM">
+		SELECT
+			number_count,
+			standard,
+			section,
+			category
+		FROM
+			temp_student_strength
+		WHERE
+			standard = #{standardName} 
+		order by category;			
+	</select>	
+	
+	<select id="generateTCReport" parameterType="java.lang.String"   resultType="com.qts.icam.model.common.Student">
+			SELECT 
+				roll_number as rollNumber,
+				gender as "resource.gender", 
+				(SELECT to_char((SELECT to_timestamp(date_of_admission)), 'DD/MM/YYYY')) as  dateOfAdmission, 					
+				first_name || ' ' || COALESCE(middle_name,' ') || ' ' || COALESCE(last_name,'  ')  as studentName,
+				(SELECT to_char((SELECT to_timestamp(date_of_birth)), 'DD/MM/YYYY')) as "resource.dateOfBirth",				 
+				father_first_name || ' ' || COALESCE(father_middle_name,' ') || ' ' || COALESCE(father_last_name,'  ')  as "resource.fatherFirstName",
+				mother_first_name || ' ' || COALESCE(mother_middle_name,' ') || ' ' || COALESCE(mother_last_name,'  ')  as "resource.motherFirstName",				
+				email_address as "resource.emailId",
+				mobile_no as "resource.mobile", 
+				blood_group as "resource.bloodGroup",
+				mother_tongue as "resource.motherTongue",
+				religion as "resource.religion",
+				nationality as "resource.nationality",
+				social_category as "resource.category",
+				standard as standard,
+				hostel as house,
+				state_of_domicile as stateOfDomicile,       
+				address as "address.addressName",
+				joining_class as joiningStandard,
+				tc_reason as "studentTC.reason",
+				tc_desc as "studentTC.description",
+				year as "resource.startDate"
+			  FROM history_resource
+			WHERE
+				roll_number=#{rollNumber}
+			AND	
+				resource_type='STUDENT' ;					
+	</select>
+	
+	<select id="selectGradeForGradePoint"  parameterType="com.qts.icam.model.academics.StudentResult"  resultType="String">
+		SELECT 
+			gp.grade as grade
+		FROM
+			grading_point gp
+		JOIN
+			standard s ON (s.rec_id = gp.standard) AND (s.is_active = true)
+		WHERE
+			gp.is_active = true
+		AND
+			type = 'SCHOLASTIC'
+		AND
+			s.standard_name = #{standard}
+		AND
+			grade_point = #{theoryObtained}::text;
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<select id="getSubjectGroupForXI_XIIResult" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.SubjectGroup">
+		SELECT 
+			sm.subject as subjectGroupName
+		FROM
+			student_marks_user_exam sm
+		JOIN
+			subject_group sg ON (sm.subject = sg.subject_group_name)
+		WHERE
+			standard = #{standard}
+		AND
+			section = #{section}
+		AND
+			exam = #{exam}
+		GROUP BY
+			sm.subject,sg.subject_group_order
+		ORDER BY
+			sg.subject_group_order;
+	</select>
+	
+	
+	<insert id="insertConsolidatedReportForXI_XIIForCurrentYear" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+       			 select consolidated_result_for_user_exam_xi_xii(
+												#{standard, mode=IN, jdbcType=VARCHAR},
+												#{section,mode=IN, jdbcType=VARCHAR},
+												#{exam,mode=IN, jdbcType=VARCHAR},
+												#{pass,mode=IN, jdbcType=INTEGER}
+												);
+	</insert>
+	<resultMap id="selectConsolidatedReportForXI_XIIForCurrentYearRM" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="roll_number" jdbcType="INTEGER" />
+		<result property="studentName" column="student_name" jdbcType="VARCHAR" />
+		<result property="studentTotal" column="grand_total" jdbcType="INTEGER" />
+		<result property="studentPercent" column="percentage" jdbcType="DOUBLE" />
+		<result property="studentPassFail" column="rank" jdbcType="VARCHAR" />
+		<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">			
+			<result property="subject" column="subject" jdbcType="VARCHAR" />
+			<result property="total" column="total" jdbcType="INTEGER" />
+			<result property="totalObtained" column="tot_marks" jdbcType="INTEGER" />
+		</collection>
+	</resultMap>
+	<select id="selectConsolidatedReportForXI_XIIForCurrentYear" resultMap="selectConsolidatedReportForXI_XIIForCurrentYearRM">
+		SELECT
+			t1.roll_number::INTEGER,
+			student_name,
+			t1.tot_marks as grand_total,
+			percentage,
+			rank,
+			subject,
+			t2.tot_marks,
+			total
+		FROM
+			temp_table_consolidated_result_for_XI_XII t1
+		JOIN temp_table_consolidated_result_marks_details_for_XI_XII t2 ON(t1.roll_number=t2.roll_number);
+	</select>
+	
+	<select id="selectReportForXI_XIIForCurrentYear" parameterType="java.lang.String" resultMap="selectConsolidatedReportForXI_XIIForCurrentYearRM">
+		SELECT
+			t1.roll_number::INTEGER,
+			student_name,
+			t1.tot_marks as grand_total,
+			percentage,
+			rank,
+			subject,
+			t2.tot_marks,
+			total
+		FROM
+			temp_table_consolidated_result_for_XI_XII t1
+		JOIN temp_table_consolidated_result_marks_details_for_XI_XII t2 ON(t1.roll_number=t2.roll_number)
+		WHERE
+			t1.roll_number=#{s};
+	</select>
+	
+	<insert id="insertResultsIntoTempTableForReportForXI" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+       		select insert_into_temp_table_report_xi(
+				#{standard, mode=IN, jdbcType=VARCHAR},
+				#{section, mode=IN, jdbcType=VARCHAR},
+				#{exam, mode=IN, jdbcType=VARCHAR},
+				#{pass, mode=IN, jdbcType=INTEGER}
+			);
+	</insert>
+	
+	<select id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearXI" parameterType="java.lang.String" resultMap="selectConsolidatedReportForXI_XIIForCurrentYearRM">
+		SELECT
+			t1.roll_number::INTEGER,
+			student_name,
+			t1.tot_marks as grand_total,
+			percentage,
+			rank,
+			subject,
+			t2.tot_marks,
+			total
+		FROM
+			temp_table_consolidated_result_for_XI_XII t1
+		JOIN temp_table_consolidated_result_marks_details_for_XI_XII t2 ON(t1.roll_number = t2.roll_number) 
+		WHERE
+			t1.roll_number = #{studentRoll};
+	</select>
+	
+	<insert id="insertConsolidatedReportForXIForGeneralStudent" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+       		select consolidated_result_for_xi(
+				#{standard, mode=IN, jdbcType=VARCHAR},
+				#{section, mode=IN, jdbcType=VARCHAR},
+				#{exam, mode=IN, jdbcType=VARCHAR},
+				#{pass, mode=IN, jdbcType=INTEGER}
+			);
+	</insert>
+	
+	<resultMap id="selectConsolidatedReportForXIForGeneralStudentRM" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="roll_number" jdbcType="INTEGER" />
+		<result property="studentName" column="student_name" jdbcType="VARCHAR" />
+		<result property="studentTotal" column="grand_total" jdbcType="INTEGER" />
+		<result property="studentPercent" column="percentage" jdbcType="DOUBLE" />
+		<result property="studentPassFail" column="rank" jdbcType="VARCHAR" />
+		<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">			
+			<result property="subject" column="subject" jdbcType="VARCHAR" />
+			<result property="total" column="total" jdbcType="INTEGER" />
+			<result property="totalObtained" column="tot_marks" jdbcType="INTEGER" />
+		</collection>
+	</resultMap>
+	<select id="selectConsolidatedReportForXIForGeneralStudent" resultMap="selectConsolidatedReportForXIForGeneralStudentRM">
+		SELECT
+			t1.roll_number::INTEGER,
+			student_name,
+			t1.tot_marks as grand_total,
+			percentage,
+			rank,
+			subject,
+			t2.tot_marks,
+			total
+		FROM
+			temp_table_consolidated_result_for_XI_XII t1
+		JOIN temp_table_consolidated_result_marks_details_for_XI_XII t2 ON(t1.roll_number=t2.roll_number);
+	</select>
+	
+	<resultMap id="selectStudentListForInternalExamRM" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="student_roll" jdbcType="INTEGER" />
+		<result property="studentName" column="student_name" jdbcType="VARCHAR" />
+		<result property="status" column="year" jdbcType="VARCHAR" />
+		<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">			
+			<result property="subject" column="subject" jdbcType="VARCHAR" />
+			<result property="exam" column="exam" jdbcType="VARCHAR" />
+			<result property="total" column="total" jdbcType="INTEGER" />
+			<result property="totalObtained" column="total_obtained" jdbcType="INTEGER" />
+		</collection>
+	</resultMap>
+	<select id="selectStudentListForInternalExam" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="selectStudentListForInternalExamRM">
+		SELECT
+			student_roll :: INTEGER,
+			student_name,
+			subject,
+			exam,
+			year,
+			total,
+			total_obtained	
+		FROM
+			student_marks where standard=#{standard} and section=#{section}
+			order by student_roll, subject, exam;
+	</select>
+	
+	
+	<select id="selectSubjectGroupForInternalExamination" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.SubjectGroup">
+		SELECT DISTINCT
+			subject as subjectGroupName
+		FROM
+			student_marks where standard=#{standard} and section=#{section}
+		order by subject;
+	</select>	
+	
+	<resultMap id="selectStudentListForCentralisedRM" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="student_roll" jdbcType="INTEGER" />
+		<result property="studentName" column="student_name" jdbcType="VARCHAR" />
+		<result property="status" column="year" jdbcType="VARCHAR" />
+		<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">			
+			<result property="subject" column="subject" jdbcType="VARCHAR" />
+			<result property="exam" column="exam" jdbcType="VARCHAR" />
+			<result property="total" column="total" jdbcType="INTEGER" />
+			<result property="practical" column="practical" jdbcType="INTEGER" />
+			<result property="totalObtained" column="total_obtained" jdbcType="INTEGER" />
+			<result property="theoryObtained" column="theory_obtained" jdbcType="INTEGER" />
+			<result property="practicalObtained" column="practical_obtained" jdbcType="INTEGER" />
+		</collection>
+	</resultMap>
+	<select id="selectStudentListForCentralised" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="selectStudentListForCentralisedRM">
+		SELECT
+			student_roll :: INTEGER,
+			student_name,
+			subject,
+			exam,
+			year,
+			total,
+			practical,
+			total_obtained,
+			theory_obtained,
+			practical_obtained
+		FROM
+			student_marks sm
+			join subject_group sg on(sm.subject = sg.subject_group_name)
+			where standard = #{standard} and section = #{section} and student_roll = #{rollNumber}
+			order by student_roll, subject_group_order, exam ;		
+	</select>
+	
+	<select id="selectTotalStudentCount" parameterType="com.qts.icam.model.academics.StudentResult" resultType="java.lang.Integer">		
+		SELECT
+			 count(distinct student_roll)
+		FROM
+			 student_marks where standard = #{standard} and section = #{section};		
+	</select>
+	
+	<resultMap id="selectRollNoWiseStudentListRM" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="student_roll" jdbcType="INTEGER" />
+		<result property="serialId" column="position" jdbcType="INTEGER" />		
+	</resultMap>
+	<select id="selectRollNoWiseStudentList" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="selectRollNoWiseStudentListRM">
+		SELECT row_number() over() as position, total, student_roll from ( 
+			SELECT			
+				student_roll :: INTEGER,
+				sum(total_obtained)as total			
+			FROM
+				student_marks sm
+				join subject_group sg on(sm.subject=sg.subject_group_name)
+				where
+				standard=#{standard} and section=#{section} 
+				group by student_roll
+				order by total desc
+			) an			
+	</select>
+	
+	
+	<!-- New CBSE System start -->
+	<select id="selectClassWiseSubjectGroupsNew" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.SubjectGroup">
+		SELECT 
+			sm.subject as subjectGroupName
+		FROM
+			student_marks_v1 sm
+		JOIN
+			subject_group sg ON (sm.subject = sg.subject_group_name)
+		WHERE
+			standard = #{standard}
+		AND
+			section = #{section}
+		AND
+			exam_v1 = #{exam}
+		GROUP BY
+			sm.subject,sg.subject_group_order
+		ORDER BY
+			sg.subject_group_order
+	</select>
+	
+	<select id="getStudentsAgainstStandardAndSectionForNewReport" resultType="com.qts.icam.model.common.Student" parameterType="com.qts.icam.model.common.Student">
+		select  
+			distinct student_roll as rollNumber, 
+			student_name as studentName
+		from 
+			student_marks_v1
+		where 
+			 section = #{section}
+		 and 
+		 	 standard = #{standard}
+		 order by student_roll asc;
+	</select>
+	
+	<insert id="insertResultsIntoTempTableForReportForTerm1" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+		<foreach item="rollNo" index="index" collection="stringList" open="" separator=";" close="">
+       		select insert_into_temp_table_report_term1(
+					#{rollNo, mode=IN, jdbcType=VARCHAR},
+					#{standard, mode=IN, jdbcType=VARCHAR},
+					#{exam, mode=IN, jdbcType=VARCHAR},
+					#{academicYear, mode=IN, jdbcType=VARCHAR}
+			)	
+ 		</foreach>
+	</insert>
+	
+	<resultMap id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearTerm1ResultMap" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="roll_number" jdbcType="VARCHAR" />
+			<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">
+				<id property="subject" column="subject" jdbcType="VARCHAR" />
+				<collection property="examList" ofType="com.qts.icam.model.backoffice.Exam">
+					<id property="examName" column="exam_name" jdbcType="VARCHAR" />
+					<result property="grade" column="exam_marks" jdbcType="VARCHAR" />
+					
+				</collection>
+			</collection>
+	</resultMap>
+	
+	<select id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearTerm1" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearTerm1ResultMap">
+		SELECT
+			 roll_number,
+			 subject,
+			 exam_name,
+			 exam_marks
+  		FROM 
+  			temp_table_report_term1
+  		ORDER BY 
+  			id;
+	</select>
+	
+	<select id="selectCoScholasticResultListForReportNew" parameterType="com.qts.icam.model.common.Student" resultType="com.qts.icam.model.academics.CoScholasticResult">
+		SELECT
+			head,
+			grade
+			
+		FROM
+			student_marks_co_v1
+		WHERE
+			year = #{studentDesc}
+		AND
+			standard=#{standard}
+		AND
+			exam=#{status}
+		AND
+			student_roll=#{rollNumber}::text
+		AND
+			is_active=true;
+	</select>
+	<insert id="insertResultsIntoTempTableForReportForTerm2" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+		<foreach item="rollNo" index="index" collection="stringList" open="" separator=";" close="">
+       		select insert_into_temp_table_report_term2(
+					#{rollNo, mode=IN, jdbcType=VARCHAR},
+					#{standard, mode=IN, jdbcType=VARCHAR},
+					#{exam, mode=IN, jdbcType=VARCHAR},
+					#{academicYear, mode=IN, jdbcType=VARCHAR}
+			)	
+ 		</foreach>
+	</insert>
+	
+ 	<resultMap id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearTerm2ResultMap" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="roll_number" jdbcType="VARCHAR" />
+			<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">
+				<id property="subject" column="subject" jdbcType="VARCHAR" />
+				<collection property="subjectList" ofType="com.qts.icam.model.academics.Subject">
+					<id property="subjectCode" column="term" jdbcType="VARCHAR" />
+						<collection property="examList" ofType="com.qts.icam.model.backoffice.Exam">
+							<id property="examName" column="exam_name" jdbcType="VARCHAR" />
+							<result property="grade" column="exam_marks" jdbcType="VARCHAR" />
+						
+						</collection>
+				</collection>
+			</collection>
+	</resultMap>
+	
+	 
+
+	<select id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearTerm2" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearTerm2ResultMap">
+		SELECT
+			 roll_number,
+			 subject,
+			 term,
+			 exam_name,
+			 exam_marks
+			
+  		FROM 
+  			temp_table_report_term2
+  		ORDER BY 
+  			id;
+	</select>
+	
+	<resultMap id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearAnnualExamResultMap" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="roll_number" jdbcType="VARCHAR" />
+			<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">
+				<id property="subject" column="subject" jdbcType="VARCHAR" />
+				<collection property="examList" ofType="com.qts.icam.model.backoffice.Exam">
+					<id property="examName" column="exam_name" jdbcType="VARCHAR" />
+					<result property="grade" column="exam_marks" jdbcType="VARCHAR" />
+					
+				</collection>
+			</collection>
+	</resultMap>
+	
+	<select id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearAnnualExam" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearAnnualExamResultMap">
+		SELECT
+			 roll_number,
+			 subject,
+			 exam_name,
+			 exam_marks
+  		FROM 
+  			temp_table_report_annual_exam
+  		ORDER BY 
+  			id;
+	</select>
+	
+	<insert id="insertResultsIntoTempTableForReportForAnnualExam" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+		<foreach item="rollNo" index="index" collection="stringList" open="" separator=";" close="">
+       		select insert_into_temp_table_report_annual_exam(
+					#{rollNo, mode=IN, jdbcType=VARCHAR},
+					#{standard, mode=IN, jdbcType=VARCHAR},
+					#{exam, mode=IN, jdbcType=VARCHAR},
+					#{academicYear, mode=IN, jdbcType=VARCHAR}
+			)	
+ 		</foreach>
+	</insert>
+	
+	<insert id="insertConsolidatedReportForTerm1" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+       		select insert_into_temp_table_consolidated_report_term1(
+				#{standard, mode=IN, jdbcType=VARCHAR},
+				#{section, mode=IN, jdbcType=VARCHAR}
+			);
+	</insert>
+	
+	<resultMap id="selectConsolidatedReportForTerm1StudentRM" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="roll_number" jdbcType="INTEGER" />
+		<result property="studentName" column="student_name" jdbcType="VARCHAR" />
+		<result property="studentPercent" column="tot_marks" jdbcType="DOUBLE" />
+		<result property="studentPassFail" column="rank" jdbcType="VARCHAR" />
+		<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">			
+			<result property="subject" column="subject" jdbcType="VARCHAR" />
+			<result property="periodicTest" column="pt" jdbcType="VARCHAR" />
+			<result property="noteBook" column="nb" jdbcType="VARCHAR" />
+			<result property="subEnrichment" column="se" jdbcType="VARCHAR" />
+			<result property="halfYearly" column="hy" jdbcType="VARCHAR" />
+			<result property="totalObtainedChar" column="total" jdbcType="VARCHAR" />
+			<result property="grade" column="grade" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="selectConsolidatedReportForTerm1Student" resultMap="selectConsolidatedReportForTerm1StudentRM">
+		SELECT
+			t1.roll_number::INTEGER,
+			t2.student_name,
+			t2.tot_marks,
+			rank,
+			subject,
+			total,
+			pt,
+			nb,
+			se,
+			hy,
+			grade
+		FROM
+			temp_table_consolidated_report_term1 t1
+		JOIN temp_table_consolidated_report_term1_rank t2 ON(t1.roll_number=t2.roll_number)
+		order By t1.roll_number ;
+	</select>
+	
+	<select id="selectClassWiseSubjectGroupsFromStudentMarksV1ForTerm1" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.SubjectGroup">
+		SELECT 
+			sm.subject as subjectGroupName
+		FROM
+			student_marks_v1 sm
+		JOIN
+			subject_group sg ON (sm.subject = sg.subject_group_name)
+		WHERE
+			standard = #{standard}
+		AND
+			section = #{section}
+		AND
+			exam_v1 IN ('T1-PT1','NoteBook1','SubEnrichment1','HalfYearlyExam1')
+		GROUP BY
+			sm.subject,sg.subject_group_order
+		ORDER BY
+			sg.subject_group_order;
+
+	</select>
+	
+	<select id="selectClassWiseSubjectGroupsFromStudentMarksV1ForTerm2" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.SubjectGroup">
+		SELECT 
+			sm.subject as subjectGroupName
+		FROM
+			student_marks_v1 sm
+		JOIN
+			subject_group sg ON (sm.subject = sg.subject_group_name)
+		WHERE
+			standard = #{standard}
+		AND
+			section = #{section}
+		AND
+			exam_v1 IN ('T2-PT1','NoteBook2','SubEnrichment2','HalfYearlyExam2')
+		GROUP BY
+			sm.subject,sg.subject_group_order
+		ORDER BY
+			sg.subject_group_order;
+
+	</select>
+	
+	<select id="selectClassWiseSubjectGroupsFromStudentMarksForAnnualExam" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.SubjectGroup">
+		SELECT 
+			sm.subject as subjectGroupName
+		FROM
+			student_marks_v1 sm
+		JOIN
+			subject_group sg ON (sm.subject = sg.subject_group_name)
+		WHERE
+			standard = #{standard}
+		AND
+			section = #{section}
+		AND
+			exam_v1 IN ('PT1','PT2','PT3','NoteBook2','SubEnrichment2','AnnualExam1')
+		GROUP BY
+			sm.subject,sg.subject_group_order
+		ORDER BY
+			sg.subject_group_order;
+
+	</select>
+	
+	<insert id="insertConsolidatedReportForTerm2" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+       		select insert_into_temp_table_consolidated_report_term2(
+				#{standard, mode=IN, jdbcType=VARCHAR},
+				#{section, mode=IN, jdbcType=VARCHAR}
+			);
+	</insert>
+	
+	<resultMap id="selectConsolidatedReportForTerm2StudentRM" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="roll_number" jdbcType="INTEGER" />
+		<result property="studentName" column="student_name" jdbcType="VARCHAR" />
+		<result property="studentPercent" column="tot_marks" jdbcType="DOUBLE" />
+		<result property="studentPassFail" column="rank" jdbcType="VARCHAR" />
+		<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">			
+			<result property="subject" column="subject" jdbcType="VARCHAR" />
+			<result property="periodicTest" column="pt" jdbcType="VARCHAR" />
+			<result property="noteBook" column="nb" jdbcType="VARCHAR" />
+			<result property="subEnrichment" column="se" jdbcType="VARCHAR" />
+			<result property="halfYearly" column="hy" jdbcType="VARCHAR" />
+			<result property="totalObtainedChar" column="total" jdbcType="VARCHAR" />
+			<result property="grade" column="grade" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="selectConsolidatedReportForTerm2Student" resultMap="selectConsolidatedReportForTerm2StudentRM">
+		SELECT
+			t1.roll_number::INTEGER,
+			t2.student_name,
+			t2.tot_marks,
+			rank,
+			subject,
+			total,
+			pt,
+			nb,
+			se,
+			hy,
+			grade
+		FROM
+			temp_table_consolidated_report_term1 t1
+		JOIN temp_table_consolidated_report_term1_rank t2 ON(t1.roll_number=t2.roll_number)
+		order By t1.roll_number ;
+	</select>
+	
+		<insert id="insertConsolidatedReportForAnnualExam" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+       		select insert_into_temp_table_consolidated_report_term2(
+				#{standard, mode=IN, jdbcType=VARCHAR},
+				#{section, mode=IN, jdbcType=VARCHAR}
+			);
+	</insert>
+	
+	<resultMap id="selectConsolidatedReportForAnnualExamStudentRM" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="roll_number" jdbcType="INTEGER" />
+		<result property="studentName" column="student_name" jdbcType="VARCHAR" />
+		<result property="studentPercent" column="tot_marks" jdbcType="DOUBLE" />
+		<result property="studentPassFail" column="rank" jdbcType="VARCHAR" />
+		<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">			
+			<result property="subject" column="subject" jdbcType="VARCHAR" />
+			<result property="periodicTest" column="pt" jdbcType="VARCHAR" />
+			<result property="noteBook" column="nb" jdbcType="VARCHAR" />
+			<result property="subEnrichment" column="se" jdbcType="VARCHAR" />
+			<result property="halfYearly" column="annual" jdbcType="VARCHAR" />
+			<result property="totalObtainedChar" column="total" jdbcType="VARCHAR" />
+			<result property="grade" column="grade" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="selectConsolidatedReportForAnnualExamStudent" resultMap="selectConsolidatedReportForAnnualExamStudentRM">
+		SELECT
+			t1.roll_number::INTEGER,
+			t2.student_name,
+			t2.tot_marks,
+			rank,
+			subject,
+			total,
+			pt,
+			nb,
+			se,
+			annual,
+			grade
+		FROM
+			temp_table_consolidated_report_annualexam t1
+		JOIN temp_table_consolidated_report_annualexam_rank t2 ON(t1.roll_number=t2.roll_number)
+		order By t1.roll_number ;
+	</select>
+	<resultMap id="selectStudentListForCentralisedV1RM" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="student_roll" jdbcType="INTEGER" />
+		<result property="studentName" column="student_name" jdbcType="VARCHAR" />
+		<result property="studentTotalChar" column="tot_marks" jdbcType="VARCHAR" />
+		<result property="studentPercentChar" column="percentage" jdbcType="DOUBLE" />
+		<result property="studentPassFail" column="rank" jdbcType="VARCHAR" />
+		<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">			
+			<result property="subject" column="subject" jdbcType="VARCHAR" />
+			<result property="total" column="total" jdbcType="INTEGER" />
+			<result property="practical" column="practical" jdbcType="INTEGER" />
+			<result property="totalObtainedChar" column="total_obtained" jdbcType="VARCHAR" />
+			<result property="theoryObtainedChar" column="theory_obtained" jdbcType="VARCHAR" />
+			<result property="practicalObtainedChar" column="practical_obtained" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="selectStudentListForConsolidateCentralisedNew" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="selectStudentListForCentralisedV1RM">
+		<!-- SELECT
+			student_roll :: INTEGER,
+			student_name,
+			subject,
+			exam_v1,
+			year,
+			total,
+			practical,
+			total_obtained,
+			theory_obtained,
+			practical_obtained
+		FROM
+			student_marks_v1 sm
+			join subject_group sg on(sm.subject = sg.subject_group_name)
+			where standard = #{standard} and section = #{section} and exam_v1 = #{exam}
+			order by student_roll, subject_group_order ; -->	
+			
+		SELECT
+			student_roll :: INTEGER,
+			t1.student_name,
+			subject,
+			percentage,
+			total,
+			practical,
+			tot_marks,
+			total_obtained,
+			theory_obtained,
+			practical_obtained,
+			rank
+		FROM
+			temp_table_consolidated_result_marks_details_centralise t1
+		JOIN 
+			temp_table_consolidated_result_for_centralise t2 ON (t2.roll_number = t1.student_roll)
+		ORDER BY
+			student_roll;
+	</select>
+	
+		<insert id="insertConsolidatedReportForXIForGeneralStudentNew" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+       		select consolidated_result_for_xi_v1(
+				#{standard, mode=IN, jdbcType=VARCHAR},
+				#{section, mode=IN, jdbcType=VARCHAR},
+				#{exam, mode=IN, jdbcType=VARCHAR}
+			);
+	</insert>
+	
+	<resultMap id="selectConsolidatedReportForXIForGeneralStudentNewRM" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="roll_number" jdbcType="INTEGER" />
+		<result property="studentName" column="student_name" jdbcType="VARCHAR" />
+		<result property="studentTotal" column="grand_total" jdbcType="INTEGER" />
+		<result property="studentPercent" column="percentage" jdbcType="DOUBLE" />
+		<result property="studentPassFail" column="rank" jdbcType="VARCHAR" />
+		<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">			
+			<result property="subject" column="subject" jdbcType="VARCHAR" />
+			<result property="total" column="total" jdbcType="INTEGER" />
+			<result property="totalObtainedChar" column="tot_marks" jdbcType="INTEGER" />
+		</collection>
+	</resultMap>
+	<select id="selectConsolidatedReportForXIForGeneralStudentNew" resultMap="selectConsolidatedReportForXIForGeneralStudentNewRM">
+		SELECT
+			t1.roll_number::INTEGER,
+			student_name,
+			t1.tot_marks as grand_total,
+			percentage,
+			rank,
+			subject,
+			t2.tot_marks,
+			total
+		FROM
+			temp_table_consolidated_result_for_XI_XII t1
+		JOIN temp_table_consolidated_result_marks_details_for_XI_XII t2 ON(t1.roll_number=t2.roll_number)
+		order By t1.roll_number ;
+	</select>
+	
+	<select id="selectStudentListForInternalExamNew" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="selectStudentListForInternalExamRM">
+		SELECT
+			student_roll :: INTEGER,
+			student_name,
+			subject,
+			exam,
+			year,
+			total,
+			total_obtained,
+			subject_group_order
+		FROM
+			student_marks_v1 sm
+			JOIN subject_group sg on(sm.subject = sg.subject_group_name)
+			where 
+				standard = #{standard} 
+			AND 
+				section = #{section} 
+			AND 
+				exam IN ('M1','M2','PC','Term_1')
+			order by student_roll, subject_group_order, exam;
+	</select>
+	
+	
+	<select id="selectSubjectGroupForInternalExaminationNew" parameterType="com.qts.icam.model.academics.StudentResult" resultType="com.qts.icam.model.academics.SubjectGroup">
+		SELECT DISTINCT
+			subject as subjectGroupName,
+			subject_group_order
+		FROM
+			student_marks_v1 sm 
+		JOIN subject_group sg on(sm.subject=sg.subject_group_name)
+		where standard=#{standard} and section=#{section}
+		order by subject_group_order;
+	</select>
+	
+	<insert id="insertConsolidatedReportForXICentralise" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+       		select insert_into_consolidated_result_for_xi_centrallise_v1(
+				#{standard, mode=IN, jdbcType=VARCHAR},
+				#{section, mode=IN, jdbcType=VARCHAR},
+				#{exam, mode=IN, jdbcType=VARCHAR}
+			);
+	</insert>
+	
+		<insert id="insertResultsIntoTempTableForReportForXINew" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+       		select insert_into_temp_table_report_xi_v1(
+				#{standard, mode=IN, jdbcType=VARCHAR},
+				#{section, mode=IN, jdbcType=VARCHAR},
+				#{exam, mode=IN, jdbcType=VARCHAR}
+			);
+	</insert>
+	<resultMap id="selectConsolidatedReportForXI_XIIForCurrentYearRMNew" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="roll_number" jdbcType="INTEGER" />
+		<result property="studentName" column="student_name" jdbcType="VARCHAR" />
+		<result property="studentTotal" column="grand_total" jdbcType="INTEGER" />
+		<result property="studentPercent" column="percentage" jdbcType="DOUBLE" />
+		<result property="studentPassFail" column="rank" jdbcType="VARCHAR" />
+		<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">			
+			<result property="subject" column="subject" jdbcType="VARCHAR" />
+			<result property="total" column="total" jdbcType="INTEGER" />
+			<result property="totalObtainedChar" column="tot_marks" jdbcType="INTEGER" />
+		</collection>
+	</resultMap>
+	<select id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearXINew" parameterType="java.lang.String" resultMap="selectConsolidatedReportForXI_XIIForCurrentYearRMNew">
+		SELECT
+			t1.roll_number::INTEGER,
+			student_name,
+			t1.tot_marks as grand_total,
+			percentage,
+			rank,
+			subject,
+			t2.tot_marks,
+			total
+		FROM
+			temp_table_consolidated_result_for_XI_XII t1
+		JOIN temp_table_consolidated_result_marks_details_for_XI_XII t2 ON(t1.roll_number = t2.roll_number) 
+		WHERE
+			t1.roll_number = #{studentRoll};
+	</select>
+	
+	<select id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearForCentraliseNew" parameterType="java.lang.String" resultMap="selectStudentListForCentralisedV1RM">
+		
+			
+		SELECT
+			student_roll :: INTEGER,
+			t1.student_name,
+			percentage,
+			total,
+			practical,
+			tot_marks,
+			subject,
+			total_obtained,
+			theory_obtained,
+			practical_obtained,
+			rank
+		FROM
+			temp_table_consolidated_result_marks_details_centralise t1
+		JOIN 
+			temp_table_consolidated_result_for_centralise t2 ON (t2.roll_number = t1.student_roll)
+		WHERE
+			student_roll = #{studentRoll};
+	</select>
+	<delete id="deleteFromTempTableForReportForTerm1" >
+		DELETE FROM temp_table_report_term1;
+	</delete>
+	
+	<insert id="insertResultsIntoTempTableForReportForPeriodicTest" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+		<foreach item="rollNo" index="index" collection="stringList" open="" separator=";" close="">
+       		select insert_into_temp_table_report_periodic_test(
+					#{rollNo, mode=IN, jdbcType=VARCHAR},
+					#{standard, mode=IN, jdbcType=VARCHAR},
+					#{exam, mode=IN, jdbcType=VARCHAR},
+					#{academicYear, mode=IN, jdbcType=VARCHAR}
+			)	
+ 		</foreach>
+	</insert>	
+	
+	<resultMap id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearPeriodicTestResultMap" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="roll_number" jdbcType="VARCHAR" />
+			<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">
+				<id property="subject" column="subject" jdbcType="VARCHAR" />
+				<collection property="examList" ofType="com.qts.icam.model.backoffice.Exam">
+					<id property="examName" column="max_marks" jdbcType="VARCHAR" />
+					<result property="grade" column="exam_marks" jdbcType="VARCHAR" />
+					
+				</collection>
+			</collection>
+	</resultMap>
+	
+	<select id="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearPeriodicTest" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="selectStudentsSubjectsAndMarksReportForCurrentAcademicYearPeriodicTestResultMap">
+		SELECT
+			 roll_number,
+			 subject,
+			 max_marks,
+			 exam_marks
+  		FROM 
+  			temp_table_report_periodic_test
+  		ORDER BY 
+  			id;
+	</select>
+	
+	<delete id="deleteFromTempTableForReportForPeriodicTable" >
+		DELETE FROM temp_table_report_periodic_test;
+	</delete>
+	
+	<select id="selectStudentResultRawDataForNewCBSEPatternForTerm1" parameterType="com.qts.icam.model.academics.StudentResult" resultMap="selectStudentResultRawDataForNewCBSEPatternResultMap">
+		select
+			student_roll :: integer,
+			subject,
+			exam,
+			total,
+			total_obtained
+		from
+			student_marks
+		where
+			standard=#{standard}
+			and
+			section=#{section}
+		ORDER BY student_roll, subject;
+	</select>
+	
+	<!-- naimisha 08.08.2017 -->
+	
+	<!-- <insert id="insertConsolidatedReportForPeriodicTestIXAndX" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE"> -->
+	<insert id="insertConsolidatedReportForPeriodicTest" parameterType="com.qts.icam.model.academics.StudentResult" statementType="CALLABLE">
+       		select insert_into_temp_table_consolidated_report_periodictest_IX_X(
+				#{standard, mode=IN, jdbcType=VARCHAR},
+				#{section, mode=IN, jdbcType=VARCHAR},
+				#{exam, mode=IN, jdbcType=VARCHAR}
+			);
+	</insert>
+	
+	<resultMap id="selectConsolidatedReportForPeridicTestIXAndXNewRM" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="roll_number" jdbcType="INTEGER" />
+		<result property="studentName" column="student_name" jdbcType="VARCHAR" />
+		<result property="studentTotalChar" column="grand_total" jdbcType="VARCHAR" />
+		<result property="studentPercentChar" column="percentage" jdbcType="VARCHAR" />
+		<result property="studentPassFail" column="rank" jdbcType="VARCHAR" />
+		<collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">			
+			<result property="subject" column="subject" jdbcType="VARCHAR" />
+			<result property="totalObtainedChar" column="total" jdbcType="VARCHAR" />
+			<result property="theoryObtainedChar" column="tot_marks" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<!-- <select id="selectConsolidatedReportForForPeridicTestIXAndXNew" resultMap="selectConsolidatedReportForPeridicTestIXAndXNewRM"> -->
+	<select id="selectConsolidatedReportForForPeridicTestNew" resultMap="selectConsolidatedReportForPeridicTestIXAndXNewRM">
+		SELECT
+			t1.roll_number::INTEGER,
+			student_name,
+			t1.tot_marks as grand_total,
+			percentage,
+			rank,
+			subject,
+			t2.tot_marks,
+			total
+		FROM
+			temp_table_consolidated_result_for_periodic_test_ix_x t1
+		JOIN temp_table_consolidated_result_marks_for_periodic_test_ix_x t2 ON(t1.roll_number=t2.roll_number)
+		order By t1.roll_number ;
+	</select>
+	
+	<select id="seleteGradeForSubjectTotal" resultType="com.qts.icam.model.academics.StudentResult" parameterType="com.qts.icam.model.common.Student">
+		SELECT
+			marks_grade_range as status,
+			grade as grade
+		FROM 
+			grading_point_v1
+		WHERE
+			type = 'SCHOLASTIC'
+		AND
+			standard = (SELECT rec_id FROM standard WHERE standard_name = #{standard} AND is_active = true)
+		AND 
+			is_active = true;
+	</select>
+	
+	<resultMap id="selectStudentResultRawDataForNewCBSEPatternResultMap" type="com.qts.icam.model.common.Student">
+		<id property="rollNumber" column="student_roll" jdbcType="INTEGER" />
+		<result property="studentName" column="student_name" jdbcType="VARCHAR" />
+		 <collection property="studentResultList" ofType="com.qts.icam.model.academics.StudentResult">			
+			<result property="subject" column="subject" jdbcType="VARCHAR" />
+			<result property="exam" column="exam_v1" jdbcType="VARCHAR" />
+			<result property="total" column="total" jdbcType="INTEGER" />
+			<result property="totalObtainedChar" column="total_obtained" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="selectStudentResultRawDataForNewCBSEPatternNew" parameterType="com.qts.icam.model.academics.StudentResult" resultMap = "selectStudentResultRawDataForNewCBSEPatternResultMap">
+		select
+			student_roll :: integer,
+			student_name,
+			subject,
+			exam_v1,
+			total,
+			total_obtained
+		from
+			student_marks_v1
+		where
+			standard=#{standard}
+		and
+			section=#{section}
+		ORDER BY student_roll, subject;
+	</select>
+	
+	<!-- New CBSE System end -->
+	
+</mapper>

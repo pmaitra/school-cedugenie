@@ -1,0 +1,131 @@
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+td {
+  padding: 0;
+}
+
+
+.calendar-container {
+  position: relative;
+  width: 610px;
+}
+
+.calendar-container header {
+  border-radius: 1em 1em 0 0;
+  background: #0b8aca;
+  color: #fff;
+  padding: 3em 2em;
+}
+
+.day {
+  font-size: 8em;
+  font-weight: 900;
+  line-height: 1em;
+}
+
+.month {
+  font-size: 4em;
+  line-height: 1em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.calendar {
+  background: #fff;
+  border-radius: 0 0 1em 1em;
+  box-shadow: 0 2px 1px rgba(0, 0, 0, 0.2), 0 3px 1px #fff;
+  color: #555;
+  display: inline-block;
+  padding: 2em;
+}
+
+.calendar thead {
+  color: #000;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.calendar tr td:nth-child(1){
+    color: #ff0000;
+}
+.calendar tr td:nth-child(7){
+    color: #ff0000;
+}
+.calendar td {
+  padding: 1em 2em;
+  text-align: center;
+  border: 1px solid #fff;  
+}
+
+.calendar tbody td:hover {
+  background: #cacaca;
+  color: #fff;
+}
+
+.off-day {
+  color: #fff;
+  background: #e66b6b;
+}
+
+.present-day {
+  color: #fff;
+  background: #11d922;
+}
+.half-day {
+  color: #fff;
+  background: #FFBF00;
+}
+
+.holiday-day {
+  color: #00AD0E;
+  background: #fff;
+}
+
+.current-day {
+  color: #e66b6b;
+}
+
+.prev-month,
+.next-month {
+  color: #cacaca;
+}
+
+.ring-left,
+.ring-right {
+  position: absolute;
+  top: 105px;
+}
+
+.ring-left {
+  left: 2em;
+}
+
+.ring-right {
+  right: 2em;
+}
+
+.ring-left:before,
+.ring-left:after,
+.ring-right:before,
+.ring-right:after {
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 3px 1px rgba(0, 0, 0, 0.3), 0 -1px 1px rgba(0, 0, 0, 0.2);
+  content: "";
+  display: inline-block;
+  margin: 8px;
+  height: 32px;
+  width: 8px;
+}
+
+.role{
+    display: block; height: 15px; width: 15px; float: left; margin-right: 5px; margin-top: 3px;
+}
+.left {
+    float: left;
+    margin: 10px 10px 0 0;
+    font-size: 11px;
+}

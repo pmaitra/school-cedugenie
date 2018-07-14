@@ -1,0 +1,36 @@
+.successbox, .warningbox, .errorbox, .infomsgbox{
+	text-align: center;
+	width: auto;
+	font-weight:bold;
+	border: 2px solid;	
+	background-repeat: no-repeat;
+	background-position: 10px center;	
+	visibility: collapse;
+	margin-top: 1em;
+	 -moz-border-radius: 20px;
+    -webkit-border-radius: 20px;
+    -khtml-border-radius: 20px;
+    border-radius: 20px;
+	vertical-align: middle;
+	font-family: bahamas;
+}
+
+.successbox {
+	color: #4F8A10;
+	background-color:#EDFCED;
+	background-image:url('/icam/images/success.png');
+}
+.warningbox {
+	color: #C86F0C;
+	background-color:#FAF9C9;
+	background-image: url('/icam/images/warning.png');
+}
+.errorbox {
+	color: #D8000C;
+	background-color:#FDD5CE;
+	background-image: url('/icam/images/error.png');
+}
+.infomsgbox {
+    background-color: #dfeff5;
+    background-image: url(/icam/images/info.png);
+}

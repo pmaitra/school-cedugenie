@@ -1,0 +1,184 @@
+@charset "utf-8";
+/*------------------------------------*\
+	eve-styles.css
+\*------------------------------------*/
+
+/* Design of Template ResponseEve (eve-styles.css) by Silvia Gamsjäger (SiGa)*/
+/*
+Twitter:            @sg_layout
+Author URL:         sg-layout.com
+Project URL:        sg-layout.com
+Version:            1.0
+Date:               January 2012
+License:			MIT License (X11)
+					http://www.opensource.org/licenses/MIT
+
+Copyright (c) 2012 Silvia Gamsjäger (SiGa)
+
+You´ll find a copy of the license in the files
+you´ve downloaded.
+*/
+
+/*------------------------------------*\
+	MAIN
+\*------------------------------------*/
+
+.social { text-align: right; position: relative; padding:65px 0px 0px 0px; margin: 0px 0px 0px 0px;}
+.social img {margin-bottom: 0;}
+
+.stablink { width:180px; height:27px; top:0px; *clear:both; position:absolute !important; float:right !important; text-align: right; top:0px; font:normal 12px/27px "Arial", Helvetica, sans-serif;
+color:#fff; text-align:center; z-index:150 !important; background:url(/icam/images/toplink_bg.png) right no-repeat; padding:5px 0px 0px 0px;  margin: 0px 0px 0px 820px;}
+.stablink img {margin-bottom: 0;}
+.stablink a { font:normal 12px/27px "Arial", Helvetica, sans-serif;
+color:#fff; text-decoration:none; padding:0px 0px 0px 0px;  margin: 0px 0px 0px 0px;}
+.stablink a:hover { text-decoration:none; font:normal 12px/27px "Arial", Helvetica, sans-serif;
+color:#103f5f; padding:0px 0px 0px 0px;  margin: 0px 0px 0px 0px;}
+.stablink span { padding:0px 0px 0px 0px;  margin: 0px 5px 0px 5px !important;}
+
+.footer01 { text-align: left; position: relative; padding:0px 0px 0px 0px;  margin: 0px 0px 0px 0px;}
+.footer01 img {margin-bottom: 0;}
+
+.footer02 { text-align: right; position: relative; padding:10px 0px 0px 0px;  margin: 0px 0px 0px 0px;}
+.footer02 img {margin-bottom: 0;}
+
+.notice{
+	font-family: cursive,Comic Sans MS,sans-serif;
+	font-style: inherit;
+	font-size:22px;	
+	color: orange;
+	padding-left: 20%;
+	position: relative;
+	vertical-align: 50%;
+}
+
+@media (max-width: 1000px){
+
+.wrapper{
+	width:100%;
+	min-height:20px !important;
+	overflow:hidden;
+	padding:100px 0 0;
+}
+	
+.loginbx label{
+	vertical-align:middle;
+	font-size:16px;
+	line-height:33px;
+	width:100%;
+	text-transform:uppercase;
+	margin:10px 0 10px 0;
+	display:block;
+	color:#fff;
+	text-align:center;
+}
+	
+.loginbx .txtfld{
+	vertical-align:middle;
+	font-size:16px;
+	text-align:left;
+	color:#fff;
+	border-radius:2px;
+	-moz-border-radius:2px;
+	-webkit-border-radius:2px;
+	-khtml-border-radius:2px;
+	height:33px;
+	border:1px dotted #3f454c;
+	line-height:33px;
+	width:100%;
+	margin:0;
+	background-color:#131c24;
+	box-shadow:0 0 5px #000 inset;
+	-moz-box-shadow:0 0 5px #000 inset;
+	-webkit-box-shadow:0 0 5px #000 inset;
+	-khtml-box-shadow:0 0 5px #000 inset;
+	display:block;
+}
+
+aside .content {
+	height:260px;	 
+}
+
+
+	
+.loginbx .resetbt{
+	vertical-align:middle;
+	font-size:16px;
+	text-align: center;
+	color:#fff;
+	height:31px;
+	border:none;
+	line-height:31px;
+	width:82px;
+	cursor:pointer;
+	text-shadow:0 0 3px #000;
+	text-transform:uppercase;
+	margin:25px auto 0;
+	background-color:none;
+	background:url(/icam/images/reset-btbg.png);
+	display:block;
+}
+	
+.loginbx .logbt{
+	vertical-align:middle;
+	font-size:16px;
+	text-align: center;
+	color:#fff;
+	height:31px;
+	border:none;
+	line-height:31px;
+	width:98px;
+	cursor:pointer;
+	text-shadow:0 0 3px #000;
+	text-transform:uppercase;
+	margin:10px auto;
+	background-color:none;
+	background:url(/icam/images/login-btbg.png);
+	display:block;
+}
+
+
+}
+
+/*------------------------------------*\
+	MOBILE  Media queries
+\*------------------------------------*/
+/*
+CSS for mobile devices.
+Linearise it!
+*/
+
+@media (max-width: 720px){
+
+.debug, .debug body{background:none!important;}
+body{-webkit-text-size-adjust:none;}
+
+	
+.grids{margin:0!important;width:auto!important;}
+[class^="grid-"],
+.grids [class^="grid-"]{
+	width:auto!important;
+	float:none!important;
+	margin:0!important;
+}
+
+header {
+	text-align:center;
+}
+
+.wrapper{
+	background:none;
+	background:#1F262D;
+	width:100%;
+	min-height:20px !important;
+	overflow:hidden;
+	padding:20px 0 0;
+}
+article, aside {
+	width:96%;
+	text-align:center;
+	margin:0 auto 10px;
+	display:block;
+	padding:0;
+}
+
+}

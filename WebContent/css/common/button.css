@@ -1,0 +1,175 @@
+
+/*For Add button */
+.addbtn{
+	background:url(/icam/images/add_btn.png) 0 0 no-repeat;
+	min-width:73px;
+	height:28px;
+	font:bold 12px/28px "Arial", Helvetica, sans-serif;
+	color:#fff;
+	text-transform:uppercase;
+	border:0px;
+	outline:none;
+	float:right;
+}
+/*For Add button Hover*/
+.addbtn:hover{
+	background:url(/icam/images/add_btn.png) 0 0 no-repeat;
+	min-width:73px;
+	height:28px;
+	font:bold 12px/28px "Arial", Helvetica, sans-serif;
+	color:#fff;
+	text-transform:uppercase;
+	border:0px;
+	outline:none;
+	cursor:pointer;
+	float:right;
+}
+/*For Submit button */
+.submitbtn{
+	background:#f74d4d;
+	min-width:73px;
+	height:28px;
+	font:bold 12px/28px "Arial", Helvetica, sans-serif;
+	color:#fff;
+	text-transform:uppercase;
+	text-align:center;
+	border:0px;
+	outline:none;
+	border-radius:5px;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	padding:0px;
+	margin:10px 0px 0px 10px;
+	float:right;
+}
+/*For Submit button Hover*/
+.submitbtn:hover{
+	background:#ee3232;
+	min-width:73px;
+	height:28px;
+	font:bold 12px/28px "Arial", Helvetica, sans-serif;
+	color:#fff;
+	text-transform:uppercase;
+	text-align:center;
+	border:0px;
+	outline:none;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	cursor:pointer;
+	padding:0px;
+	margin:10px 0px 0px 10px;
+	float:right;
+}
+/*For Clear button*/
+.clearbtn{
+	background:#72706d;
+	min-width:73px;
+	height:28px;
+	font:bold 12px/28px "Arial", Helvetica, sans-serif;
+	color:#fff;
+	text-transform:uppercase;
+	text-align:center;
+	border:0px;
+	outline:none;
+	border-radius:5px;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	padding:0px;
+	margin:10px 0px 0px 10px;
+	float:right;
+}
+/*For Clear button Hover*/
+.clearbtn:hover{
+	background:#5a5856;
+	min-width:73px;
+	height:28px;
+	font:bold 12px/28px "Arial", Helvetica, sans-serif;
+	color:#fff;
+	text-transform:uppercase;
+	text-align:center;
+	border:0px;
+	outline:none;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	cursor:pointer;
+	padding:0px;
+	margin:10px 0px 0px 10px;
+	float:right;
+}
+/*For Some button need to check*/
+.editbtn{
+	background:#27a9e3;
+	min-width:73px;
+	height:28px;
+	font:bold 12px/28px "Arial", Helvetica, sans-serif;
+	color:#fff;
+	text-transform:uppercase;
+	text-align:center;
+	border:0px;
+	outline:none;
+	border-radius:5px;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	padding:0px;
+	margin:10px 0px 0px 10px;
+	float:right;
+}
+/*For Some button hover need to check*/
+.editbtn:hover{
+	background:#1595ce;
+	min-width:73px;
+	height:28px;
+	font:bold 12px/28px "Arial", Helvetica, sans-serif;
+	color:#fff;
+	text-transform:uppercase;
+	text-align:center;
+	border:0px;
+	outline:none;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	cursor:pointer;
+	padding:0px;
+	margin:10px 0px 0px 10px;
+	float:right;
+}
+/*For Extra button */
+.greenbtn{
+	background:#006600;
+	min-width:73px;
+	
+	height:28px;
+	font:bold 12px/28px "Arial", Helvetica, sans-serif;
+	color:#fff;
+	text-transform:uppercase;
+	text-align:center;
+	border:0px;
+	outline:none;
+	border-radius:5px;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	padding:0px;
+	margin:10px 0px 0px 10px;
+	float:right;
+}
+/*For Extra button Hover*/
+.greenbtn:hover{
+	background:#006600;
+	min-width:73px;
+	height:28px;
+	font:bold 12px/28px "Arial", Helvetica, sans-serif;
+	color:#fff;
+	text-transform:uppercase;
+	text-align:center;
+	border:0px;
+	outline:none;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	cursor:pointer;
+	padding:0px;
+	margin:10px 0px 0px 10px;
+	float:right;
+}

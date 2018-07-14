@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.ticket.xml.TicketMapper">
+	<insert id="insertServiceType" parameterType="com.qts.icam.model.ticket.ServiceType">
+		INSERT INTO
+		ticket_service(
+		rec_id,
+		obj_id,
+		updated_by,
+		updated_on,
+		date_of_creation,		
+		ticket_service_code,
+		ticket_service_name,
+		ticket_service_desc,
+		service_owner,
+		department)
+		VALUES (uuid_generate_v4(),
+		#{ticketServiceObjectId},
+		(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+		(SELECT extract(epoch FROM now())),
+		(SELECT extract(epoch FROM now())),		
+		#{ticketServiceName},
+		#{ticketServiceName},
+		#{ticketServiceName},
+		(SELECT rec_id FROM resource WHERE user_id=#{ticketServiceOner.userId} AND is_active=true),
+		(SELECT rec_id FROM department WHERE department_code = #{department.departmentCode} AND is_active=true));
+	</insert>
+
+	<update id="deleteServiceType" parameterType="com.qts.icam.model.ticket.ServiceType">
+		UPDATE
+		ticket_service
+		SET
+		updated_by=(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+		updated_on=(SELECT extract(epoch FROM now())),
+		is_active = false
+		WHERE
+		ticket_service_name=#{ticketServiceName};
+	</update>
+
+	<update id="updateServiceType" parameterType="com.qts.icam.model.ticket.ServiceType">
+		UPDATE
+		ticket_service
+		SET
+		updated_by=(SELECT rec_id FROM resource WHERE user_id=#{updatedBy} AND is_active = true),
+		updated_on=(SELECT extract(epoch FROM now())),
+		ticket_service_code=#{ticketServiceName},
+		ticket_service_name=#{ticketServiceName},
+		ticket_service_desc=#{ticketServiceName},
+		service_owner=(SELECT rec_id FROM resource WHERE user_id=#{ticketServiceOner.userId} AND is_active=true),
+		department=(SELECT rec_id FROM department WHERE department_code = #{department.departmentCode} AND is_active=true)
+		WHERE
+			ticket_service_name=#{ticketServiceCode}		 
+		AND 
+			is_active=true;
+	</update>
+
+	
+
+	
+	
+	<resultMap id="getTicketListRM" type="com.qts.icam.model.ticket.Ticket">
+		<id property="ticketCode" column="ticket_code" jdbcType="VARCHAR" />
+		<result property="ticketOpenDate" column="ticket_open_date"	jdbcType="VARCHAR" />
+		<!-- <result property="ticketRecId" column="ticket_code" jdbcType="VARCHAR" /> -->
+		<result property="affectedUser" column="user_id" jdbcType="VARCHAR" />
+		<result property="reportedBy" column="reportedBy" jdbcType="VARCHAR" />
+		<result property="ticketService.ticketServiceCode" column="category_code"	jdbcType="VARCHAR" />
+		<result property="ticketService.ticketServiceName" column="category_name"	jdbcType="VARCHAR" />
+		<result property="ticketSummary" column="ticket_summary" jdbcType="VARCHAR" />
+		<result property="status" column="ticket_status_code" jdbcType="VARCHAR" />
+		<result property="taskStatus" column="ticket_status_name" jdbcType="VARCHAR" /> 
+		<result property="queryStatus" column="type" jdbcType="VARCHAR" /> 
+		<collection property="commentList" ofType="com.qts.icam.model.ticket.TicketComment">
+			<id property="comment" column="ticket_comment" jdbcType="VARCHAR" />
+			<result property="ticketCommentDate" column="date_of_comment" jdbcType="INTEGER" />
+		</collection>
+	</resultMap>
+	<!-- Modified By Naimisha 23102017 -->
+	<select id="selectInwardTicketList" resultMap="getTicketListRM" parameterType="String">
+	
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY HH12:MI:SS AM'))as
+			ticket_open_date,
+			t.ticket_code,
+			r.user_id , 
+			r1.user_id as reportedBy,
+			t.ticket_summary,
+			tss.ticket_status_code,
+			tss.ticket_status_name,
+			t.ticket_desc,
+			c.category_name,
+			c.category_code,
+			tss.type
+		FROM
+			ticket t
+		JOIN resource r ON (t.ticket_recepient = r.rec_id AND r.is_active = true) 
+		JOIN category c ON (t.category = c.rec_id AND c.is_active = true)
+		JOIN resource r1 ON (r1.rec_id = t.reported_by AND r1.is_active = true)
+		JOIN ticket_status tss ON (tss.rec_id = t.ticket_status AND tss.is_active = true)
+		WHERE
+			tss.type NOT IN ('CLOSED','REJECTED','COMPLETED')
+		AND
+			r.user_id = #{updatedBy} 
+		AND
+			t.is_active = true;
+	</select>
+
+	<resultMap id="getClosedTicketListRM" type="com.qts.icam.model.ticket.Ticket">
+		<id property="ticketCode" column="ticket_code" jdbcType="VARCHAR" />
+		<result property="ticketOpenDate" column="ticket_open_date" jdbcType="VARCHAR" />
+		<result property="ticketCloseDate" column="ticket_close_date" jdbcType="VARCHAR" />
+		<result property="affectedUser" column="user_id" jdbcType="VARCHAR" />
+		<result property="reportedBy" column="reportedBy" jdbcType="VARCHAR" />
+		<result property="ticketService.ticketServiceName" column="ticket_service_name" jdbcType="VARCHAR" />
+		<result property="ticketSummary" column="ticket_summary" jdbcType="VARCHAR" />
+		<result property="status" column="ticket_status_code" jdbcType="VARCHAR" />
+		<collection property="commentList" ofType="com.qts.icam.model.ticket.TicketComment">
+			<id property="comment" column="ticket_comment" jdbcType="VARCHAR" />
+			<result property="ticketCommentDate" column="date_of_comment" jdbcType="INTEGER" />
+		</collection>
+	</resultMap>
+	
+	
+	
+
+		
+
+	
+
+	
+	
+	<select id="getSearchBasedTicketList" resultMap="getTicketListRM" parameterType="java.util.Map">
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY HH12:MI:SS AM'))as
+			ticket_open_date,
+			t.ticket_code,
+			r.user_id,
+			r1.user_id as reportedBy,
+			ts.ticket_service_name,
+			t.ticket_summary,
+			tss.ticket_status_code,
+			(SELECT to_char((SELECT to_timestamp(tc.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM'))as
+			date_of_comment,
+			tc.ticket_comment			
+		FROM
+			ticket t			
+			JOIN ticket_service ts ON (ts.rec_id=t.service_type AND ts.is_active = true)
+			JOIN resource r ON (r.rec_id=t.affected_user AND r.is_active = true)
+			JOIN resource r1 ON (r1.rec_id=t.reported_by AND r1.is_active = true)
+			JOIN ticket_status tss ON (tss.rec_id=t.ticket_status AND tss.is_active = true)
+			LEFT JOIN ticket_comment tc ON (t.rec_id=tc.ticket AND tc.is_active = true)
+		WHERE			
+			tss.ticket_status_code != 'CLOSED'
+		<if test="status != null">
+		AND 
+			tss.ticket_status_code ilike ('%'||#{status}||'%')
+		</if>	
+		
+	</select>
+	
+	<select id="selectListClosedTicket" resultMap="getTicketListRM" parameterType="String">
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY HH12:MI:SS AM'))as ticket_open_date,
+			t.ticket_code,
+			r.user_id , 
+			r1.user_id as reportedBy,
+			t.ticket_summary,
+			tss.ticket_status_code,
+			t.ticket_desc,
+			c.category_name,
+			tss.ticket_status_name,
+			tss.type
+		FROM
+			ticket t
+		JOIN resource r ON (t.ticket_recepient = r.rec_id AND r.is_active = true) 
+		JOIN category c ON (t.category = c.rec_id AND c.is_active = true)
+		JOIN resource r1 ON (r1.rec_id = t.reported_by AND r1.is_active = true)
+		JOIN ticket_status tss ON (tss.rec_id = t.ticket_status AND tss.is_active = true)
+		WHERE
+			tss.type IN ('CLOSED','COMPLETED','REJECTED')
+		AND
+			r.user_id = #{updatedBy}
+	</select>
+	
+
+
+
+	<resultMap id="getTicketDetailsRM" type="com.qts.icam.model.ticket.Ticket">
+		<id property="ticketCode" column="ticket_code" jdbcType="VARCHAR" />
+		<result property="ticketOpenDate" column="ticket_open_date" jdbcType="VARCHAR" />
+		<result property="affectedUser" column="user_id" jdbcType="VARCHAR" />
+		<result property="reportedBy" column="reportedBy" jdbcType="VARCHAR" />
+		<result property="ticketService.ticketServiceName" column="category_name"	jdbcType="VARCHAR" />
+		<result property="ticketSummary" column="ticket_summary" jdbcType="VARCHAR" />
+		<result property="description" column="ticket_desc" jdbcType="VARCHAR" />
+		<result property="status" column="ticket_status_code" jdbcType="VARCHAR" />
+		<collection property="commentList" ofType="com.qts.icam.model.ticket.TicketComment">
+			<id property="comment" column="ticket_comment" jdbcType="VARCHAR" />
+			<result property="updatedBy" column="commented_by" jdbcType="VARCHAR" />
+			<result property="ticketCommentDate" column="date_of_comment" jdbcType="INTEGER" />
+		</collection>
+	</resultMap>
+	
+	
+	<select id="selectOpenTicketList" resultMap="getTicketListRM" parameterType="String">
+		 SELECT
+			to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY HH12:MI:SS AM') as ticket_open_date,
+			t.ticket_code,
+			r.user_id,
+			
+			c.category_name,
+			t.ticket_summary,
+			tss.ticket_status_code,
+			(SELECT to_char((SELECT to_timestamp(tc.date_of_comment)), 'DD/MM/YYYY HH12:MI:SS AM'))as
+			date_of_comment,
+			tc.ticket_comment			
+		FROM
+			ticket t			
+			JOIN category c ON (c.rec_id=t.category AND c.is_active = true)
+			JOIN resource r ON (r.rec_id=t.ticket_recepient AND r.is_active = true)
+			JOIN ticket_status tss ON (tss.rec_id=t.ticket_status AND tss.is_active = true)
+			LEFT JOIN ticket_comment tc ON (t.rec_id=tc.ticket AND tc.is_active = true)
+		WHERE			
+			tss.ticket_status_code = 'OPEN'
+		AND 
+			r.user_id = #{userId}
+		AND
+			t.is_active = true; 	
+			
+	</select>
+      
+      
+    <!--   Added by naimisha 24042018 -->
+ <insert id="insertInTransactionWorkingAreaForTicketing" parameterType="com.qts.icam.model.finance.TransactionalWorkingArea"> 
+		INSERT INTO transactional_working_area(
+			rec_id,
+			obj_id,
+			updated_by,
+			updated_on, 
+			date_of_creation,
+			transactional_working_area_code,
+			transactional_working_area_name, 
+			transactional_working_area_desc,
+			resource,
+			transaction_date,	
+			transaction_year,
+			transaction_month,
+			gross_amount,
+			net_amount,
+			transaction_mode
+			<choose>
+				<when test="transactionMode == 'BANK'">
+					,bank_amount,
+					cheque_no,
+					bank_name,
+					bank_code,
+					bank_location
+				</when>
+				<otherwise>
+					,cash_amount
+				</otherwise>
+			</choose>
+			,
+			
+			
+			transaction_status,
+			academic_year,
+			department,
+			
+			income_expense,
+			ledger,
+			ticket,
+			task_details)
+		VALUES(
+			uuid_generate_v4(),
+			#{objectId},
+			(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active=true),
+			extract(epoch FROM now()), 
+			extract(epoch FROM now()),
+			(SELECT('TWA' ||(SELECT COALESCE((SELECT MAX(transactional_working_area_id) FROM transactional_working_area), 0)+1))),
+			#{transactionalWorkingAreaName}, 
+			#{transactionalWorkingAreaDesc},
+			#{academicYear},
+			extract(epoch FROM now()),			
+			to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'YYYY'),
+			to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'MM'),
+			#{netAmount},
+			#{netAmount}, 
+			#{transactionMode}
+			<choose>
+				<when test="transactionMode == 'BANK'">
+					,#{netAmount},
+					#{chequeNo},
+					#{bankName},
+					#{bankCode},
+					#{bankLocation}
+				</when>
+				<otherwise>
+					,#{netAmount}
+				</otherwise>
+			</choose>
+			
+			,'PENDING',
+			(SELECT academic_year_name FROM academic_year WHERE year_status=(SELECT rec_id FROM status_flag WHERE status_sym='C')),
+			 (SELECT department_name FROM department WHERE department_code = #{department}), 
+			#{incomeExpense},
+			(SELECT rec_id FROM ledger WHERE ledger_code = #{academicYear} AND is_active = true),
+			(SELECT rec_id FROM ticket WHERE ticket_code = #{ticketCode} AND is_active = true),
+			(SELECT rec_id FROM task_details WHERE task_details_code = #{taskCode} AND is_active = true)
+		);
+	</insert> 
+	
+	<!-- Added By Naimisha 23052018 -->
+	<select id="inwardListTicketForTicketAdministrator" resultMap="getTicketListRM" parameterType="String">
+	
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY HH12:MI:SS AM'))as
+			ticket_open_date,
+			t.ticket_code,
+			r.user_id , 
+			r1.user_id as reportedBy,
+			t.ticket_summary,
+			tss.ticket_status_code,
+			tss.ticket_status_name,
+			t.ticket_desc,
+			c.category_name,
+			c.category_code,
+			tss.type
+		FROM
+			ticket t
+		JOIN resource r ON (t.ticket_recepient = r.rec_id AND r.is_active = true) 
+		JOIN category c ON (t.category = c.rec_id AND c.is_active = true)
+		JOIN resource r1 ON (r1.rec_id = t.reported_by AND r1.is_active = true)
+		JOIN ticket_status tss ON (tss.rec_id = t.ticket_status AND tss.is_active = true)
+		WHERE
+			tss.type NOT IN ('CLOSED','REJECTED','COMPLETED')
+		AND
+			t.is_active = true;
+	</select>
+	
+	<select id="listClosedTicketForForTicketAdministrator" resultMap="getTicketListRM" parameterType="String">
+		SELECT
+			(SELECT to_char((SELECT to_timestamp(t.ticket_open_date)), 'DD/MM/YYYY HH12:MI:SS AM'))as ticket_open_date,
+			t.ticket_code,
+			r.user_id , 
+			r1.user_id as reportedBy,
+			t.ticket_summary,
+			tss.ticket_status_code,
+			t.ticket_desc,
+			c.category_name,
+			tss.ticket_status_name,
+			tss.type
+		FROM
+			ticket t
+		JOIN resource r ON (t.ticket_recepient = r.rec_id AND r.is_active = true) 
+		JOIN category c ON (t.category = c.rec_id AND c.is_active = true)
+		JOIN resource r1 ON (r1.rec_id = t.reported_by AND r1.is_active = true)
+		JOIN ticket_status tss ON (tss.rec_id = t.ticket_status AND tss.is_active = true)
+		WHERE
+			tss.type IN ('CLOSED','COMPLETED','REJECTED');
+	</select>
+</mapper>

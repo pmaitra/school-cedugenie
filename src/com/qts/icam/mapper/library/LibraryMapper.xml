@@ -1,0 +1,2985 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.mapper.library.LibraryMapper">
+
+	<resultMap id="resultMapOfSelectBookStock" type="com.qts.icam.model.library.Book">
+		<id property="bookCode" column="book_stock_book_code" jdbcType="VARCHAR" />
+		<result property="bookName" column="book_name" jdbcType="VARCHAR" />
+		<result property="totalNumberOfBookCopies" column="book_stock_total" jdbcType="INTEGER" />
+		<result property="totalNumberOfBookCopiesAvailable" column="book_stock_available" jdbcType="INTEGER" />
+		<result property="totalNumberOfBookCopiesLended" column="book_stock_out" jdbcType="INTEGER" />
+		<result property="totalNumberOfBookCopiesReserved" column="book_stock_reserved" jdbcType="INTEGER" />
+	</resultMap>
+
+
+	<parameterMap id="insertingAuthor" type="com.qts.icam.model.library.Author">
+		<parameter property="authorObjectId" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="authorObjectId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="authorFullName" jdbcType="VARCHAR" mode="IN" />
+	</parameterMap>
+	<insert id="insertAuthorList" parameterMap="insertingAuthor"
+		statementType="CALLABLE">
+		{? = call addauthor(?,?,?)}
+	</insert>
+
+
+	<parameterMap id="insertingBookPublisher" type="com.qts.icam.model.library.BookPublisher">
+		<parameter property="bookPublisherObjectId" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="bookPublisherObjectId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookPublisherName" jdbcType="VARCHAR" mode="IN" />
+	</parameterMap>
+	<insert id="insertBookPublisher" parameterMap="insertingBookPublisher" statementType="CALLABLE">
+		{? = call addbookpublisher(?,?,?)}
+	</insert>
+
+
+	<parameterMap id="insertingMedium" type="com.qts.icam.model.library.BookMedium">
+		<parameter property="bookMediumObjectId" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="bookMediumObjectId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookMediumName" jdbcType="VARCHAR" mode="IN" />
+	</parameterMap>
+	<insert id="insertMedium" parameterMap="insertingMedium" statementType="CALLABLE">
+		{? = call addmedium(?,?,?)}
+	</insert>
+
+
+	<parameterMap id="insertingLanguage" type="com.qts.icam.model.library.BookLanguage">
+		<parameter property="bookLanguageObjectId" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="bookLanguageObjectId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookLanguageName" jdbcType="VARCHAR" mode="IN" />
+	</parameterMap>
+	<insert id="insertLanguage" parameterMap="insertingLanguage" statementType="CALLABLE">
+		{? = call addlanguage(?,?,?)}
+	</insert>
+
+	<!-- <parameterMap id="insertingGenre" type="com.qts.icam.model.common.Genre">
+		<parameter property="genreObjectId" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="genreObjectId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="genreName" jdbcType="VARCHAR" mode="IN" />
+	</parameterMap>
+	<insert id="insertGenre" parameterMap="insertingGenre" statementType="CALLABLE">
+		{? = call addGenre(?,?,?)}
+	</insert> -->
+
+	<!-- <parameterMap id="insertingBook" type="com.qts.icam.model.library.Book">
+		<parameter property="bookObjectId" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="bookObjectId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookCode" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookDesc" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookPublisherId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookMediumId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookIsbn" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookEdition" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookLanguageId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="totalNumberOfBookCopies" jdbcType="INTEGER" mode="IN" />
+		<parameter property="bookPlace" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookPeriodicity" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookType" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="requisitionReceivedDateDetailsId" jdbcType="INTEGER" mode="IN" />
+		<parameter property="price" jdbcType="DOUBLE" mode="IN" />
+		<parameter property="genre.genreName" jdbcType="VARCHAR" mode="IN" />
+	</parameterMap>
+	<insert id="addNewBook" parameterMap="insertingBook" statementType="CALLABLE">
+		{? = call addbook(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}
+	</insert> -->
+	
+	<parameterMap id="insertingBook" type="com.qts.icam.model.library.Book">
+		<parameter property="bookObjectId" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="bookObjectId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookCategory.bookCategoryCode" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookEntryDate" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="accessionNumber" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookPlace" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookPublisherId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="publishingYear" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="pages" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="volume" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="source" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="billNo" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="billDate" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="cost" jdbcType="DOUBLE" mode="IN" />
+		<parameter property="classNo" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookNo" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="withdrawalNo" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="withdrawalDate" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="remarks" jdbcType="VARCHAR" mode="IN" />
+	</parameterMap>
+	<!-- <insert id="addNewBook" parameterMap="insertingBook" statementType="CALLABLE">
+		{? = call addbook(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}
+	</insert> -->
+	
+	<insert id="addNewBook" parameterType="com.qts.icam.model.library.Book">
+		INSERT INTO 
+			book(
+		            rec_id, obj_id, updated_by, updated_on, date_of_creation,
+		            date_of_entry, accession_number, bill_no, bill_date, price, 
+		          	withdrawal_no, withdrawal_date, item_status, library_catalogue, total_no_of_copies_available
+	            )
+    	VALUES 
+    			(
+    				(select uuid_generate_v4()), #{bookObjectId}, 
+    				(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active =true), 
+				 	(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())), 
+				 	(SELECT extract(epoch from (SELECT to_timestamp(#{bookEntryDate},'DD/MM/YYYY')))),
+				 	#{accessionNumber}, #{billNo}, (SELECT extract(epoch from (SELECT to_timestamp(#{billDate},'DD/MM/YYYY')))),
+				 	#{cost}, #{withdrawalNo}, (SELECT extract(epoch from (SELECT to_timestamp(#{withdrawalDate},'DD/MM/YYYY')))),
+				 	(SELECT rec_id FROM status_of_item WHERE status_of_item_code = #{statusOfItemName} AND is_active = true),
+				 	(SELECT rec_id FROM library_catalogue WHERE item_code = #{bookName} AND is_active = true), 1
+    			);
+	</insert>
+
+	<insert id="insertBookAuthor" parameterType="com.qts.icam.model.library.BookAuthor"
+		statementType="CALLABLE">
+		select add_book_author(
+		#{updatedBy, mode=IN, jdbcType=VARCHAR},
+		#{bookAuthorObjectId, mode=IN, jdbcType=VARCHAR},
+		#{bookObjectId, mode=IN, jdbcType=VARCHAR},
+		#{authorObjectId, mode=IN, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<resultMap id="bookOperationalStatus" type="com.qts.icam.model.library.BookOperationalStatus">
+		<id property="bookOperationalStatusCode" column="book_operational_status_code"
+			jdbcType="VARCHAR" />
+		<result property="bookOperationalStatusDesc" column="book_operational_status_name"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectOperationalStatusList" resultMap="bookOperationalStatus">
+		SELECT
+			book_operational_status_code,
+			book_operational_status_name
+		FROM
+			book_operational_status
+	</select>
+
+	<resultMap id="bookLifecycleStatus" type="com.qts.icam.model.library.BookLifeCycleStatus">
+		<id property="bookLifeCycleStatusCode" column="book_lifecycle_status_code"
+			jdbcType="VARCHAR" />
+		<result property="bookLifeCycleStatusDesc" column="book_lifecycle_status_name"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectLifeCycleStatusList" resultMap="bookLifecycleStatus">
+		SELECT
+			book_lifecycle_status_code,
+			book_lifecycle_status_name
+		FROM
+			book_lifecycle_status
+	</select>
+
+	<!-- This resultMap with id="generalResultMapOfBookMapper" is being access 
+		by "selectBookStock" and "selectBookProfile" id -->
+	<resultMap id="generalResultMapOfBookMapper" type="com.qts.icam.model.library.Book">
+		<id property="bookCode" column="book_code" jdbcType="VARCHAR" />
+		<result property="bookName" column="book_name" jdbcType="VARCHAR" />
+		<result property="totalNumberOfBookCopies" column="total_no_of_copies" jdbcType="INTEGER" />
+		<result property="totalNumberOfBookCopiesRetired" column="total_no_of_copies_retired" jdbcType="INTEGER" />
+		<result property="totalNumberOfBookCopiesAvailable" column="total_no_of_copies_available" jdbcType="INTEGER" />
+		<result property="totalNumberOfBookCopiesLended" column="total_no_of_copies_lended" jdbcType="INTEGER" />
+		<result property="totalNumberOfBookCopiesReserved" column="total_no_of_copies_reserved" jdbcType="INTEGER" />
+		<result property="authorFirstName" column="author_first_name" jdbcType="VARCHAR" />
+		<result property="authorMiddleName" column="author_middle_name" jdbcType="VARCHAR" />
+		<result property="authorLastName" column="author_last_name" jdbcType="VARCHAR" />
+		<result property="vendorName" column="vendor_name" jdbcType="VARCHAR" />
+		<result property="bookLanguageName" column="book_language" jdbcType="VARCHAR" />
+		<result property="bookEdition" column="book_edition" jdbcType="VARCHAR" />
+		<result property="bookMediumName" column="book_medium_name" jdbcType="VARCHAR" />
+		<result property="bookDesc" column="book_desc" jdbcType="VARCHAR" />
+		<result property="averageBookRating" column="avg_book_rating" jdbcType="INTEGER" />
+		
+	</resultMap>
+
+	<!-- This resultMap with id="bookAllocationListResultMapOfBookMapper" is 
+		being access by "selectBookAllocationList" id -->
+	<resultMap id="bookAllocationListResultMapOfBookMapper" type="com.qts.icam.model.library.BookAllocation">
+		<id property="bookAllocationObjectId" column="obj_id" jdbcType="VARCHAR" />
+		<association property="bookIssuedTo" javaType="com.qts.icam.model.common.Resource">
+			<id property="userId" column="user_id" jdbcType="VARCHAR" />
+			<result property="name" column="name" jdbcType="VARCHAR" />
+		</association>
+	</resultMap>
+
+	<!-- This select tag with id="selectBookAllocationList" is being called 
+		by getLendingHistory() method of LibraryDAO.java class -->
+	<select id="selectBookAllocationListForStudent" parameterType="java.lang.String"
+		resultMap="bookAllocationListResultMapOfBookMapper">
+		SELECT
+			r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || COALESCE(r.last_name,'') as name,
+			r.roll_number as user_id
+		FROM
+			book_allocation ba
+			JOIN resource r ON (ba.book_issued_to = r.rec_id AND r.is_active = true)
+			JOIN book_allocation_details bad ON (bad.book_allocation = ba.rec_id)
+			LEFT JOIN book b ON (b.book_code = bad.book_code)
+			JOIN resource_type rt ON (rt.rec_id = r.resource_type) AND (rt.is_active = true)
+		WHERE
+			b.book_code=#{bookCode}
+		AND
+			rt.resource_type_name ILIKE 'STUDENT'
+		AND
+			ba.is_active = true
+		GROUP BY
+			r.roll_number ,
+			name;
+	</select>
+	<select id="selectBookRatingForBookCodeAndUser" parameterType="com.qts.icam.model.library.BookAllocation"
+		resultType="com.qts.icam.model.library.BookRating">
+		SELECT
+			br.book_rating_desc as bookRatingDesc,
+			br.book_rating_comment as bookRatingComments
+		FROM
+			book_rating br
+		JOIN resource r ON (br.book_rating_by = r.rec_id AND r.is_active = true)
+		LEFT JOIN book b ON (b.book_code = br.book_rating_code)
+		WHERE
+			b.book_code=#{book.bookCode}
+		AND 
+			br.is_active = true 
+		AND
+			r.rec_id = (select COALESCE((SELECT r.rec_id FROM resource r WHERE
+								user_id=#{bookIssuedTo.userId} AND is_active = true),
+								(SELECT r1.rec_id FROM resource
+									r1 WHERE user_id = #{bookIssuedTo.userId} AND is_active = true) ))
+	</select>
+
+	<select id="selectBookAllocationListForStaff" parameterType="java.lang.String"
+		resultMap="bookAllocationListResultMapOfBookMapper">
+		SELECT
+			r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || COALESCE(r.last_name,'') as name,
+			r.user_id
+		FROM
+			book_allocation ba
+		JOIN resource r ON (ba.book_issued_to = r.rec_id AND r.is_active = true)
+		JOIN book_allocation_details bad ON (bad.book_allocation = ba.rec_id)
+		LEFT JOIN book b ON (b.book_code = bad.book_code)
+		JOIN resource_type rt ON (rt.rec_id = r.resource_type) AND (rt.is_active = true)
+		WHERE
+			b.book_code=#{bookCode}
+		AND
+			rt.resource_type_name NOT IN ('STUDENT')
+		AND 
+			ba.is_active = true
+		GROUP BY
+			r.user_id,
+			name;
+	</select>
+
+	<select id="selectIssueDateAndReturnDateForStaffStudent"
+		parameterType="com.qts.icam.model.library.Book" resultType="com.qts.icam.model.library.BookAllocationDetails">
+		SELECT
+			to_char((SELECT to_timestamp(bad.book_issued_date)), 'DD/MM/YYYY HH12:MI:SS AM') as bookIssueDate,
+			to_char((SELECT to_timestamp( bad.book_actual_submission_date)), 'DD/MM/YYYY HH12:MI:SS AM') as bookReturnDate
+		FROM
+			book_allocation ba
+		JOIN resource r ON (ba.book_issued_to = r.rec_id AND r.is_active = true)
+		JOIN book_allocation_details bad ON (bad.book_allocation = ba.rec_id)
+		LEFT JOIN book b ON (b.book_code = bad.book_code)
+		WHERE
+			b.book_code = #{bookCode}
+		AND
+			r.rec_id = (select COALESCE((SELECT r.rec_id FROM resource r WHERE user_id = #{updatedBy} AND is_active = true),
+						(SELECT r1.rec_id FROM resource r1 WHERE roll_number = #{updatedBy} AND is_active = true) ))
+		AND
+			ba.is_active = true;
+	</select>
+
+	<!-- This select tag with id="selectBookStock" is being called by getBookStock() 
+		method of LibraryDAO.java class -->
+
+	<select id="selectBookStock" resultMap="generalResultMapOfBookMapper">
+		SELECT
+			book_code,
+			book_name,
+			total_no_of_copies,
+			total_no_of_copies_lended,
+			total_no_of_copies_reserved,
+			total_no_of_copies_available,
+			avg_book_rating
+		FROM
+			book
+		WHERE
+			total_no_of_copies > 0
+		AND
+			is_active = true;
+	</select>
+	<select id="selectUserBookRating" parameterType="com.qts.icam.model.library.Book" resultType="Integer">
+		SELECT
+			sum(cast(book_rating_desc as int))/count(book_rating_code) as userBookRating
+		FROM
+			book_rating br
+		WHERE
+			br.is_active = true
+		AND	
+			book_rating_code = #{bookCode}
+		AND
+			br.date_of_creation BETWEEN 
+									(SELECT 
+										session_start_date
+									FROM
+										academic_year ay
+									JOIN
+										status_flag sf1 ON (sf1.rec_id = ay.year_status)
+									WHERE
+										ay.is_active = true
+									AND
+										sf1.status_sym = 'C'
+									)
+								AND
+									(SELECT 
+										session_end_date
+									FROM
+										academic_year ay
+									JOIN
+										status_flag sf1 ON (sf1.rec_id = ay.year_status)
+									WHERE
+										ay.is_active = true	
+									AND
+										sf1.status_sym = 'C'
+									)
+	</select>
+	
+
+	<select id="searchForViewBookStock" parameterType="java.util.Map"
+		resultMap="generalResultMapOfBookMapper">
+		SELECT
+			book_code,
+			book_name,
+			total_no_of_copies,
+			total_no_of_copies_lended,
+			total_no_of_copies_reserved,
+			total_no_of_copies_available
+		FROM
+			book
+		WHERE
+			total_no_of_copies > 0
+		AND
+			is_active = true
+		<if test="BookCode != null">
+			AND book_code ilike ('%'||#{BookCode}||'%')
+		</if>
+		<if test="BookName != null">
+			AND book_name ilike ('%'||#{BookName}||'%')
+		</if>
+	</select>
+
+	<!-- This select tag with id="selectBookProfile" is being called by getBookProfile()and 
+		getLendingHistory() method of LibraryDAO.java class -->
+<!-- 	<select id="selectBookProfile" parameterType="String" -->
+<!-- 		resultMap="generalResultMapOfBookMapper"> -->
+<!-- 		SELECT -->
+<!-- 		b.book_code, -->
+<!-- 		b.book_name, -->
+<!-- 		b.avg_book_rating -->
+<!-- 		FROM -->
+<!-- 		"Book" b -->
+<!-- 		WHERE -->
+<!-- 		b.active=(select rec_id from "Status_Flag" where status_desc='ACTIVE') -->
+<!-- 		AND b.book_code=#{bookCode}; -->
+<!-- 	</select> -->
+
+	<resultMap id="getBookDetailsResultMap" type="com.qts.icam.model.library.Book">
+		<id property="bookCode" column="book_code" jdbcType="VARCHAR" />
+		<result property="bookName" column="book_name" jdbcType="VARCHAR" />
+		<result property="bookEdition" column="book_edition" jdbcType="VARCHAR" />
+		<result property="bookIsbn" column="book_isbn" jdbcType="VARCHAR" />
+		<association property="bookPublisher"
+			javaType="com.qts.icam.model.library.BookPublisher">
+			<id property="bookPublisherName" column="book_publisher_name"
+				jdbcType="VARCHAR" />
+		</association>
+	</resultMap>
+	<select id="getBookDetails" parameterType="String"
+		resultMap="getBookDetailsResultMap">
+		SELECT
+			b.book_code,
+			b.book_name,
+			bp.book_publisher_name,
+			b.book_edition,
+			b.book_isbn
+		FROM
+			book b
+		JOIN book_publisher bp ON (b.book_publisher = bp.rec_id AND bp.is_active = true)
+		WHERE
+			b.book_code = #{bookCode}
+		AND 
+			b.is_active = true
+	</select>
+
+	<resultMap id="getBookIdListResultMap" type="com.qts.icam.model.library.BookId">
+		<id property="bookCode" column="book_common_code" jdbcType="VARCHAR" />
+		<result property="bookId" column="book_individual_code" jdbcType="VARCHAR" />
+		<result property="newBookEntryDate" column="book_entry_date" jdbcType="VARCHAR" />
+		<result property="price" column="price" jdbcType="DOUBLE" />
+	</resultMap>
+	<select id="getBookIdList" parameterType="com.qts.icam.model.library.Book" resultMap="getBookIdListResultMap">
+		SELECT
+			book_common_code,
+			book_individual_code,
+			book_entry_date,
+			price
+		FROM
+			book_id bi
+		JOIN 
+			book_lifecycle_status bls ON (bi.book_lifecycle_code = bls.rec_id AND bls.is_active = true)
+		WHERE
+			bls.book_lifecycle_status_code ='PUB'
+		AND
+			bi.book_common_code = #{bookCode}
+		AND
+			bi.is_active = true
+<!-- 		<if test="bookId!=null and bookId.bookId != null"> -->
+<!-- 			AND book_individual_code ilike ('%'||#{bookId.bookId}||'%') -->
+<!-- 		</if> -->
+<!-- 		<if test="bookId!=null and bookId.newBookEntryDate != null"> -->
+<!-- 			AND (SELECT extract(epoch from (SELECT to_timestamp((SELECT to_char((SELECT to_timestamp((book_entry_date))), 'DD/MM/YYYY')), 'DD/MM/YYYY'))))  =    (SELECT extract(epoch from (SELECT to_timestamp(#{bookId.newBookEntryDate}, 'DD/MM/YYYY')))) -->
+<!-- 		</if> -->
+		ORDER BY
+			sequence_no
+	</select>
+
+	<resultMap id="getAuthorListResultMap" type="com.qts.icam.model.library.Author">
+		<id property="authorFullName" column="author_full_name" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getAuthorList" parameterType="String"
+		resultMap="getAuthorListResultMap">
+		SELECT
+			a.author_full_name
+		FROM
+			book b
+		JOIN book_author ba ON (b.rec_id = ba.book AND ba.is_active = true)
+		JOIN author a ON (a.rec_id = ba.author AND a.is_active = true)
+		WHERE
+			b.is_active = true
+		AND
+			b.book_code = #{bookCode}
+	</select>
+
+	<update id="makeBookRetire" parameterType="com.qts.icam.model.library.BookId">
+		select makebookretire(
+		#{bookId, mode=IN, jdbcType=VARCHAR},
+		#{comment, mode=IN, jdbcType=VARCHAR}
+		)
+	</update>
+
+	<select id="getRetiredBookList" resultMap="generalResultMapOfBookMapper"  parameterType="java.util.Map">
+		SELECT
+			b.book_code,
+			b.book_name,
+			b.total_no_of_copies,
+			b.total_no_of_copies_retired
+		FROM
+			book b
+		WHERE
+			total_no_of_copies_retired>0
+		AND	
+			b.is_active = true;
+<!-- 		<if test="BookCode != null"> -->
+<!-- 			AND b.book_code ilike ('%'||#{BookCode}||'%') -->
+<!-- 		</if> -->
+<!-- 		<if test="BookName != null"> -->
+<!-- 			AND b.book_name ilike ('%'||#{BookName}||'%') -->
+<!-- 		</if>; -->
+	</select>
+
+	<resultMap id="getBookDetailsListResultMap" type="com.qts.icam.model.library.BookId">
+		<id property="bookCode" column="book_common_code" jdbcType="VARCHAR" />
+		<result property="bookId" column="book_individual_code" jdbcType="VARCHAR" />
+		<result property="newBookEntryDate" column="book_entry_date" jdbcType="VARCHAR" />
+		<result property="bookRetirementDate" column="book_retirement_date" jdbcType="VARCHAR" />
+		<result property="price" column="price" jdbcType="DOUBLE" />
+	</resultMap>
+	<select id="getBookDetailsList" parameterType="String" resultMap="getBookDetailsListResultMap">
+		SELECT
+			book_common_code,
+			book_individual_code,
+			book_entry_date,
+			book_retirement_date,
+			price
+		FROM
+			book_id bi
+		JOIN
+			book_lifecycle_status bls ON (bi.book_lifecycle_code = bls.rec_id AND bls.is_active = true)
+		WHERE
+			bls.book_lifecycle_status_code ='RETD'
+		AND
+			book_common_code = #{bookCode}
+		AND
+			bi.is_active = true
+		ORDER BY
+			sequence_no
+	</select>
+
+	<resultMap id="getLastRequisitionIdMapper" type="com.qts.icam.model.library.BookRequisition">
+		<id property="bookRequisitionCode" column="book_requisition_code"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getLastRequisitionId" resultMap="getLastRequisitionIdMapper">
+		SELECT
+			book_requisition_code
+		FROM
+			book_requisition
+		WHERE 
+			sequence_no=(SELECT max(sequence_no) FROM book_requisition);
+	</select>
+
+	<parameterMap id="insertingBookRequisition" type="com.qts.icam.model.library.BookRequisition">
+		<parameter property="bookRequisitionObjectId" jdbcType="VARCHAR"
+			mode="OUT" />
+		<parameter property="bookRequisitionObjectId" jdbcType="VARCHAR"
+			mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookRequisitionCode" jdbcType="VARCHAR"
+			mode="IN" />
+	</parameterMap>
+	<insert id="insertRequisition" parameterMap="insertingBookRequisition"
+		statementType="CALLABLE">
+		{? = call addbookrequisition(?,?,?)}
+	</insert>
+	
+	<insert id="insertRequisitionDetails" parameterType="com.qts.icam.model.library.BookRequisitionDetails">
+			INSERT INTO book_requisition_details
+					(
+					rec_id, 
+					obj_id, 
+					updated_by, 
+					updated_on, 
+					date_of_creation,    
+					book_requisition_details_code,		      
+					book_requisition_details_requisition_code, 		    
+					book_requisition_details_book_name, 
+					book_requisition_details_book_edition,
+					book_requisition_details_book_publisher, 
+					book_requisition_details_book_author,
+					book_requisition_details_required,
+					genre,
+					department
+					)
+			VALUES (
+					uuid_generate_v4(), 
+					#{bookRequisitionDetailsObjectId},
+					(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+					(SELECT extract(epoch FROM now())),
+					(SELECT extract(epoch FROM now())),
+					(SELECT (#{bookRequisitionDetailsCode}||(select COALESCE((SELECT MAX(serial_id) FROM book_requisition_details), 0 )+1))),		 
+					(SELECT rec_id FROM book_requisition WHERE serial_id = (SELECT max(serial_id) FROM book_requisition WHERE is_active = true)),		
+					#{bookName},
+					#{bookEdition},
+					#{bookPublisher},
+					#{bookAuthor},
+					#{numberOfBooksRequisitioned},
+					#{genre},
+					#{departmentName}
+					);	
+	</insert>
+
+	<!-- <insert id="insertRequisitionDetails" parameterType="com.qts.icam.model.library.BookRequisitionDetails"
+		statementType="CALLABLE">
+		select addbookrequisitiondetails(
+		#{bookRequisitionDetailsObjectId, mode=IN, jdbcType=VARCHAR},
+		#{updatedBy, mode=IN, jdbcType=VARCHAR},
+		#{bookRequisitionDetailsCode, mode=IN, jdbcType=VARCHAR},
+		#{bookRequisitionCode, mode=IN, jdbcType=VARCHAR},
+		#{bookName, mode=IN, jdbcType=VARCHAR},
+		#{bookAuthor, mode=IN, jdbcType=VARCHAR},
+		#{bookEdition, mode=IN, jdbcType=VARCHAR},
+		#{bookPublisher, mode=IN, jdbcType=VARCHAR},
+		#{numberOfBooksRequisitioned, mode=IN, jdbcType=INTEGER}
+		)
+	</insert> -->
+
+	<!-- This resultMap with id="getAllBookRequisitionMapper" is being access 
+		by "getAllBookRequisition" id -->
+	<resultMap id="getAllBookRequisitionMapper" type="com.qts.icam.model.library.BookRequisition">
+		<id property="bookRequisitionCode" column="book_requisition_code" jdbcType="VARCHAR" />
+		<result property="bookRequisitionStatus" column="operational_status_name" jdbcType="VARCHAR" />
+		<result property="bookRequisitionOpenDate" column="book_requisition_open_date"  jdbcType="INTEGER" />
+		<result property="bookRequisitionCloseDate" column="book_requisition_close_date" jdbcType="INTEGER" />
+		<result property="purchaseOrderCreated" column="purchase_order_created" jdbcType="BOOLEAN" />
+	</resultMap>
+
+	<!-- This select tag with id="getAllBookRequisition" is being called by 
+		getRequisitionFulfillment() method of LibraryDAO.java class -->
+	<select id="getAllBookRequisition" resultMap="getAllBookRequisitionMapper" parameterType="java.util.Map">
+		SELECT
+			br.book_requisition_code,
+			os.operational_status_name,
+			br.book_requisition_open_date,
+			br.book_requisition_close_date,
+			br.purchase_order_created
+		FROM
+			book_requisition br
+		JOIN 
+			operational_status os ON (br.book_requisition_status = os.rec_id AND os.is_active = true)
+		WHERE
+			br.is_active = true
+		AND
+			os.operational_status_desc IN ('OPEN','PARTIAL')
+		<if test="RequisitionID != null">
+			AND br.book_requisition_code ilike ('%'||#{RequisitionID}||'%')
+		</if>
+		<if test="OpenDate != null">
+			AND br.book_requisition_open_date = #{OpenDate}
+		</if>
+		<if test="CloseDate != null">
+			AND br.book_requisition_close_date = #{CloseDate}
+		</if>
+		<if test="Status != null">
+			AND os.operational_status_desc ilike ('%'||#{Status}||'%')
+		</if>
+		<if test="Book != null">
+			AND br.rec_id IN(select book_requisition_details_requisition_code FROM book_requisition_details where book_requisition_details_book_name ilike #{Book})
+		</if>
+		ORDER BY
+			sequence_no
+	</select>
+
+	<resultMap id="getRequisitionDetailsMapper" type="com.qts.icam.model.library.BookRequisition">
+		<id property="bookRequisitionCode" column="book_requisition_code"
+			jdbcType="VARCHAR" />
+		<result property="bookRequisitionOpenDate" column="book_requisition_open_date"
+			jdbcType="INTEGER" />
+		<result property="bookRequisitionCloseDate" column="book_requisition_close_date"
+			jdbcType="INTEGER" />
+	</resultMap>
+	<select id="selectRequisitionDetails" parameterType="String"
+		resultMap="getRequisitionDetailsMapper">
+		SELECT
+			book_requisition_code,
+			book_requisition_open_date,
+			book_requisition_close_date
+		FROM
+			book_Requisition
+		WHERE
+			book_requisition_code = #{requisitionCode}
+		AND
+			is_active = true
+	</select>
+	
+	<!-- modified by sourav.bhadra on 13-09-2017 -->
+	<resultMap id="getBookRequisitionListMapper" type="com.qts.icam.model.library.BookRequisitionDetails">
+		<id property="bookName" column="book_requisition_details_book_name" jdbcType="VARCHAR" />
+		<result property="bookAuthor" column="book_requisition_details_book_author" jdbcType="VARCHAR" />
+		<result property="bookPublisher" column="book_requisition_details_book_publisher" jdbcType="VARCHAR" />
+		<result property="bookEdition" column="book_requisition_details_book_edition" jdbcType="VARCHAR" />
+		<result property="numberOfBooksRequisitioned" column="book_requisition_details_required" jdbcType="INTEGER" />
+		<result property="genre" column="genre" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<!-- modified by sourav.bhadra on 13-09-2017 -->
+	<select id="selectBookRequisitionList" parameterType="String" resultMap="getBookRequisitionListMapper">
+		SELECT
+			brd.book_requisition_details_book_name,
+			brd.book_requisition_details_book_author,
+			brd.book_requisition_details_book_publisher,
+			brd.book_requisition_details_book_edition,
+			brd.book_requisition_details_required,
+			brd.genre
+		FROM
+			book_requisition_details brd
+		JOIN book_requisition br ON (brd.book_requisition_details_requisition_code = br.rec_id AND br.is_active = true)
+		WHERE
+			brd.is_active = true
+		AND
+			br.book_requisition_code = #{requisitionCode};
+	</select>
+
+	<!-- This select tag with id="getRequisitionFulfillment" is being called 
+		by getRequisitionFulfillment() method of LibraryDAO.java class -->
+	<update id="getRequisitionFulfillment" parameterType="com.qts.icam.model.library.BookRequisitionDetails"
+		statementType="CALLABLE">
+		select updatebookrequisitiondetails(
+		#{updatedBy, mode=IN, jdbcType=VARCHAR},
+		#{bookRequisitionCode, mode=IN, jdbcType=VARCHAR},
+		#{bookName, mode=IN, jdbcType=VARCHAR},
+		#{numberOfBooksReceived, mode=IN, jdbcType=INTEGER}
+		)
+	</update>
+
+	<select id="addToCatalogFromBookRequisitionDetails"
+		parameterType="com.qts.icam.model.library.BookRequisitionDetails"
+		resultType="com.qts.icam.model.library.BookRequisitionDetails">
+		SELECT
+			brrd.book_requisition_received_date_id as numberOfBooksDeficit,
+			brd.book_requisition_details_book_name as bookName,
+			brd.book_requisition_details_book_edition as bookEdition,
+			brd.book_requisition_details_book_author as bookAuthor,
+			brd.book_requisition_details_book_publisher as bookPublisher,
+			brrd.book_requisition_received_date_no_of_copies as numberOfBooksReceived,
+			brrd.added_to_stock as addedToStock
+		FROM
+			book_requisition_received_date brrd
+		JOIN book_requisition_details brd ON (brd.rec_id = brrd.book_requisition_received_date_requisition_details AND (brd.is_active = true)
+		JOIN book_requisition br ON (brd.book_requisition_details_requisition_code = br.rec_id AND br.is_active = true)
+		WHERE
+			brrd.book_requisition_received_date_id = #{numberOfBooksDeficit}
+		AND
+			brrd.is_active = true;
+	</select>
+
+	<resultMap id="selectRequisitionIdResultmap" type="com.qts.icam.model.library.BookRequisition">
+		<id property="bookRequisitionOpenDate" column="book_requisition_open_date"
+			jdbcType="VARCHAR" />
+		<result property="bookRequisitionCloseDate" column="book_requisition_close_date"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectRequisitionId" parameterType="com.qts.icam.model.library.BookRequisition"
+		resultMap="selectRequisitionIdResultmap">
+		SELECT
+			book_requisition_open_date,
+			book_requisition_close_date
+		FROM
+			book_requisition
+		WHERE
+			book_requisition_code= #{bookRequisitionCode}
+		AND
+			is_active = true)
+	</select>
+
+	<resultMap id="selectRequisitionIdDetailsResultmap" type="com.qts.icam.model.library.BookRequisitionDetails">
+		<id property="bookRequisitionDetailsObjectId" column="sequence"
+			jdbcType="VARCHAR" />
+		<result property="bookName" column="book_requisition_details_book_name"
+			jdbcType="VARCHAR" />
+		<result property="numberOfBooksRequisitioned" column="book_requisition_details_required"
+			jdbcType="INTEGER" />
+	</resultMap>
+	<select id="selectRequisitionIdDetails" parameterType="String"
+		resultMap="selectRequisitionIdDetailsResultmap">
+		SELECT
+			brd.sequence,
+			brd.book_requisition_details_book_name,
+			brd.book_requisition_details_required
+		FROM
+			book_requisition_details brd
+		JOIN book_requisition br ON (brd.book_requisition_details_requisition_code = br.rec_id AND (br.is_active = true)
+		WHERE
+			brd.is_active = true
+		AND
+			brd.book_requisition_details_requisition_code = (SELECT rec_id FROM book_requisition 
+															WHERE book_requisition_code = #{requisitionId});
+	</select>
+
+	<resultMap id="selectRequisitionDetailsDateResultmap"
+		type="com.qts.icam.model.library.BookRequisitionReceivedDates">
+		<id property="numberOfBooksReceived" column="book_requisition_received_date_no_of_copies"
+			jdbcType="INTEGER" />
+		<result property="dateBooksReceived" column="book_requisition_received_date_received_date"
+			jdbcType="INTEGER" />
+		<result property="bookRequisitionReceivedDatesId" column="book_requisition_received_date_id"
+			jdbcType="INTEGER" />
+		<result property="addedToStock" column="added_to_stock"
+			jdbcType="BOOLEAN" />
+	</resultMap>
+	<select id="selectRequisitionDetailsDate" parameterType="int"
+		resultMap="selectRequisitionDetailsDateResultmap">
+		SELECT
+			brrd.book_requisition_received_date_id,
+			brrd.book_requisition_received_date_no_of_copies,
+			brrd.book_requisition_received_date_received_date,
+			brrd.added_to_stock
+		FROM
+			book_requisition_received_date brrd
+		JOIN book_requisition_details brd ON (brd.rec_id = brrd.book_requisition_received_date_requisition_details AND (brd.is_active = true)
+		JOIN book_requisition br ON (brd.book_requisition_details_requisition_code = br.rec_id AND (br.is_active = true)
+		WHERE
+			brrd.is_active = true
+		AND
+			brrd.book_requisition_received_date_requisition_details = (SELECT rec_id FROM book_requisition_details WHERE sequence=#{sequence});
+	</select>
+
+	<resultMap id="getLastRequestIdMapper" type="com.qts.icam.model.library.BookRequest">
+		<id property="bookRequestCode" column="book_request_code" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getLastRequestId" resultMap="getLastRequestIdMapper">
+		SELECT
+			book_request_code
+		FROM
+			book_request
+		WHERE sequence_no=(SELECT max(sequence_no) FROM book_request)
+	</select>
+
+	<!-- anup.roy -->
+	
+	<resultMap id="createLodgingRequestResultMap" type="com.qts.icam.model.library.Book">
+		<id property="accessionNumber" column="accession_number" jdbcType="VARCHAR" />
+		<result property="bookName" column="book_name" jdbcType="VARCHAR" />
+		<result property="classNo" column="class_no" jdbcType="VARCHAR" />
+		<result property="volume" column="volume" jdbcType="VARCHAR" />	
+		<association property="bookPublisher" javaType="com.qts.icam.model.library.BookPublisher">
+			<id property="bookPublisherName" column="book_publisher_name" jdbcType="VARCHAR" />
+		</association>
+		<collection property="bookAuthorList" ofType="com.qts.icam.model.library.Author">
+			<id property="authorFullName" column="author_full_name" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="createLodgingRequest" resultMap="createLodgingRequestResultMap">
+		SELECT
+			b.accession_number,
+			b.book_name,
+			a.author_full_name,
+			b.class_no,
+			bp.book_publisher_name,
+			b.volume
+		FROM
+			book b
+		JOIN 
+			book_publisher bp ON (b.book_publisher = bp.rec_id AND bp.is_active = true)
+		JOIN 
+			book_author ba ON (b.rec_id = ba.book AND ba.is_active = true)
+		JOIN 
+			author a ON (a.rec_id = ba.author AND a.is_active = true)
+		WHERE
+			b.is_active = true
+		ORDER BY
+			b.accession_number	
+	</select>
+
+	<select id="searchLodgingRequest" parameterType="java.util.Map"
+		resultMap="createLodgingRequestResultMap">
+		SELECT
+			b.book_code,
+			b.book_name,
+			bp.book_publisher_name,
+			b.book_edition,
+			a.author_full_name
+		FROM
+			book b
+		JOIN book_publisher bp ON (b.book_publisher = bp.rec_id AND (bp.is_active = true)
+		JOIN book_author ba ON (b.rec_id = ba.book AND (ba.is_active = true)
+		JOIN author a ON (a.rec_id = ba.author AND (a.is_active = true)
+		WHERE
+			b.is_active = true
+		AND
+			b.total_no_of_copies >=1
+		<if test="BookCode != null">
+			AND b.book_code ilike ('%'||#{BookCode}||'%')
+		</if>
+		<if test="BookName != null">
+			AND b.book_name ilike ('%'||#{BookName}||'%')
+		</if>
+		<if test="Author != null">
+			AND a.author_full_name ilike ('%'||#{Author}||'%')
+		</if>
+		<if test="Publisher != null">
+			AND bp.book_publisher_name ilike ('%'||#{Publisher}||'%')
+		</if>
+		<if test="Edition != null">
+			AND b.book_edition ilike ('%'||#{Edition}||'%')
+		</if>
+		ORDER BY
+			b.book_code
+	</select>
+
+	<parameterMap id="addBookRequestParameterMap" type="com.qts.icam.model.library.BookRequest">
+		<parameter property="bookRequestObjectId" jdbcType="VARCHAR"
+			mode="OUT" />
+		<parameter property="bookRequestObjectId" jdbcType="VARCHAR"
+			mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookRequestCode" jdbcType="VARCHAR"
+			mode="IN" />
+		<parameter property="userId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="numberOfBookRequested" jdbcType="INTEGER"
+			mode="IN" />
+	</parameterMap>
+	<insert id="insertingBookLodgingRequestId" parameterMap="addBookRequestParameterMap"
+		statementType="CALLABLE">
+		{? = call addbookrequest(?,?,?,?,?)}
+	</insert>
+
+	<insert id="insertingBookLodgingRequestDetailsBookCode" parameterType="java.util.List" statementType="CALLABLE">
+		<foreach collection="list" item="bookRequestDetails" open="" close="" separator=";">
+			select addbookrequestdetails(
+				#{bookRequestDetails.bookRequestDetailsObjectId, mode=IN, jdbcType=VARCHAR},
+				#{bookRequestDetails.updatedBy, mode=IN, jdbcType=VARCHAR},
+				#{bookRequestDetails.bookRequestDetailsCode, mode=IN,jdbcType=VARCHAR},
+				#{bookRequestDetails.bookCode, mode=IN, jdbcType=VARCHAR}
+			)
+		</foreach>
+	</insert>
+
+	<!-- saif.ali 03072017 -->
+
+	<resultMap id="getBookRequestIdResultMap" type="com.qts.icam.model.library.BookRequest">
+		<id property="bookRequestCode" column="book_request_code" jdbcType="VARCHAR" />
+		<result property="bookRequestOpenDate" column="book_request_open_date" jdbcType="VARCHAR" />
+		<result property="bookRequestCloseDate" column="book_request_close_date" jdbcType="VARCHAR" />
+		<result property="bookRequestStatus" column="operational_status_code" jdbcType="VARCHAR" />
+		<association property="bookRequestFor" javaType="com.qts.icam.model.common.Resource">
+			<id property="userId" column="user_id" jdbcType="VARCHAR" />
+		</association>
+	</resultMap>
+	<select id="getBookRequestId" resultMap="getBookRequestIdResultMap">
+		SELECT
+			br.book_request_code,
+			r.user_id,
+			br.book_request_open_date,
+			br.book_request_close_date,
+			os.operational_status_code
+		FROM
+			book_request br
+		<!-- JOIN resource r ON (r.rec_id = br.updated_by AND r.is_active = true) -->
+		JOIN resource r ON (r.rec_id = br.book_resource_id AND r.is_active = true) <!-- old -->
+		JOIN operational_status os ON (br.book_request_status = os.rec_id AND os.is_active = true)
+		WHERE
+			br.book_request_status IN (SELECT 
+											rec_id
+									   FROM 
+									   		operational_status
+									   WHERE 
+									   		operational_status_code IN('OPEN','PARTIAL','CLOSE')
+									   )
+	   AND
+			br.is_active = true
+	  ORDER BY
+	  	 sequence_no desc;
+	</select>
+
+	<select id="searchForBookRequest" parameterType="java.util.Map" resultMap="getBookRequestIdResultMap">
+		SELECT
+			br.book_request_code,
+			r.user_id,
+			br.book_request_open_date,
+			br.book_request_close_date,
+			os.operational_status_code
+		FROM
+			book_request br
+		JOIN resource r ON (r.rec_id = br.book_resource_id AND r.is_active = true)
+		JOIN operational_status os ON (br.book_request_status = os.rec_id AND os.is_active = true)
+		WHERE
+			br.book_request_status IN (SELECT rec_id
+		FROM
+			operational_status
+		WHERE
+			operational_status_code IN('OPEN','PARTIAL','CLOSE')
+		)
+		AND br.is_active = true
+		<if test="RequestID != null">
+			AND br.book_request_code ilike ('%'||#{RequestID}||'%')
+		</if>
+		<if test="UserID != null">
+			AND r.user_id ilike ('%'||#{UserID}||'%')
+		</if>
+		<if test="RequestedDate != null">
+			AND br.book_request_open_date = #{RequestedDate}
+		</if>
+		<if test="RequestExpireDate != null">
+			AND br.book_request_close_date = #{RequestExpireDate}
+		</if>
+		<if test="Status != null">
+			AND os.operational_status_code ilike ('%'||#{Status}||'%')
+		</if>
+	</select>
+
+
+
+	<resultMap id="getBookRequestDetailsResultMap" type="com.qts.icam.model.library.BookRequest">
+		<id property="bookRequestOpenDate" column="book_request_open_date" jdbcType="VARCHAR" />
+		<result property="bookRequestCode" column="book_request_code" jdbcType="VARCHAR" />
+		<result property="bookRequestCloseDate" column="book_request_close_date" jdbcType="VARCHAR" />
+		<association property="bookRequestFor" javaType="com.qts.icam.model.common.Resource">
+			<id property="userId" column="user_id" jdbcType="VARCHAR" />
+			<id property="resourceType.resourceTypeName" column="resource_type_name" jdbcType="VARCHAR" />
+		</association>
+		<collection property="bookRequestDetailsList" ofType="com.qts.icam.model.library.BookRequestDetails">
+			<id property="bookCode" column="book_request_details_book_code" jdbcType="VARCHAR" />
+			<result property="bookName" column="book_request_details_book_name" jdbcType="VARCHAR" />
+			<result property="book.threshold" column="threshold" jdbcType="INTEGER" />
+		</collection>
+	</resultMap>
+	<select id="getBookRequestDetails" parameterType="com.qts.icam.model.library.BookRequest" resultMap="getBookRequestDetailsResultMap">
+		SELECT
+			b.book_name as book_request_details_book_name,
+			brd.book_request_details_book_code,
+			br.book_request_open_date,
+			br.book_request_close_date,
+			br.book_request_code,
+			r.user_id,
+			rt.resource_type_name,
+			b.threshold
+		FROM
+			book_request br
+		JOIN 
+			book_request_details brd ON (br.rec_id = brd.book_request_details_book_request AND brd.is_active = true)
+		<!-- JOIN book_operational_status bos ON (brd.book_request_details_book_operational_status = bos.rec_id AND bos.is_active = true) -->
+		JOIN 
+			resource r ON (br.book_resource_id = r.rec_id AND r.is_active = true)
+		JOIN 
+			resource_type rt ON (r.resource_type = rt.rec_id AND rt.is_active = true)
+		JOIN 
+			book b ON (b.book_code = brd.book_request_details_book_code)
+		WHERE
+			br.book_request_code = #{bookRequestCode}
+		<!-- AND
+			bos.book_operational_status_code IN ('RQTD') -->
+		AND
+			br.is_active = true;
+	</select>
+	<select id="getExpectedBookReturnDate" parameterType="com.qts.icam.model.library.BookRequest" resultType="String">
+		SELECT to_char((
+			SELECT to_timestamp((
+				SELECT extract(epoch from now()::date +
+								(SELECT 
+									max_lending_period  
+								FROM 
+									library_policy_rating
+								WHERE 
+									rating = 
+										(SELECT 
+											avg_book_rating 
+								 	  	  FROM 
+											book
+									  	  WHERE 
+											book_code = #{accessionNumber} 
+									  	  AND
+									  	  	is_active = true
+									     )
+								AND 
+									is_active = true
+								AND
+									library_policy=
+										(SELECT 
+											rec_id 
+										FROM 
+											library_policy
+										WHERE
+											resource_type = 
+												(SELECT 
+													rec_id
+												 FROM 
+													resource_type
+												 WHERE 
+													resource_Type_Name = #{bookRequestFor.resourceType.resourceTypeName}
+												 AND 
+													is_active = true
+												)
+										)
+							) * CAST('1 day' AS interval)
+						)
+				   ))
+			   ), 'DD/MM/YYYY')  as expectedBookReturnDate;
+	</select>
+
+	<select id="getMaxNoOfAllocateBooksPolicy" parameterType="String" resultType="Integer">
+		SELECT 
+      		 max_book_allocated as maxNoOfAllocateBooksPolicy
+  		FROM 
+			library_policy lp
+		JOIN
+			resource_type rt ON (rt.rec_id = lp.resource_type) AND  (rt.is_active = true)
+		WHERE
+			rt.resource_type_name = #{resourceTypeName}
+		AND
+			lp.is_active = true;
+	</select>
+	
+	<select id="selectMaxNoOfBooksPerRequest" parameterType="String" resultType="Integer">
+		SELECT 
+			 max_no_of_books_per_req as maxNoOfBooksPerRequest
+  		FROM 
+			library_policy lp
+    	JOIN
+			resource_type rt ON (rt.rec_id = lp.resource_type) AND (rt.is_active = true)
+		WHERE
+			lp.is_active = true
+		AND
+			rt.resource_type_name=#{resourceTypeName}
+	</select>
+
+
+	<select id="getIssuerAllocatedLodgingHistory" parameterType="String" resultMap="getAllocationListResultMap">
+		SELECT
+			ba.book_allocation_code
+		FROM
+			book_allocation ba
+		JOIN book_operational_status bos ON (ba.allocation_status = bos.rec_id AND bos.is_active = true)
+		JOIN book_request br ON (ba.book_issued_to=br.book_resource_id) AND (br.is_active = true)
+		JOIN book_allocation_details bad ON (ba.rec_id = bad.book_allocation ) AND (bad.is_active = true)
+		WHERE
+			bos.book_operational_status_code = 'ALTD'
+		AND
+			br.book_request_code =#{bookRequestCode}
+		AND
+			ba.is_active = true
+		GROUP BY
+			ba.book_allocation_code;
+	</select>
+
+	<select id="getIssuerAllocatedDetailsLodgingHistory" parameterType="String" resultMap="getAllocationDetailsListResultMap">
+		SELECT
+			bad.book_id,
+			bad.book_code,
+			b.book_name,
+			to_char((SELECT to_timestamp(bad.book_issued_date)), 'DD/MM/YYYY') as book_issued_date,
+			to_char((SELECT to_timestamp(bad.book_return_date)), 'DD/MM/YYYY') as book_return_date,
+			bos.book_operational_status_code
+		FROM
+			book_allocation_details bad
+		JOIN book_operational_status bos ON (bad.book_allocation_details_status = bos.rec_id AND bos.is_active = true)
+		JOIN book_allocation ba ON (bad.book_allocation = ba.rec_id AND ba.is_active = true)
+		JOIN book b ON (bad.book_code = b.book_code AND ba.is_active = true)
+		WHERE
+			bos.book_operational_status_code = 'ALTD'
+		AND
+			bad.is_active = true
+		AND
+			ba.book_allocation_code = #{allocationCode};
+	</select>
+
+	<resultMap id="getAvailableBookIdResultMap" type="com.qts.icam.model.library.BookId">
+		<id property="bookId" column="book_individual_code" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getAvailableBookId" parameterType="String"
+		resultMap="getAvailableBookIdResultMap">
+		SELECT
+			book_individual_code
+		FROM
+			book_id bi
+		JOIN book_operational_status bos ON (bi.book_operational_code = bos.rec_id AND (bos.is_active = true))
+		WHERE 
+			bos.book_operational_status_code = 'AVLB'
+		AND 
+			bi.is_active = true
+		AND 
+			book_common_code = #{bookCode}
+	</select>
+
+
+
+	<resultMap id="getWaitingBookCodeResultMap" type="com.qts.icam.model.library.BookWaiting">
+		<id property="userId" column="user_id" jdbcType="VARCHAR" />
+		<result property="status" column="resource_type_name" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getWaitingBookCode" parameterType="String" resultMap="getWaitingBookCodeResultMap">
+		SELECT
+			r.user_id,
+			rt.resource_type_name
+		FROM
+			book_waiting bw
+		JOIN 
+			resource r ON (bw.user_id = r.rec_id AND r.is_active = true)
+		JOIN 
+			resource_type rt ON (rt.rec_id = r.resource_type AND rt.is_active = true)
+		JOIN 
+			book_operational_status bos ON (bw.book_waiting_status = bos.rec_id)
+		WHERE
+			bos.book_operational_status_code ='WATN'
+		AND
+			bw.book_code = #{bookCode}
+		order by
+			request_date_time
+	</select>
+
+	<parameterMap id="allocateBookParameterMap" type="com.qts.icam.model.library.BookAllocation">
+		<parameter property="bookAllocationObjectId" jdbcType="VARCHAR"
+			mode="OUT" />
+		<parameter property="bookAllocationObjectId" jdbcType="VARCHAR"
+			mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookRequestedId" jdbcType="VARCHAR"
+			mode="IN" />
+		<parameter property="bookIssuedTo.userId" jdbcType="VARCHAR"
+			mode="IN" />
+		<!-- <parameter property="bookIssuedTo" jdbcType="VARCHAR" mode="IN" /> -->
+		<!-- <parameter property="bookIssuedBy" jdbcType="VARCHAR" mode="IN" /> -->
+	</parameterMap>
+	<insert id="allocateBook" parameterMap="allocateBookParameterMap"
+		statementType="CALLABLE">
+		{? = call allocateBook(?,?,?,?)}
+	</insert>
+
+	<insert id="allocateBookDetails" parameterType="java.util.List"
+		statementType="CALLABLE">
+		<foreach collection="list" item="bookId" open="" close=""	separator=";">
+			select allocateBookDetails(
+			#{bookId.bookIdObjectId, mode=IN, jdbcType=VARCHAR},
+			#{bookId.updatedBy, mode=IN, jdbcType=VARCHAR},
+			#{bookId.bookCode, mode=IN, jdbcType=VARCHAR},
+			#{bookId.bookId, mode=IN, jdbcType=VARCHAR},
+			#{bookId.bookLifeCycleCode, mode=IN, jdbcType=VARCHAR},
+			#{bookId.bookRetirementDate, mode=IN, jdbcType=VARCHAR}
+			)
+		</foreach>
+	</insert>
+
+	<update id="countPenalty" parameterType="com.qts.icam.model.common.Resource"
+		statementType="CALLABLE">
+		select countpenalty(
+		#{userId, mode=IN, jdbcType=VARCHAR}
+		)
+	</update>
+
+	<resultMap id="getAllocationListResultMap" type="com.qts.icam.model.library.BookAllocation">
+		<id property="bookIssueDate" column="book_issued_date" jdbcType="VARCHAR" />
+		<result property="bookReturnDate" column="book_return_date"
+			jdbcType="VARCHAR" />
+		<result property="bookAllocationCode" column="book_allocation_code"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getAllocationList" parameterType="com.qts.icam.model.common.Resource" resultMap="getAllocationListResultMap">
+		SELECT
+		    ba.book_allocation_code
+		FROM
+			book_allocation ba
+		JOIN resource r ON (ba.book_issued_to = r.rec_id) AND (r.is_active = true)
+		JOIN book_allocation_details bad ON (ba.rec_id = bad.book_allocation )
+		JOIN book_operational_status bos ON (ba.allocation_status = bos.rec_id AND bos.is_active = true)
+		WHERE
+			r.user_id = #{userId}
+		AND
+			bos.book_operational_status_code = 'ALTD'
+		GROUP BY
+			ba.book_allocation_code, ba.sequence_no
+		ORDER BY
+			ba.sequence_no desc;
+	</select>
+
+	<resultMap id="getAllocationDetailsListResultMap" type="com.qts.icam.model.library.BookAllocationDetails">
+		<id property="bookId" column="book_id" jdbcType="VARCHAR" />
+		<result property="bookCode" column="book_Code" jdbcType="VARCHAR" />
+		<result property="bookName" column="book_name" jdbcType="VARCHAR" />
+		<result property="penalty" column="penalty" jdbcType="INTEGER" />
+		<result property="bookIssueDate" column="book_issued_date" jdbcType="VARCHAR" />
+		<result property="bookReturnDate" column="book_return_date" jdbcType="VARCHAR" />
+		<result property="noOfDaysExtend" column="no_of_days_extend" jdbcType="INTEGER" />
+		<result property="actualReturnDate" column="book_actual_submission_date" jdbcType="VARCHAR" />
+		<result property="status" column="book_operational_status_code" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getAllocationDetailsList" parameterType="String" resultMap="getAllocationDetailsListResultMap">
+		SELECT
+			bad.book_id,
+			bad.book_code,
+			bad.penalty,
+			to_char((SELECT to_timestamp(bad.book_issued_date)), 'DD/MM/YYYY') as book_issued_date,
+			to_char((SELECT to_timestamp(bad.book_return_date)), 'DD/MM/YYYY') as book_return_date,
+			bad.no_of_days_extend,
+			bad.book_actual_submission_date,
+			bos.book_operational_status_code
+		FROM
+			book_allocation_details bad
+		JOIN book_operational_status bos ON (bad.book_allocation_details_status = bos.rec_id AND bos.is_active = true)
+		JOIN book_allocation ba ON (bad.book_allocation = ba.rec_id AND ba.is_active = true)
+		WHERE
+			bad.is_active = true
+		AND
+			ba.book_allocation_code = #{allocationCode}
+		AND
+			bos.book_operational_status_code = 'ALTD'
+	</select>
+
+	<update id="submitReturnBookDetails" parameterType="java.util.List"
+		statementType="CALLABLE">
+		<foreach collection="list" item="bookAllocationDetails" open=""
+			close="" separator=";">
+			select updatereturndate(
+			#{bookAllocationDetails.updatedBy, mode=IN, jdbcType=VARCHAR},
+			#{bookAllocationDetails.bookId, mode=IN, jdbcType=VARCHAR},
+			#{bookAllocationDetails.bookIssuedTo, mode=IN, jdbcType=VARCHAR},
+			#{bookAllocationDetails.bookAllocationDetailsCode, mode=IN,
+			jdbcType=VARCHAR}
+			)
+		</foreach>
+	</update>
+
+
+	<insert id="submitBookRatingDetails" parameterType="com.qts.icam.model.library.BookRating" statementType="CALLABLE">
+		select insertbookrating_foruserrating(
+										#{bookRatingObjectId, mode=IN, jdbcType=VARCHAR},
+										#{updatedBy, mode=IN, jdbcType=VARCHAR},
+										#{userId, mode=IN, jdbcType=VARCHAR},
+										#{bookRatingCode, mode=IN, jdbcType=VARCHAR},
+										#{bookRatingDesc, mode=IN, jdbcType=VARCHAR},
+										#{bookRatingComments, mode=IN, jdbcType=VARCHAR}
+									 )
+	</insert>
+	
+	<insert id="updateBookRatingForBookRequest" parameterType="com.qts.icam.model.library.BookRating" statementType="CALLABLE">
+		select updatebookrating_forbookrequest(
+										#{updatedBy, mode=IN, jdbcType=VARCHAR},
+										#{bookRatingCode, mode=IN, jdbcType=VARCHAR}
+									 )
+	</insert>
+
+
+	<resultMap id="getAllocationListForFineResultMap" type="com.qts.icam.model.library.BookAllocationDetails">
+		<id property="bookId" column="book_id" jdbcType="VARCHAR" />
+		<result property="bookCode" column="book_Code" jdbcType="VARCHAR" />
+		<result property="updatedBy" column="book_operational_status_name" jdbcType="VARCHAR" />
+		<result property="penalty" column="penalty" jdbcType="INTEGER" />
+		<result property="noOfDaysExtend" column="no_of_days_extend" jdbcType="INTEGER" />
+		<result property="bookIssueDate" column="book_issued_date" jdbcType="VARCHAR" />		
+		<result property="bookReturnDate" column="book_return_date" jdbcType="VARCHAR" />
+		<result property="status" column="book_operational_status_name" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getAllocationListForFine" parameterType="String" resultMap="getAllocationListForFineResultMap">
+		SELECT
+			bad.book_id,
+			bad.book_code,
+			bos1.book_operational_status_name,
+			bad.penalty,
+			bad.no_of_days_extend,
+			bad.book_issued_date,
+			bad.book_return_date,
+			bos.book_operational_status_name
+		FROM
+			book_allocation_details bad
+		JOIN book_operational_status bos ON (bad.book_allocation_details_status = bos.rec_id) AND (bos.is_active = true)
+		JOIN book_allocation ba ON (bad.book_allocation = ba.rec_id) AND  (ba.is_active = true)
+		LEFT JOIN book_operational_status bos1 ON (bad.fine_status = bos1.rec_id) AND (bos1.is_active = true)
+		WHERE
+			ba.book_allocation_code = #{allocationCode}
+		AND
+			bad.is_active = true;
+	</select>
+
+
+
+	
+
+	<resultMap id="bookRequisitionDetailsResultMap" type="com.qts.icam.model.library.BookRequisition">
+		<id property="bookRequisitionCode" column="book_requisition_code" jdbcType="VARCHAR" />
+		<result property="totalNumberOfBooksRequisitioned" column="book_requisition_total_no_of_requisition" jdbcType="INTEGER" />
+		<result property="totalNumberOfBooksReceived" column="book_requisition_total_no_of_received" jdbcType="INTEGER" />
+		<result property="totalPrice" column="receive_amount" jdbcType="DOUBLE" />
+		<association property="vendor" javaType="com.qts.icam.model.common.Vendor">
+			<id property="vendorName" column="vendor_name" jdbcType="VARCHAR" />
+		</association>
+		<collection property="bookRequisitionDetailsList"
+			ofType="com.qts.icam.model.library.BookRequisitionDetails">
+			<id property="bookName" column="book_requisition_details_book_name"
+				jdbcType="VARCHAR" />
+			<result property="bookAuthor" column="book_requisition_details_book_author"
+				jdbcType="VARCHAR" />
+			<result property="bookEdition" column="book_requisition_details_book_edition"
+				jdbcType="VARCHAR" />
+			<result property="bookPublisher" column="book_requisition_details_book_publisher"
+				jdbcType="VARCHAR" />
+			<result property="numberOfBooksRequisitioned" column="book_requisition_details_required"
+				jdbcType="INTEGER" />
+			<result property="rate" column="rate" jdbcType="DOUBLE" />
+			<result property="totalPrice" column="total_price" jdbcType="DOUBLE" />
+		</collection>
+
+	</resultMap>
+	<select id="getBookRequisitionDetails" parameterType="com.qts.icam.model.library.BookRequisition"
+		resultMap="bookRequisitionDetailsResultMap">
+		SELECT
+			br.book_requisition_code,
+			br.receive_amount,
+			br.book_requisition_total_no_of_requisition,
+			br.book_requisition_total_no_of_received,
+			v.vendor_name,
+			brd.book_requisition_details_book_name,
+			brd.book_requisition_details_book_author,
+			brd.book_requisition_details_book_edition,
+			brd.book_requisition_details_book_publisher,
+			brd.book_requisition_details_required,
+			brd.rate,
+			brd.total_price
+		FROM
+			book_requisition br
+		JOIN vendor v ON (br.book_requisition_vendor = v.rec_id AND v.is_active = true)
+		JOIN book_requisition_details brd ON (br.rec_id = brd.book_requisition_details_requisition_code AND brd.is_active = true)
+		WHERE
+			br.is_active = true
+		AND
+			br.book_requisition_code = #{bookRequisitionCode};
+	</select>
+
+	<update id="updatePaymentModeForBookRequisition" parameterType="com.qts.icam.model.library.BookRequisition">
+		UPDATE
+			book_requisition
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy}),
+			updated_on = (SELECT extract(epoch FROM now())),
+		    payment_status = (SELECT rec_id FROM status_flag WHERE status_sym = 'PD'),
+			receive_amount = receive_amount + #{totalPrice}
+		WHERE
+			book_requisition_code = #{bookRequisitionCode}
+		AND
+			is_active = true
+
+	</update>
+
+	<select id="getAllBookNames" resultType="com.qts.icam.model.library.Book">
+		SELECT
+			b.book_code as bookCode,
+			b.book_name as bookName
+		FROM
+			book b
+		WHERE
+			b.book_type = 'book'
+		AND
+			b.is_active = true
+	</select>
+
+	<resultMap id="getAllBookDetailsResultMap" type="com.qts.icam.model.library.Book">
+		<id property="bookEdition" column="book_edition" jdbcType="VARCHAR" />
+		<result property="bookPublisher.bookPublisherName" column="book_publisher_name"
+			jdbcType="VARCHAR" />
+		<collection property="bookAuthorList" ofType="com.qts.icam.model.library.Author">
+			<id property="authorFullName" column="author_full_name" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="getAllBookDetails" resultMap="getAllBookDetailsResultMap">
+		SELECT
+			b.book_edition,
+			bp.book_publisher_name,
+			a.author_full_name
+		FROM
+			book b
+		JOIN book_publisher bp ON (b.book_publisher = bp.rec_id AND bp.is_active = true)
+		JOIN book_author ba ON (b.rec_id = ba.book AND ba.is_active = true)
+		JOIN author a ON (a.rec_id = ba.author AND a.is_active = true)
+		WHERE
+			b.is_active = true
+		AND
+			b.book_name = #{bookName}
+		AND
+			b.book_type = 'book'
+	</select>
+
+	
+
+	<resultMap id="getBookListRM" type="com.qts.icam.model.common.Item">
+		<id property="itemCode" column="book_code" jdbcType="VARCHAR" />
+		<result property="itemName" column="book_name" jdbcType="VARCHAR" />
+		<result property="threshold" column="threshold" jdbcType="INTEGER" />
+	</resultMap>
+	<select id="getBookList" parameterType="java.util.Map"
+		resultMap="getBookListRM">
+		SELECT
+			book_code,
+			book_name,
+			threshold
+		FROM
+			book
+		WHERE
+			is_active = true
+		<if test="BookCode != null">
+			AND book_code ILIKE ('%'||#{BookCode}||'%')
+		</if>
+		<if test="BookName != null">
+			AND book_name ILIKE ('%'||#{BookName}||'%')
+		</if>
+		<if test="BookThresholdValue != null">
+			AND threshold = #{BookThresholdValue}
+		</if>
+		ORDER BY book_name;
+	</select>
+
+	<select id="getVendorBooksMapping" parameterType="java.lang.String"
+		resultType="com.qts.icam.model.common.Item">
+		SELECT
+			b.book_code AS itemCode,
+			vb.book_price AS sellingRate
+		FROM
+			vendor_book vb
+		JOIN book b ON (vb.book = b.rec_id AND b.is_active = true)
+		JOIN vendor v ON (vb.vendor = v.rec_id AND v.is_active = true)
+		WHERE
+			vb.is_active = true	
+		AND
+			v.vendor_code = #{vendorCode};
+	</select>
+
+	<update id="updateVendorBookMapping" parameterType="com.qts.icam.model.common.Vendor">
+		UPDATE
+			vendor_book
+		SET
+			book_price = #{vendorSellingRate}
+		WHERE
+			vendor = (SELECT rec_id FROM vendor WHERE vendor_code = #{vendorCode} AND is_active = true)
+		AND
+			book = (SELECT rec_id FROM book WHERE book_code = #{book.bookCode} AND is_active = true)
+		AND
+			is_active = true
+	</update>
+
+	<insert id="insertVendorBookMapping" parameterType="com.qts.icam.model.common.Item">
+		INSERT INTO vendor_book(
+			rec_id,
+			obj_id,
+			updated_by,
+			updated_on,
+			date_of_creation,
+			vendor_book_code,
+			vendor,
+			book,
+			book_price)
+		VALUES 
+			(uuid_generate_v4(),
+			#{itemObjectId},
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			(SELECT extract(epoch FROM now())),
+			(SELECT extract(epoch FROM now())),
+			(select('vendor_book_code' ||(select COALESCE((SELECT MAX(serial_id) FROM vendor_book), 0)+1))),
+			(SELECT rec_id FROM vendor WHERE vendor_code = #{itemDesc} AND is_active = true),
+			(SELECT rec_id FROM book WHERE book_code = #{itemCode} AND is_active = true),
+			#{sellingRate});
+	</insert>
+
+	<update id="inactiveVendorBookMapping" parameterType="com.qts.icam.model.common.Vendor">
+		UPDATE
+			vendor_book
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			is_active = false
+		WHERE
+			vendor = (SELECT rec_id FROM vendor WHERE vendor_code = #{vendorCode} AND is_active = true)
+		AND
+			book = (SELECT rec_id FROM book WHERE book_code = #{updatedBy} AND is_active = true)
+		AND
+			is_active = true;
+	</update>
+
+
+	<resultMap id="selectVendorBookListResultMap" type="com.qts.icam.model.common.Vendor">
+		<id property="vendorName" column="vendor_name" jdbcType="VARCHAR" />
+		<result property="vendorCode" column="vendor_code" jdbcType="VARCHAR" />
+		<collection property="vendorItems" ofType="com.qts.icam.model.common.Item">
+			<id property="itemCode" column="book_code" jdbcType="VARCHAR" />
+			<result property="itemName" column="book_name" jdbcType="VARCHAR" />
+			<result property="purchaseRate" column="book_price" jdbcType="DOUBLE" />
+		</collection>
+	</resultMap>
+	<select id="selectVendorBookList" parameterType="com.qts.icam.model.common.Vendor" resultMap="selectVendorBookListResultMap">
+		SELECT
+			v.vendor_name,
+			v.vendor_code,
+			b.book_code,
+			b.book_name,
+			vb.book_price
+		FROM
+			book b
+		LEFT JOIN 
+			vendor v ON (v.is_active = true)
+		LEFT JOIN 
+			vendor_book vb ON (b.rec_id = vb.book) AND (v.rec_id = vb.vendor) AND (vb.is_active = true)
+		WHERE
+			b.is_active = true
+		AND
+			v.vendor_code = #{vendorCode}
+		<if test="item!=null and item.itemCode != null">
+		AND b.book_code ilike ('%'||#{item.itemCode}||'%')
+		</if>
+		<if test="item!=null and item.itemName != null">
+		AND b.book_name ilike ('%'||#{item.itemName}||'%')
+		</if>
+		ORDER BY b.book_code;
+	</select>
+
+	<update id="updateBookForThreshold" parameterType="com.qts.icam.model.common.Item">
+		UPDATE
+			book
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			threshold = #{threshold}
+		WHERE
+			is_active = true
+		AND
+			book_code = #{itemCode};
+	</update>
+
+	<parameterMap id="updateBookCatalogingParameterMap" type="com.qts.icam.model.library.Book">
+		<parameter property="bookObjectId" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="bookObjectId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookCode" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookType" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookDesc" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookPublisher.bookPublisherName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookMedium.bookMediumName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookIsbn" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookEdition" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookPlace" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookPeriodicity" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookLanguage.bookLanguageName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="genre.genreName" jdbcType="VARCHAR" mode="IN" />
+	</parameterMap>
+	<update id="updateBookCataloging" parameterMap="updateBookCatalogingParameterMap"
+		statementType="CALLABLE">
+		{? = call updateBook(?,?,?,?,?,?,?,?,?,?,?,?,?,?)}
+	</update>
+
+	<select id="getCodeForBook" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			b.book_code as bookCodeDB
+		FROM
+			book b
+		WHERE
+			b.is_active = true
+		AND
+			b.book_name ILIKE #{bookName};
+	</select>
+
+
+	<select id="checkAvailabilityForCode" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			b.book_code as bookCodeDB
+		FROM
+			book b
+		WHERE
+			b.is_active = true
+		AND
+			b.book_code ILIKE #{bookCode};
+	</select>
+
+	<select id="getAllPublishersName" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT 
+			bp.book_publisher_name as publisherList
+		FROM 
+			book_publisher bp
+		WHERE 
+			bp.is_active = true;
+	</select>
+
+	<select id="publisherList" resultType="com.qts.icam.model.library.BookPublisher">
+		SELECT
+			bp.book_publisher_name as bookPublisherName
+		FROM
+			book_publisher bp
+		WHERE
+			bp.is_active = true
+		AND
+			bp.book_publisher_name IS NOT NULL;
+	</select>
+
+	<resultMap id="getNotReturnedRequestedBookDetailsResultMap" type="com.qts.icam.model.library.BookRequest">
+		<id property="bookRequestCode" column="book_request_code" jdbcType="VARCHAR" />
+		<result property="bookRequestOpenDate" column="book_issued_date" jdbcType="VARCHAR" />
+		<result property="bookRequestCloseDate" column="book_return_date" jdbcType="VARCHAR" />
+		<association property="bookRequestFor" javaType="com.qts.icam.model.common.Resource">
+			<id property="userId" column="user_id" jdbcType="VARCHAR" />
+			<result property="firstName" column="first_name" jdbcType="VARCHAR" />
+			<result property="middleName" column="middle_name" jdbcType="VARCHAR" />
+			<result property="lastName" column="last_name" jdbcType="VARCHAR" />
+		</association>
+		<collection property="bookRequestDetailsList" ofType="com.qts.icam.model.library.BookRequestDetails">
+			<id property="bookCode" column="book_name" jdbcType="VARCHAR" />
+			<result property="bookName" column="book_code" jdbcType="VARCHAR" />
+			<result property="bookId" column="book_id" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="getNotReturnedRequestedBookDetails" resultMap="getNotReturnedRequestedBookDetailsResultMap">
+		SELECT
+			br.book_request_code,
+			to_char((SELECT to_timestamp(bad.book_issued_date)), 'DD/MM/YYYY') as book_issued_date,
+			to_char((SELECT to_timestamp(bad.book_return_date)), 'DD/MM/YYYY') as book_return_date,
+			r.user_id,
+			r.first_name,
+			r.middle_name,
+			r.last_name,
+			b.book_name,
+			bad.book_code,
+			bad.book_id
+		FROM
+			book_allocation_details bad
+		JOIN
+			book_allocation ba ON (bad.book_allocation = ba.rec_id) AND (ba.is_active = true)
+		JOIN
+			resource r ON (r.rec_id = ba.book_issued_to) AND (r.is_active = true)
+		JOIN
+			book_request br ON (br.rec_id = ba.request_id) AND (br.is_active = true)
+		JOIN
+			book_id bi ON (bad.book_id = book_individual_code) AND (bi.is_active = true)
+		JOIN
+			book b ON (bi.book_common_code = b.book_code ) AND (b.is_active = true)
+		WHERE
+			bad.is_active = true
+		<!-- AND
+			(SELECT extract(epoch FROM now())) > bad.book_return_date -->
+		AND
+			bad.book_actual_submission_date IS NULL;
+	</select>
+
+	<select id="getPurchaseOrdersInRequition" parameterType="java.lang.String"
+		resultType="com.qts.icam.model.library.BookPurchaseOrder">
+		SELECT
+			br.book_requisition_code as bookRequisition,
+			bpo.book_purchase_order_code as purchaseOrderCode,
+			to_char((SELECT to_timestamp((bpo.book_purchase_order_open_date))), 'DD/MM/YYYY') as purchaseOrderOpenDate,
+			to_char((SELECT to_timestamp((bpo.book_purchase_order_close_date))), 'DD/MM/YYYY') as purchaseOrderCloseDate,
+			bpo.totalqtyordered as totalQtyOrdered,
+			bpo.totalqtydeficit as totalQtyDeficit,
+			bpo.totalqtyreceived as totalQtyReceived,
+			bpo.totalamount as totalAmount,
+			bpo.paid as advanceAmount,
+			bpo.order_status as status,
+			bpo.amountstatus as amountStatus,
+			v.vendor_name as vendorCode,
+			v.vendor_code as ledger		<!-- added by sourav.bhadra on 31-07-2017 -->
+		FROM
+			book_purchase_order bpo
+		JOIN
+			book_requisition br ON (bpo.requisition = br.rec_id AND br.is_active = true)
+		JOIN 
+			vendor v ON (bpo.vendor = v.rec_id AND v.is_active = true)
+		WHERE
+			bpo.is_active = true
+		AND
+			br.book_requisition_code = #{requisitionCode}
+	</select>
+	
+	<!-- modified by sourav.bhadra on 13-09-2017 -->
+	<select id="getPurchaseOrdersDetailsInPurchaseOrder" parameterType="java.lang.String" resultType="com.qts.icam.model.library.BookPurchaseOrderDetails">
+		SELECT
+			bpo.book_purchase_order_code as bookPurchaseOrderCode,
+			bpod.book_purchase_order_details_code as purchaseOrderDetailsCode,
+			bpod.qty_ordered as qtyOrdered,
+			bpod.qty_deficit as qtyDeficit,
+			bpod.qty_received as qtyReceived,
+			bpod.book as bookName,
+			bpod.rate as rate,
+			bpod.amount as amount,
+			bpod.order_status as status,
+			bpod.author as authorName,
+			bpod.tax as tax,
+			bpod.discount as discount,
+			bpo.paid as paidAmount,
+			g.genre_name as itemCode
+		FROM
+			book_purchase_order_details bpod
+		JOIN
+			book_purchase_order bpo ON (bpod.book_purchase_order = bpo.rec_id AND bpo.is_active = true)
+		JOIN
+			genre g ON (bpod.genre = g.rec_id AND g.is_active = true)
+		WHERE
+			bpod.is_active = true
+		AND
+			bpo.book_purchase_order_code=#{purchaseOrderCode}
+	</select>
+
+	<update id="receiveBookPurchaseOrder" parameterType="com.qts.icam.model.library.BookPurchaseOrder">
+		UPDATE
+			book_purchase_order
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			totalqtydeficit = #{totalQtyDeficit},
+		 	totalqtyreceived = #{totalQtyReceived},
+			order_status = #{status}
+		WHERE
+			book_purchase_order_code = #{purchaseOrderCode}
+		AND
+			is_active = true;
+	</update>
+
+	<update id="receiveBookPurchaseOrderDetails" parameterType="com.qts.icam.model.library.BookPurchaseOrderDetails">
+		UPDATE
+			book_purchase_order_details
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			qty_deficit = #{qtyDeficit},
+			qty_received = #{qtyReceived},
+			order_status = #{status}
+		WHERE
+			book_purchase_order_details_code = #{purchaseOrderDetailsCode}
+		AND
+			is_active = true;
+	</update>
+
+	<select id="getPurchaseOrdersForPayment" parameterType="java.lang.String" resultType="com.qts.icam.model.library.BookPurchaseOrder">
+		SELECT
+				bpo.book_purchase_order_code as purchaseOrderCode,
+				bpo.totalqtyordered as totalQtyOrdered,
+				bpo.totalqtydeficit as totalQtyDeficit,
+				bpo.totalqtyreceived as totalQtyReceived,
+				bpo.paid as advanceAmount,
+				bpo.totalamount as totalAmount,
+				net_amount as netAmount,
+				stds_in_percent as stdsInPercent,
+				stds_in_amount as stdsInAmount,
+				service_charge as serviceCharge,
+				service_tax_in_percent as serviceTaxInPercent,
+				tds_in_percent as tdsInPercent,
+				tds_in_amount as tdsInAmount,
+				pending_amount as pendingAmount
+		FROM
+			book_purchase_order bpo
+		WHERE
+			bpo.is_active = true
+		AND
+			bpo.book_purchase_order_code = #{purchaseOrderCode}
+	</select>
+
+	<update id="updatePurchaseOrderPayment" parameterType="com.qts.icam.model.library.BookPurchaseOrder">
+		UPDATE
+			book_purchase_order
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			paid = paid + #{advanceAmount},
+			amountstatus = #{amountStatus},
+			pending_amount = #{pendingAmount}
+			<if test="status == null">
+				,net_amount = #{netAmount},
+				stds_in_percent = #{stdsInPercent},
+				stds_in_amount = #{stdsInAmount},
+				service_charge = #{serviceCharge},
+				service_tax_in_percent = #{serviceTaxInPercent},
+				tds_in_percent = #{tdsInPercent},
+				tds_in_amount = #{tdsInAmount}
+			</if>
+		WHERE
+			book_purchase_order_code = #{purchaseOrderCode}
+		AND
+			is_active = true
+	</update>
+
+	<select id="getReqAndAllStatus" parameterType="java.lang.String"
+		resultType="com.qts.icam.model.library.BookPurchaseOrder">
+		SELECT
+			bpo2.book_purchase_order_code as purchaseOrderCode,
+			bpo2.amountstatus as amountStatus,
+			bpo2.order_status as status,
+			br.book_requisition_code as bookRequisition
+		FROM
+			book_purchase_order bpo1
+		JOIN
+			book_purchase_order bpo2 ON (bpo1.requisition = bpo2.requisition)
+		JOIN 
+			book_requisition br ON (br.rec_id = bpo1.requisition AND br.is_active = true)
+		WHERE
+			bpo1.book_purchase_order_code = #{purchaseOrderCode}
+		AND
+			bpo1.is_active = true
+	</select>
+
+	<update id="setPurchaseOrderCloseDate" parameterType="com.qts.icam.model.library.BookPurchaseOrder">
+		UPDATE
+			book_purchase_order
+		SET
+			book_purchase_order_close_date = (SELECT extract(epoch FROM now()))
+		WHERE
+			book_purchase_order_code = #{purchaseOrderCode}
+		AND
+			is_active = true
+	</update>
+
+	<update id="setBookReqCloseDate" parameterType="java.lang.String">
+		UPDATE
+			book_requisition
+		SET
+			book_requisition_status = (SELECT rec_id FROM operational_status WHERE operational_status_code = 'CLOSE'),
+			book_requisition_close_date = (SELECT extract(epoch FROM now()))
+		WHERE
+			book_requisition_code = #{bookRequisitionCode}
+		AND
+			is_active = true
+	</update>
+
+	<resultMap id="vendorListForCheckingRM" type="com.qts.icam.model.common.Vendor">
+		<id property="vendorCode" column="vendor_code" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<select id="vendorListForChecking" resultMap="vendorListForCheckingRM">
+		SELECT
+			v.vendor_code
+		FROM
+			vendor v
+		JOIN
+			vendor_type vd ON (vd.is_active = true) AND (v.vendor_type = vd.rec_id)
+		WHERE
+			v.is_active = true
+		AND
+			vd.vendor_type_code = 'BV';
+	</select>
+
+	<select id="getPurchaseOrderDetailsList" resultType="com.qts.icam.model.library.BookPurchaseOrderDetails" parameterType="java.util.Map">
+		SELECT
+			bpod.book_purchase_order_details_code as purchaseOrderDetailsCode,
+			bpod.qty_ordered as qtyOrdered,
+			bpod.qty_deficit as qtyDeficit,
+			bpod.qty_received as qtyReceived,
+			bpo.book_purchase_order_code as bookPurchaseOrderCode,
+			br.book_requisition_code as updatedBy,
+			bpod.qty_received-bpod.added_to_catalogue as qtyDefect,
+			bpod.book as bookName,
+			bpod.author as authorName,
+			bpod.publisher as publisherName,
+			bpod.edition as edition,
+			bpod.amount as amount,
+			bpod.rate as rate,
+			g.genre_name as genre
+		FROM
+			book_purchase_order_details bpod
+		JOIN
+			genre g ON (bpod.genre = g.rec_id AND g.is_active = true)	
+		JOIN
+			book_purchase_order bpo ON (bpod.book_purchase_order = bpo.rec_id AND bpo.is_active = true)
+		JOIN 
+			book_requisition br ON (bpo.requisition = br.rec_id AND br.is_active = true)
+		WHERE
+			bpod.is_active = true
+		AND
+			(bpod.qty_received-bpod.added_to_catalogue) > 0
+		<!-- <if test="RequisitionCode != null">
+			AND br.book_requisition_code ilike ('%'||#{RequisitionCode}||'%')
+		</if>
+		<if test="OrderCode != null">
+			AND bpo.book_purchase_order_code ilike ('%'||#{OrderCode}||'%')
+		</if>
+		<if test="BookName != null">
+			AND bpod.book ilike ('%'||#{BookName}||'%')
+		</if>
+		<if test="Author != null">
+			AND bpod.author ilike ('%'||#{Author}||'%')
+		</if>
+		<if test="Edition != null">
+			AND bpod.edition ilike ('%'||#{Edition}||'%')
+		</if>
+		<if test="Amount != null">
+			AND cast((SELECT round( CAST(bpod.amount as numeric), 2)) as character varying) ilike ('%'||#{Amount}||'%')
+		</if> -->
+	</select>
+
+
+
+	<update id="updateAddedToCatalogue" parameterType="com.qts.icam.model.library.Book">
+		UPDATE
+			book_purchase_order_details
+		SET
+			added_to_catalogue = (added_to_catalogue + #{totalNumberOfBookCopies})
+		WHERE
+			book_purchase_order_details_code = #{bookObjectId}
+		AND
+			is_active = true
+	</update>
+	
+	<select id="getBookCodeForBookName" parameterType="java.lang.String" resultType="com.qts.icam.model.library.Book">
+		SELECT
+			b.book_code as bookCode,
+			b.book_desc as bookDesc,
+			b.book_isbn as bookIsbn,
+			bl.book_language_name as "bookLanguage.bookLanguageName",
+			bm.book_medium_name as "bookMedium.bookMediumName"
+		FROM
+			book b
+		LEFT JOIN
+			book_language bl ON (bl.is_active = true) AND (b.book_language = bl.rec_id)
+		LEFT JOIN
+			book_medium bm ON (bm.is_active = true) AND (b.book_medium = bm.rec_id)
+		WHERE
+			b.book_name = #{bookName}
+		AND
+			b.is_active = true	
+	</select>
+
+	<parameterMap id="insertVendorListFromRequisitionResultMap"
+		type="com.qts.icam.model.common.Vendor">
+		<parameter property="vendorCode" jdbcType="VARCHAR" mode="OUT" />
+		<parameter property="vendorObjectId" jdbcType="VARCHAR"
+			mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="vendorName" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="vendorType" jdbcType="VARCHAR" mode="IN" />
+
+	</parameterMap>
+
+	<insert id="insertVendorListFromRequisition" parameterMap="insertVendorListFromRequisitionResultMap"
+		statementType="CALLABLE">
+		{? = call addvendorforrequisition(?,?,?,?)}
+	</insert>
+
+	<select id="getAllVendorsNameForAuto" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			v.vendor_code || ',' ||v.vendor_name as vendorNameList
+		FROM
+			vendor v
+		JOIN
+			vendor_type vd ON (vd.is_active = true) AND (v.vendor_type = vd.rec_id)
+		WHERE
+			v.is_active = true
+		AND
+			v.vendor_name ilike (#{strQuery}||'%')
+		AND
+			vd.vendor_type_code = 'BV';
+	</select>
+
+	<select id="getNameOfVendors" resultType="com.qts.icam.model.common.Vendor">
+		SELECT
+			v.vendor_name as vendorName
+		FROM
+			vendor v
+		JOIN
+			vendor_type vd ON (vd.is_active = true) AND (v.vendor_type = vd.rec_id)
+		WHERE
+			v.is_active = true
+		AND
+			vd.vendor_type_code = 'BV';
+	</select>
+	
+	<select id="getIdAgainstName" parameterType="com.qts.icam.model.common.Vendor" resultType="java.lang.String">
+		SELECT
+			v.vendor_code
+		FROM
+			vendor v
+		JOIN
+			vendor_type vt ON (v.vendor_type = vt.rec_id AND vt.is_active = true)
+		WHERE
+			v.is_active = true
+		AND
+			v.vendor_name = #{vendorName}
+		AND
+			vt.vendor_type_code = 'BV';
+	</select>
+
+	<update id="updateBookRequisitionForPurchaseOrder" parameterType="java.lang.String">
+		UPDATE
+			book_requisition as br
+		SET
+			purchase_order_created = true
+		WHERE
+			br.is_active = true
+		AND
+			br.book_requisition_code = #{status}
+		AND
+			br.is_active = true
+	</update>
+
+	<select id="getAlleditions" parameterType="java.lang.String"
+		resultType="java.lang.String">
+		SELECT
+			distinct b.book_edition as editionList
+		FROM
+			book b
+		WHERE
+			b.book_edition ilike (#{strQuery}||'%')
+		AND
+			b.is_active = true
+	</select>
+
+	<select id="authorList" resultType="com.qts.icam.model.library.Author">
+		SELECT
+			a.author_full_name as authorFullName
+		FROM
+			author a
+		WHERE
+			a.is_active = true
+		AND
+			a.author_full_name IS NOT NULL;
+	</select>
+
+	<resultMap id="getAllVendorsNameRM" type="com.qts.icam.model.common.Vendor">
+		<id property="vendorCode" column="vendor_code" jdbcType="VARCHAR" />
+		<result property="vendorName" column="vendor_name" jdbcType="VARCHAR" />
+		<result property="vendorSellingRate" column="book_price"
+			jdbcType="DOUBLE" />
+	</resultMap>
+	<select id="getAllVendorsName" parameterType="com.qts.icam.model.library.Book"
+		resultMap="getAllVendorsNameRM">
+		SELECT
+			v.vendor_code as vendorCode,
+			v.vendor_name as vendorName,
+			vbk.book_price as vendorSellingRate
+		FROM
+			book bk
+		JOIN
+			author au ON (au.is_active = true)
+		JOIN
+			vendor v ON (v.is_active = true)
+		JOIN
+			book_author bkau ON (bk.rec_id = bkau.book) AND(au.rec_id = bkau.author) AND (bkau.is_active = true)
+		JOIN
+			vendor_book vbk ON (bk.rec_id = vbk.book) AND (v.rec_id = vbk.vendor) AND (vbk.is_active = true)
+		WHERE
+			bk.book_name = #{bookName}
+		AND
+			au.author_full_name = #{bookDesc}
+			<!-- au.author_full_name IN (select unnest(string_to_array(#{bookDesc},','))) -->
+		AND
+			bk.is_active = true
+		order by 
+			vbk.book_price;
+	</select>
+
+	<parameterMap id="insertIntoBookPurchaseOrderResultMap" type="com.qts.icam.model.library.BookPurchaseOrder">
+		<parameter property="purchaseSerialId" jdbcType="INTEGER" mode="OUT" />
+		<parameter property="purchaseOrderObjectId" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="updatedBy" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="purchaseOrderCode" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="purchaseOrderDesc" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="totalQtyOrdered" jdbcType="DOUBLE"  mode="IN" />
+		<parameter property="totalQtyDeficit" jdbcType="DOUBLE" mode="IN" />
+		<parameter property="totalQtyReceived" jdbcType="DOUBLE" mode="IN" />
+		<parameter property="totalAmount" jdbcType="DOUBLE" mode="IN" />
+		<parameter property="amountStatus" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="status" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="bookRequisition" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="vendorCode" jdbcType="VARCHAR" mode="IN" />
+	</parameterMap>
+
+	<insert id="insertIntoBookPurchaseOrder" parameterMap="insertIntoBookPurchaseOrderResultMap"
+		statementType="CALLABLE">
+		{? = call
+		insert_into_book_purchase_order(?,?,?,?,?,?,?,?,?,?,?,?)}
+	</insert>
+
+
+
+	<!-- modified by sourav.bhadra on 13-09-2017 -->
+	<insert id="insertIntoBookPurchaseOrderDetails" parameterType="com.qts.icam.model.library.BookPurchaseOrderDetails"
+		statementType="CALLABLE">
+		select insert_into_book_purchase_order_details(
+		#{purchaseOrderDetailsObjectId, mode=IN, jdbcType=VARCHAR},
+		#{updatedBy, mode=IN, jdbcType=VARCHAR},
+		#{purchaseOrderDetailsCode, mode=IN, jdbcType=VARCHAR},
+		#{PurchaseOrderDetailsDesc, mode=IN, jdbcType=VARCHAR},
+		#{qtyOrdered, mode=IN, jdbcType=DOUBLE},
+		#{qtyDeficit, mode=IN, jdbcType=DOUBLE},
+		#{qtyReceived, mode=IN, jdbcType=DOUBLE},
+		#{rate, mode=IN, jdbcType=DOUBLE},
+		#{amount, mode=IN, jdbcType=DOUBLE},
+		#{status, mode=IN, jdbcType=VARCHAR},
+		#{bookPurchaseOrder.purchaseSerialId, mode=IN, jdbcType=INTEGER},
+		#{bookName, mode=IN, jdbcType=VARCHAR},
+		#{authorName, mode=IN, jdbcType=VARCHAR},
+		#{publisherName, mode=IN, jdbcType=VARCHAR},
+		#{edition, mode=IN, jdbcType=VARCHAR},
+		#{tax, mode=IN, jdbcType=DOUBLE},
+		#{discount, mode=IN, jdbcType=DOUBLE},
+		#{itemCode, mode=IN, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+
+	<select id="getBookPeriodicityPublisher" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			book_publisher_name as bookPeriodicityPublisherDB
+		FROM
+			book_publisher bp
+		WHERE
+			bp.is_active = true
+		AND
+			bp.book_publisher_name = #{bookPeriodicityPublisher}
+	</select>
+
+	<!-- <resultMap id="getBookListForEditResultMap" type="com.qts.icam.model.library.Book">
+		<id property="bookType" column="book_type" jdbcType="VARCHAR" />
+		<result property="bookCode" column="book_code" jdbcType="VARCHAR" />
+		<result property="bookName" column="book_name" jdbcType="VARCHAR" />
+		<result property="bookEdition" column="book_edition" jdbcType="VARCHAR" />
+		<result property="bookMedium.bookMediumName" column="book_medium_name" jdbcType="VARCHAR" />
+		<result property="bookIsbn" column="book_isbn" jdbcType="VARCHAR" />
+		<result property="bookPublisher.bookPublisherName" column="book_publisher_name" jdbcType="VARCHAR" />
+		<result property="bookLanguage.bookLanguageName" column="book_language_name" jdbcType="VARCHAR" />
+		<result property="genre.genreName" column="genre_name" jdbcType="VARCHAR" />
+	</resultMap> -->
+	<!-- modified by sourav.bhadra on 12-02-2018 -->
+	<!-- modified by sourav.bhadra on 16-02-2018 -->
+	<select id="getBookListForEdit" resultType="com.qts.icam.model.library.Book"  parameterType="java.util.Map">
+		SELECT 
+			to_char((SELECT to_timestamp(b.date_of_entry)), 'DD/MM/YYYY') as bookEntryDate,
+			b.accession_number as accessionNumber,
+			b.book_code as bookCode,
+			lc.item_name as bookName,
+			bc.book_category_name as bookType,
+			lc.place as bookPlace,
+			bp.book_publisher_name as bookPublisherId,
+			lc.publish_year as publishingYear,
+			b.pages as pages,
+			b.volume as volume,
+			b.source as source,
+			b.bill_no as billNo,
+			to_char((SELECT to_timestamp(b.bill_date)), 'DD/MM/YYYY') as billDate,
+			b.price as cost,
+			b.class_no as classNo,
+			b.book_no as bookNo,
+			b.withdrawal_no as withdrawalNo,
+			to_char((SELECT to_timestamp(b.withdrawal_date)), 'DD/MM/YYYY') as withdrawalDate,
+			b.remarks as remarks,
+			b.total_no_of_copies_available as totalNumberOfBookCopiesAvailable
+		FROM 
+			book b
+		LEFT JOIN 
+			library_catalogue lc ON (b.library_catalogue = lc.rec_id AND lc.is_active = true)	
+		JOIN
+			book_publisher bp ON(lc.book_publisher = bp.rec_id AND bp.is_active = true)
+		JOIN
+			book_category bc ON(lc.type = bc.rec_id AND bc.is_active = true)
+		WHERE
+			lc.type = (select rec_id from book_category where book_category_code = 'BOOK_CATEGORY_1' and is_active = true)
+		AND
+			b.is_active = true;
+	</select>
+
+
+	<resultMap id="getBookAuthorListResultMap" type="com.qts.icam.model.library.Author">
+		<id property="authorFullName" column="author_full_name" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getBookAuthorList" parameterType="com.qts.icam.model.library.Book" resultMap="getBookAuthorListResultMap">
+		SELECT
+			a.author_full_name
+		FROM
+			author a
+		JOIN
+			book_author ba ON (ba.author = a.rec_id) AND (ba.is_active = true)
+		JOIN
+			book b ON(ba.book = b.rec_id) AND (b.is_active = true)
+		WHERE
+			b.book_code = #{bookCode}
+		AND
+			a.is_active = true
+	</select>
+
+	<resultMap id="getBookDetailsToEditResultMap" type="com.qts.icam.model.library.Book">
+		<id property="bookType" column="book_type" jdbcType="VARCHAR" />
+		<result property="bookCode" column="book_code" jdbcType="VARCHAR" />
+		<result property="bookName" column="book_name" jdbcType="VARCHAR" />
+		<result property="genre.genreName" column="genre_name" jdbcType="VARCHAR" />
+		<result property="bookDesc" column="book_desc" jdbcType="VARCHAR" />
+		<result property="bookPublisher.bookPublisherName" column="book_publisher_name"
+			jdbcType="VARCHAR" />
+		<result property="bookMedium.bookMediumName" column="book_medium_name"
+			jdbcType="VARCHAR" />
+		<result property="bookIsbn" column="book_isbn" jdbcType="VARCHAR" />
+		<result property="bookEdition" column="book_edition" jdbcType="VARCHAR" />
+		<result property="bookPlace" column="book_place" jdbcType="VARCHAR" />
+		<result property="bookPeriodicity" column="book_periodicity"
+			jdbcType="VARCHAR" />
+		<result property="bookLanguage.bookLanguageName" column="book_language_name"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getBookDetailsToEdit" parameterType="com.qts.icam.model.library.Book"
+		resultMap="getBookDetailsToEditResultMap">
+		SELECT
+			b.book_type,
+			b.book_code,
+			b.book_name,
+			g.genre_name,
+			b.book_desc,
+			bp.book_publisher_name,
+			bm.book_medium_name,
+			b.book_isbn,
+			b.book_edition,
+			b.book_place,
+			b.book_periodicity,
+			bl.book_language_name,
+			g.genre_name
+		FROM
+			book b
+		JOIN 
+			book_language bl ON (b.book_language = bl.rec_id) AND (bl.is_active = true)
+		LEFT JOIN
+			book_publisher bp ON(b.book_publisher = bp.rec_id) AND (bp.is_active = true)
+		JOIN 
+			book_medium bm ON(b.book_medium = bm.rec_id) AND (bm.is_active = true)
+		JOIN
+			genre g ON(b.genre = g.rec_id)AND (g.is_active = true)
+		WHERE
+			b.book_code=#{bookCode}
+		AND
+			b.is_active = true
+	</select>
+
+	<update id="inactiveBookAuthorMapping" parameterType="com.qts.icam.model.library.Book">
+		UPDATE
+			book_author
+		SET
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			updated_on = (SELECT extract(epoch FROM now())),
+			is_active = false
+
+		WHERE
+			book = (SELECT rec_id FROM book b WHERE book_code = #{bookCode} AND is_active = true)
+		AND
+			is_active = true;
+	</update>
+
+	<select id="getbookLanguageList" resultType="com.qts.icam.model.library.BookLanguage" >
+		SELECT 
+	       		book_language_code as bookLanguageCode, 
+	       		book_language_name as bookLanguageName
+	  	FROM 
+				book_language
+	 	WHERE
+				is_active = true
+		ORDER BY 
+				book_language_name;
+	</select>
+	
+
+	<select id="selectUpdateBookLogDetails"  parameterType="String" resultType="com.qts.icam.model.common.LoggingAspect">
+	    SELECT 
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || r.last_name || '(' || r.user_id || ')' as updatedBy,
+			ld.logging_desc as loggingDesc,
+			to_char((SELECT to_timestamp(ld.updated_on)), 'DD-MM-YYYY') as loggingTime
+		FROM
+			logging_Details ld
+		JOIN
+			resource r ON (r.rec_id = ld.updated_by) AND (r.is_active = true)
+		JOIN
+			book b ON (b.is_active = true) AND (ld.updated_for = b.rec_id)
+		WHERE
+			ld.service_name = 'LIBRARY'
+		AND
+			ld.method_accessed = 'updateBook'
+		AND
+			ld.is_active = true
+		AND
+			b.book_code= #{bookCode}
+		ORDER BY 
+			ld.updated_on desc;
+	</select>
+	
+	<select id="selectRetiredBookLogDetails"  parameterType="String" resultType="com.qts.icam.model.common.LoggingAspect">
+	    SELECT 
+			r.first_name || ' ' || COALESCE(r.middle_name,' ') || ' ' || r.last_name || '(' || r.user_id || ')' as updatedBy,
+			ld.logging_desc as loggingDesc,
+			to_char((SELECT to_timestamp(ld.updated_on)), 'DD-MM-YYYY') as loggingTime
+		FROM
+			logging_details ld
+		JOIN
+			resource r ON (r.rec_id = ld.updated_by) AND (r.is_active = true)
+		JOIN
+			book b ON (b.is_active = true) AND (ld.updated_for = b.rec_id)
+		WHERE
+			ld.service_name = 'LIBRARY'
+		AND
+			ld.method_accessed = 'removeBookIds'
+		AND
+			ld.is_active = true
+		AND
+			b.book_code = #{bookCode}
+		ORDER BY 
+			ld.updated_on desc;
+	</select>
+	
+	<!-- sourav.bhadra 24062017 -->
+		
+	<insert id="insertIntoTransactionalWorkingAreaForLibraryPurchaseOrderPayment" parameterType="com.qts.icam.model.library.BookPurchaseOrder">
+		INSERT INTO 
+			transactional_working_area
+					(
+						rec_id,
+						obj_id,
+						updated_by,
+						updated_on, 
+						date_of_creation,
+						transactional_working_area_code,
+						transactional_working_area_name, 
+						transactional_working_area_desc,
+						resource_type,
+						resource,
+						transaction_date,
+						gross_amount,
+						net_amount,
+						reason_of_transaction,
+						desc_of_transaction,
+						transaction_status,
+						academic_year,
+						paid_against,
+						transaction_year,
+						transaction_month,
+						department,
+						income_expense,
+						ledger
+					)
+		VALUES
+					(
+						uuid_generate_v4(),
+						#{purchaseOrderObjectId},
+						(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+						extract(epoch FROM now()), 
+						extract(epoch FROM now()),
+						(SELECT('TWA' ||(SELECT COALESCE((SELECT MAX(transactional_working_area_id) FROM transactional_working_area), 0)+1))),
+						#{purchaseOrderName}, 
+						#{purchaseOrderName},
+						'BOOK VENDOR',
+						(SELECT
+							v.vendor_name
+						FROM
+							book_purchase_order bpo
+						JOIN
+							vendor v ON (v.is_active = true) AND (bpo.vendor = v.rec_id)
+						WHERE
+							bpo.book_purchase_order_code = #{purchaseOrderCode}
+						AND
+							bpo.is_active = true
+						),
+						extract(epoch FROM now()),
+						#{advanceAmount},
+						#{advanceAmount},
+						'PO',
+						#{purchaseOrderDesc},
+						'PENDING',
+						(SELECT
+							academic_year_name
+						 FROM
+							academic_year
+						 WHERE
+							is_active = true
+						 AND
+							year_status = (SELECT rec_id FROM status_flag WHERE status_sym ='C')
+						 ),
+						(SELECT
+							bpo.book_purchase_order_code
+						FROM
+							book_purchase_order bpo
+						WHERE
+							bpo.book_purchase_order_code=#{purchaseOrderCode}
+						AND
+							bpo.is_active = true
+						),
+						to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'YYYY'),
+						to_char((SELECT to_timestamp(extract(epoch FROM now()))), 'MM')
+						,'LIBRARY DEPARTMENT',
+						'EXPENSE',
+						(SELECT rec_id FROM ledger WHERE ledger_code = #{ledger} AND is_active = true)
+					);
+	</insert>
+	 
+	<insert id="insertIntoPriceHistory" parameterType="com.qts.icam.model.common.Item">
+		INSERT INTO
+				price_history(
+							rec_id,
+							obj_id,
+							updated_by,
+							updated_on,
+							date_of_creation,
+							price_history_code,
+							price_history_name,
+							price_history_desc,
+							vendor_id,
+							item_id,
+							price)
+				VALUES 
+							(uuid_generate_v4(),
+							#{itemObjectId},
+							(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+							(SELECT extract(epoch FROM now())),
+							(SELECT extract(epoch FROM now())),
+							#{status},
+							#{status},
+							#{status},
+							#{vendorCode},
+							#{itemCode},
+							#{sellingRate}
+							);
+	</insert>
+	
+	
+	
+	<select id="getVendorBookPriceHistory" parameterType="com.qts.icam.model.common.Item" resultType="com.qts.icam.model.common.Item">
+		SELECT
+			price as sellingRate,
+			to_char((SELECT to_timestamp(date_of_creation)),'DD/MM/YYYY') as status
+		FROM
+			price_history
+		WHERE
+			item_id = #{itemCode}
+		AND
+			vendor_id = #{vendorCode}
+		AND
+			is_active = true
+		ORDER BY
+			status DESC;
+	</select>
+	
+	<!-- GAp work started -->
+	
+	<select id="getGenreList" resultType="com.qts.icam.model.common.Genre" >
+		SELECT 	
+				genre_id,
+	       		genre_code as genreCode, 
+	       		genre_name as genreName
+	  	FROM 
+				genre
+	 	WHERE
+				is_active = true
+		ORDER BY 
+				genre_id ASC;
+	</select>
+	
+	<resultMap id="allocatedBookRequestCodesResultMap" type="com.qts.icam.model.library.BookAllocation" >
+		<result property="bookAllocationCode" column="book_allocation_code" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getBookRequestCodes" parameterType = "com.qts.icam.model.common.Resource" resultMap="allocatedBookRequestCodesResultMap">
+		SELECT 
+		    ba.book_allocation_code
+		FROM 
+			book_allocation ba
+		JOIN 
+			resource r ON (ba.book_issued_to = r.rec_id) AND (r.is_active = true)
+		JOIN 
+			book_allocation_details bad ON (ba.rec_id = bad.book_allocation )
+		WHERE 
+			r.user_id = #{userId}
+		GROUP BY 
+			ba.book_allocation_code, ba.sequence_no
+		ORDER BY 
+			ba.sequence_no desc;
+	</select>
+	
+	<resultMap id="getRequestedBookAgainstRequestCodeResultMap" type="com.qts.icam.model.library.BookAllocationDetails">
+		<id property="bookId" column="book_id" jdbcType="VARCHAR" />
+		<result property="bookCode" column="book_Code" jdbcType="VARCHAR" />
+		<result property="bookName" column="book_name" jdbcType="VARCHAR" />
+		<result property="genreName" column="genre_name" jdbcType="VARCHAR" />
+		<result property="bookIssueDate" column="book_issued_date" jdbcType="VARCHAR" />
+		<result property="bookReturnDate" column="book_return_date" jdbcType="VARCHAR" />
+		<result property="actualReturnDate" column="book_actual_submission_date" jdbcType="VARCHAR" />
+		<result property="status" column="book_operational_status_code" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="getRequestedBookAgainstRequestCode" parameterType="String" resultMap="getRequestedBookAgainstRequestCodeResultMap">
+		SELECT 
+			bad.book_id,
+			bad.book_code,
+			b.book_name,
+			g.genre_name,
+			bad.penalty,
+			to_char((SELECT to_timestamp(bad.book_issued_date)), 'DD/MM/YYYY') as book_issued_date,
+			to_char((SELECT to_timestamp(bad.book_return_date)), 'DD/MM/YYYY') as book_return_date,
+			bad.book_actual_submission_date,
+			bos.book_operational_status_code
+		FROM 
+			book_allocation_details bad
+		JOIN 
+			book_operational_status bos ON (bad.book_allocation_details_status = bos.rec_id AND bos.is_active = true)
+		JOIN 
+			book_allocation ba ON (bad.book_allocation = ba.rec_id AND ba.is_active = true)
+		JOIN 
+			book b ON (bad.book_code = b.book_code AND b.is_active = true)
+		JOIN 
+			genre g ON (b.genre = g.rec_id AND g.is_active = true)		
+		WHERE 
+			bad.is_active = true
+		AND 
+			ba.book_allocation_code = #{allocationCode}
+	</select>
+	
+	<select id="selectAllocatedBookDetails" resultType="com.qts.icam.model.library.BookAllocation">
+		SELECT 	
+		  	r.user_id as bookAllocationObjectId,
+		  	ba.book_allocation_code as bookAllocationCode,
+		  	br.book_request_code as bookIssueComment,
+		  	to_char((SELECT to_timestamp(bad.book_issued_date)), 'DD/MM/YYYY') as bookIssueDate,
+			to_char((SELECT to_timestamp(bad.book_return_date)), 'DD/MM/YYYY') as bookReturnDate
+		FROM	
+			book_request br
+		JOIN
+			resource r ON (r.rec_id=br.book_resource_id AND r.is_active=true)
+		JOIN 
+			book_allocation ba ON (ba.request_id=br.rec_id AND br.is_active=true)
+		JOIN 	
+			book_allocation_details bad ON (bad.book_allocation=ba.rec_id AND bad.is_active=true)
+		WHERE
+			ba.is_active=true;
+	</select>
+	
+	<select id="getCurrentBalanceForALedger" parameterType="java.lang.String" resultType="java.lang.Double">
+		SELECT 
+			current_balance 
+		FROM 
+			ledger_balance 
+		WHERE 
+			ledger = (SELECT rec_id FROM ledger WHERE ledger_code = #{ledger})
+		AND 
+			is_active = true;
+	</select>
+	
+	<update id="updateCurrentBalanceOfALedger" parameterType="com.qts.icam.model.common.Ledger">
+		UPDATE
+			ledger_balance
+		SET
+			current_balance = #{currentBal}
+		WHERE
+			ledger = (SELECT rec_id FROM ledger WHERE ledger_code = #{ledgerCode})
+		AND 
+			is_active = true;
+	</update>
+	
+	<select id="selectDepartmentForBookRequisition" resultType="com.qts.icam.model.common.Department" >
+		SELECT 
+				department_name as departmentName,
+				department_code as departmentCode
+		FROM 	
+				department 
+		WHERE 	
+				is_active = true;
+	</select>
+	
+	<!-- sourav 27062017 -->
+	
+	<select id="getBankAllDetailsList" resultType="com.qts.icam.model.common.Vendor" parameterType="java.lang.String">
+		SELECT 
+				b.branch_code as bankCode,
+				b.bank_account_no as accountNo,
+				b.bank_branch_name as bankLocation
+		FROM 	
+				bank b
+		WHERE 	
+				b.bank_name=#{bankName}
+		AND		
+				b.is_active=true;
+	</select>
+	
+	<!-- saif.ali 03072017 -->
+	
+	<resultMap id="selectUserIdListByAjaxResultMap" type="java.lang.String">
+		<id property="UserIdList" column="user_id" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="selectUserIdListByAjax" parameterType="java.lang.String" resultMap="selectUserIdListByAjaxResultMap">
+		SELECT
+			user_id
+		FROM
+			resource 	
+		WHERE
+			is_active = true
+		AND
+			user_id ilike (#{strQuery}||'%')
+		AND
+			 user_id != 'superadmin'
+	</select>
+	
+	<select id="selectMaximumNumberBookByAjax" parameterType="String" resultType="Integer">
+		SELECT 
+			 max_no_of_books_per_req as maxNoOfBooksPerRequest
+  		FROM 
+			library_policy lp
+		JOIN
+			resource_type rt ON (rt.rec_id = lp.resource_type) AND (rt.is_active = true)
+		JOIN 
+			resource r ON(r.resource_type = rt.rec_id)
+		WHERE
+			lp.is_active = true
+		AND
+			r.user_id=#{bookRequestedFor}
+	</select>
+	
+	<!-- added by sourav.bhadra on 11-09-2017 -->
+	<select id="selectLedgerOfAGenre" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT 
+			ledger_name 
+		FROM 
+			ledger
+		WHERE 
+			ledger_holder = (SELECT rec_id FROM genre WHERE genre_name = #{genre} AND  is_active=true)
+		AND 
+			is_active = true
+	</select>
+	
+	<!-- added by sourav.bhadra on 13-09-2017 -->
+	<insert id="createTransactionForBookReceive" parameterType="com.qts.icam.model.finance.Transaction">
+		<selectKey keyProperty="voucherTypeName"  resultType="String" order="BEFORE">
+			(select('VOW-' ||(select COALESCE((SELECT MAX(transaction_id) FROM transaction), 0 )+1)));
+		</selectKey>
+		INSERT INTO transaction(
+				rec_id, 
+				obj_id, 
+				updated_by, 
+				updated_on, 
+				date_of_creation, 
+				is_active, 
+				date, 
+				voucher_type,
+				voucher_number, 
+				narration
+			)VALUES(
+				(select uuid_generate_v4()), 
+				 #{objectId},
+				(SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+				(SELECT extract(epoch FROM now())),
+				(SELECT extract(epoch FROM now())), 
+				true,
+				(SELECT extract(epoch FROM now())),
+				(SELECT rec_id FROM voucher_type WHERE voucher_type_code =#{voucherTypeCode} AND is_active = true),
+				#{voucherTypeName}, 
+				#{narration}
+			);
+		<foreach collection="trDetList" item="trDt" open="" close="" separator=";">
+			INSERT INTO transaction_details(
+				 rec_id,
+				 obj_id, 
+				 updated_by, 
+				 updated_on, 
+				 date_of_creation, 
+				 is_active, 
+				 transaction, 
+				 ledger, 
+				 amount, 
+				 is_debit
+			)VALUES(
+				 (select uuid_generate_v4()),
+				 #{objectId},
+				 (SELECT rec_id FROM resource WHERE user_id =#{updatedBy} AND is_active =true),
+				 (SELECT extract(epoch FROM now())), 
+				 (SELECT extract(epoch FROM now())), 
+				  true,
+				 (SELECT rec_id FROM transaction WHERE voucher_number =#{voucherTypeName} AND is_active =true),
+				 (SELECT rec_id FROM ledger WHERE ledger_code =#{trDt.ledger} AND is_active =true),
+				 #{trDt.amount}, 
+				 #{trDt.isDebit}
+			);			
+		</foreach>
+	</insert>
+	
+	<select id="getAllCategories" resultType="com.qts.icam.model.library.BookCategory">
+		SELECT
+			book_category_code as bookCategoryCode,
+			book_category_name as bookCategoryName
+		FROM
+			book_category
+		WHERE
+			is_active = true
+	</select>
+	
+	<select id="getLastAccessionNo" resultType="java.lang.String">
+		SELECT 
+			max(accession_number) 
+		FROM 
+			book 
+		WHERE 
+			is_active = true;	
+	</select>
+	
+	<!-- added by sourav.bhadra -->
+	<select id="getMagazinePublisherID" parameterType = "java.lang.String" resultType="java.lang.String" >
+		SELECT 
+			book_publisher_code 
+		FROM 
+			book_publisher 
+		WHERE 
+			book_publisher_name = #{magPublisherName} 
+		AND 
+			is_active = true;
+	</select>
+	
+	<!-- added by sourav.bhadra -->
+	<insert id="insertMagazinePublisher" parameterType="com.qts.icam.model.library.MagazinePublisher">
+		INSERT INTO book_publisher(
+			rec_id, 
+			obj_id, 
+			updated_by, 
+			updated_on, 
+			date_of_creation,
+			book_publisher_code, 
+			book_publisher_name, 
+			book_publisher_desc) 
+		VALUES (
+			uuid_generate_v4(),
+			#{magazinePublisherObjId},
+			(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+			(SELECT extract(epoch FROM now())), 
+			(SELECT extract(epoch FROM now())), 
+			(SELECT ('BP-'||(select COALESCE((SELECT MAX(serial_id) FROM book_publisher), 0 )+1))), 
+			#{magazinePublisherName}, 
+			#{magazinePublisherName}
+		);
+	</insert>
+	
+	<!-- anup.roy // for submitting new magazine to accession register -->
+	<insert id="insertMagazine" parameterType = "com.qts.icam.model.library.Magazine">
+		INSERT INTO 
+			book
+				(
+					rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+					date_of_entry, bill_no, bill_date, 
+					magazine_date_of_receive, price, item_status, library_catalogue, total_no_of_copies_available
+				)
+		VALUES (
+					uuid_generate_v4(), #{magazineObjectId}, (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true), 
+					(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())), 
+					(SELECT extract(epoch from (SELECT to_timestamp(#{magazineEntryDate},'DD/MM/YYYY')))), #{magazineBillNo}, 
+					(SELECT extract(epoch from (SELECT to_timestamp(#{magazineBillDate},'DD/MM/YYYY')))),
+					(SELECT extract(epoch from (SELECT to_timestamp(#{magazineReceiveDate},'DD/MM/YYYY')))),
+					#{magazineCost}, (SELECT rec_id FROM status_of_item WHERE status_of_item_code = #{statusOfItemName} AND is_active = true),
+					(SELECT rec_id FROM library_catalogue WHERE item_code = #{magazineName} AND is_active = true), 1
+				);
+	</insert>
+	
+	<!-- added by sourav.bhadra 14-02-2018 -->
+	<select id="getMagazineListForEdit" resultType="com.qts.icam.model.library.Magazine">
+		SELECT 
+			bp.book_publisher_name as updatedBy,
+			bc.book_category_name as magazineObjectId, 
+			to_char((SELECT to_timestamp(b.date_of_entry)), 'DD/MM/YYYY') as magazineEntryDate,
+			b.bill_no as magazineBillNo, 
+			to_char((SELECT to_timestamp(b.bill_date)), 'DD/MM/YYYY') as magazineBillDate, 
+			b.price as magazineCost, 
+			lc.item_name as magazineName, 
+			b.magazine_code as magazineCode,
+			lc.period as magazinePeriod, 
+			to_char((SELECT to_timestamp(b.magazine_date_of_receive)), 'DD/MM/YYYY') as magazineReceiveDate
+		FROM
+			book b
+		LEFT JOIN
+			library_catalogue lc ON (b.library_catalogue = lc.rec_id AND lc.is_active = true)	
+		JOIN 
+			book_publisher bp ON (lc.book_publisher = bp.rec_id AND bp.is_active = true)
+		JOIN 
+			book_category bc ON (lc.type = bc.rec_id AND bc.is_active = true)
+		WHERE 
+			lc.type = (SELECT rec_id FROM book_category WHERE book_category_code = 'BOOK_CATEGORY_2' AND is_active = true) 
+		AND 
+			b.is_active = true;
+	</select>
+	
+	<!-- added by sourav.bhadra on 15-02-2018 -->
+	<update id="updateMagazine" parameterType="com.qts.icam.model.library.Magazine">
+		UPDATE 
+			book
+		SET 
+			book_publisher = (SELECT rec_id FROM book_publisher WHERE book_publisher_name ilike #{magazinePublisher.magazinePublisherName} AND is_active = true),
+			date_of_entry = (SELECT extract(epoch from (SELECT to_timestamp(#{magazineEntryDate},'DD/MM/YYYY')))),
+			bill_no = #{magazineBillNo},
+			bill_date = (SELECT extract(epoch from (SELECT to_timestamp(#{magazineBillDate},'DD/MM/YYYY')))),
+			price = #{magazineCost},
+			magazine_name = #{magazineName},
+			magazine_periods = #{magazinePeriod},
+			magazine_date_of_receive = (SELECT extract(epoch from (SELECT to_timestamp(#{magazineReceiveDate},'DD/MM/YYYY'))))
+		WHERE 
+			magazine_code = #{magazineCode}
+		AND
+			is_active = true;
+	</update>
+	
+	<!-- added by sourav.bhadra on 16-02-2018 -->
+	<select id="getBookDetailsToUpdate" resultType="com.qts.icam.model.library.Book">
+		
+	</select>
+	
+	<!-- anup.roy // for adding new book to catalogue -->
+	
+	<insert id="addBookToCatalogueFromLibrary" parameterType="com.qts.icam.model.library.Book">
+		INSERT INTO
+			library_catalogue
+				(
+					rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+					item_code, item_name, book_publisher, place, type,
+					publish_year, pages, volume, source, class_no, book_no, item_status
+				)
+		VALUES
+				(
+					uuid_generate_v4(), #{bookObjectId}, (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active =true),
+					(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())), (SELECT 'LIBRARYCATALOGUE-' ||COALESCE((SELECT MAX(serial_id) FROM library_catalogue), 0 )+1),
+					#{bookName}, (SELECT rec_id FROM book_publisher WHERE book_publisher_name = #{bookPublisherId} AND is_active = true), #{bookPlace}, 
+					(SELECT rec_id FROM book_category WHERE book_category_code = #{bookType} AND is_active = true), #{publishingYear}, #{pages}, #{volume}, #{source}, 
+					#{classNo}, #{bookNo}, (SELECT rec_id FROM status_of_item WHERE status_of_item_code = #{statusOfItemName} AND is_active = true)
+				);
+	</insert>
+	
+	<!-- anup.roy // for getting last inserted item code in library catalogue -->
+	
+	<select id="getLastInsertedItemCode" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT 
+			item_code
+		FROM 
+			library_catalogue 
+		WHERE 
+			serial_id = (SELECT max(serial_id) FROM library_catalogue 
+						WHERE type = (SELECT rec_id FROM book_category WHERE book_category_code = #{itemType} AND is_active = true))
+		AND 
+			is_active = true;
+	</select>
+	
+	<!-- anup.roy // for adding new magazine to catalogue -->
+	
+	<insert id="addMagazineToCatalogueFromLibrary" parameterType="com.qts.icam.model.library.Magazine">
+		INSERT INTO
+			library_catalogue
+				(
+					rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+					item_code, item_name, book_publisher, type, period, item_status
+				)
+		VALUES
+				(
+					uuid_generate_v4(), #{magazineObjectId}, (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active =true),
+					(SELECT extract(epoch FROM now())), (SELECT extract(epoch FROM now())), 
+					(SELECT 'LIBRARYCATALOGUE-' ||COALESCE((SELECT MAX(serial_id) FROM library_catalogue), 0 )+1),
+					#{magazineName}, (SELECT rec_id FROM book_publisher WHERE book_publisher_name ilike #{magazinePublisher.magazinePublisherName} AND is_active = true), 
+					(SELECT rec_id FROM book_category WHERE book_category_code = #{bookType} AND is_active = true), #{magazinePeriod}, 
+					(SELECT rec_id FROM status_of_item WHERE status_of_item_code = #{statusOfItemName} AND is_active = true)
+				);
+	</insert>
+	
+	<!-- anup.roy // for fetching list of items from catalogue w.r.t category -->
+	
+	<select id="getListOfItemsFromCatalogue" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Item">
+		SELECT
+			item_code as itemCode,
+			item_name as itemName
+		FROM
+			library_catalogue lc
+		JOIN
+			book_category bc ON (lc.type = bc.rec_id AND bc.is_active = true)
+		WHERE
+			bc.book_category_code = #{category}
+		AND	
+			lc.is_active = true;
+	</select>
+	
+	<!-- anup.roy // for getting details of books from catalogue w.r.t book code -->
+	<resultMap type="com.qts.icam.model.library.Book" id="getAllDetailsOfBooksFromCatalogueResultMap">
+		<id property="bookCode" column="item_code" jdbcType="VARCHAR"/>
+		<result property="bookName" column="item_name" jdbcType="VARCHAR"/>
+		<result property="bookPlace" column="place" jdbcType="VARCHAR"/>
+		<result property="bookPublisher.bookPublisherName" column="bookPublisherName" jdbcType="VARCHAR"/>
+		<result property="publishingYear" column="publish_year" jdbcType="VARCHAR"/>
+		<result property="pages" column="pages" jdbcType="VARCHAR"/>
+		<result property="volume" column="volume" jdbcType="VARCHAR"/>
+		<result property="source" column="source" jdbcType="VARCHAR"/>
+		<result property="classNo" column="class_no" jdbcType="VARCHAR"/>
+		<result property="bookNo" column="book_no" jdbcType="VARCHAR"/>
+		<collection property="bookAuthorList" ofType="com.qts.icam.model.library.Author">
+			<id property="authorFullName" column="author_full_name" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<select id="getAllDetailsOfBooksFromCatalogue" parameterType="java.lang.String" resultMap="getAllDetailsOfBooksFromCatalogueResultMap">
+		SELECT
+			item_code,
+			item_name,
+			place,
+			book_publisher_name as bookPublisherName,
+			publish_year,
+			pages,
+			volume,
+			source,
+			class_no,
+			book_no,
+			author_full_name
+		FROM
+			library_catalogue lc 
+		JOIN 
+			book_publisher bp ON (lc.book_publisher = bp.rec_id AND bp.is_active = true)
+		JOIN
+			book_author ba ON (ba.catalogue_item = lc.rec_id AND ba.is_active = true)
+		JOIN
+			author a ON (ba.author = a.rec_id AND a.is_active = true)
+		WHERE
+			lc.item_code = #{bookCode}
+		AND
+			lc.is_active = true;
+	</select>
+	
+	<select id="getAllDetailsOfMagazinesFromCatalogue" resultType="com.qts.icam.model.library.Magazine" parameterType="java.lang.String">
+		SELECT
+			item_name as magazineName,
+			book_publisher_name as "magazinePublisher.magazinePublisherName",
+			period as magazinePeriod
+		FROM
+			library_catalogue lc
+		JOIN
+			book_publisher bp ON (lc.book_publisher = bp.rec_id AND bp.is_active = true)
+		WHERE
+			lc.item_code = #{magCode}
+		AND
+			lc.is_active = true;
+	</select>
+</mapper>

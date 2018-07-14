@@ -1,0 +1,11 @@
+/* Add here all your CSS customizations */
+.desk{
+	background: url('../images/desk.png') no-repeat no-repeat bottom center;
+	display: inline-block;
+	background-size: 50%;
+	height: 40px;
+	width: 50px;
+	float: left;
+	font-size: 11px;
+	text-align: center;
+}

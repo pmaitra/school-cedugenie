@@ -1,0 +1,8 @@
+
+
+<c:if test="${sessionScope.sessionObject.userId==null}">
+ <script>
+ window.close(); 
+ window.open("login.html", "_parent");	
+ </script>
+</c:if>

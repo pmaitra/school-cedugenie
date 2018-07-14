@@ -1,0 +1,247 @@
+@charset "utf-8";
+
+/*For Text Box */
+.textfield1{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:50px;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.textfield2{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:200px;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.textfield3{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+	width:130px;
+	height:30px;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+
+.txtarea{
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	width:100%;
+	color:orange;
+	outline:none;
+	padding:0px 1% 0px 1%;
+	margin:0px;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+
+.midsec {
+	margin:0 auto 15px;
+	border:1px solid orange;
+	background-color:#99FF66;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	overflow:hidden;
+	overflow-x:scroll;
+	min-height:20px;
+	margin-top: 20px;
+	align: center;
+	white-space: nowrap;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.midsec tr{
+	padding:0 2%;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+	text-align:left;
+	border-bottom: 1px solid #C4C4C4;
+	text-transform:capitalize;
+}
+.midsec tr td{
+	width: 230px;
+	padding:0 10px;
+	color: black;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.midsec tr th{
+	width: 120px;
+	padding:0 10px;
+	color: #000080;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+input[type=radio].css-checkbox {
+	display:none;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+input[type=radio].css-checkbox + label.css-label {
+	padding-left:24px;
+	height:19px; 
+	display:inline-block;
+	line-height:19px;
+	background-repeat:no-repeat;
+	background-position: 0 0;
+	font-size:16px;
+	vertical-align:middle;
+	cursor:pointer;
+	width: 50%;	
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+input[type=radio].css-checkbox:checked + label.css-label {
+	background-position: 0 -19px;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+label.css-label {
+	background-image:url(radio.png);
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+
+label.css-label {
+	background-image: url(/sms/images/radio.png);
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+.multipleSelectDiv{
+	width: auto;
+	background-color: powderblue;
+	position:absolute;
+	display: none;
+	margin-top: -0.9%;
+	
+}
+.multipleSelectDiv span{
+	display: block;
+	line-height: 15px;
+	width: 210px;
+	font-weight: bold;
+	color: black;
+}
+
+
+select.defaultselect {
+	background:#1f262d;
+	border:1px solid #a5a5a5;
+	color:orange;
+    height: 27px;
+    line-height: 22px;
+    padding: 3px 5px;
+    width: 100%;
+    font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.defaultselect option {
+    color: orange;
+    font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+.midsec1 {
+	margin:0 auto 15px;
+	border:1px solid #c4c4c4;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	min-height:20px;
+	margin-top: 20px;
+	align: center;
+	white-space: nowrap;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.midsec1 tr{
+	padding:0 2%;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+	color: #000080;
+	text-align:left;
+	border-bottom: 1px solid #C4C4C4;
+	text-transform:capitalize;
+}
+.midsec1 tr td{
+	padding:0 10px;
+	border-bottom: 1px solid #C4C4C4;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.midsec1 tr th{
+	color:black;
+	font-weight: bold;
+	font-style: oblique;
+	text-align: center;
+	padding:0 10px;
+	border-bottom: thick;
+	border-bottom-style: double;
+	border-bottom-color: black;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+.midsec1 tr:nth-child(odd){
+	background-color: #99FF66;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+.midsec1 tr:nth-child(even){
+	background-color: #66CC33;
+	font:normal 18px/40px bahamas,"Verdana", "Geneva", "sans-serif", "Georgia", "serif";
+}
+
+@media (max-width: 1000px){
+	.multipleSelectDiv{
+		margin-top: -1.5%;
+	}
+	.textfield3{
+		width:200px;
+	}
+	.textfield2{
+		width:50px;
+	}
+}
+
+@media (max-width: 720px){
+	.multipleSelectDiv{
+		margin-top: -1.5%;
+	}
+	.textfield3{
+		width:200px;
+	}
+	.textfield2{
+		width:50px;
+	}
+}
+
+
+@media (max-width: 480px){
+	.multipleSelectDiv{
+		margin-top: -4%;
+	}
+	.textfield3{
+		width:100px;
+	}
+	.textfield2{
+		width:50px;
+	}
+	input[type=radio].css-checkbox + label.css-label {
+	width: 20%;
+}
+}

@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.qts.icam.mapper.facility.FacilityMapper">
+	<insert id="insertFacilities" parameterType="com.qts.icam.model.facility.Facility">
+		INSERT INTO facility(
+							rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            				facility_code, facility_name, facility_desc, is_paid)
+					VALUES (
+							(select uuid_generate_v4()), #{facilityObjectId},
+							(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+							(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+							(SELECT('FAC-' ||(SELECT COALESCE((SELECT MAX(facility_id) FROM facility), 0)+1))), 
+							#{facilityName}, #{facilityDesc},
+							<choose>
+								<when test="ispaid == true">
+									true
+								</when>
+								<otherwise>
+									false
+								</otherwise>
+							</choose>);
+		<if test="ispaid == true">
+			<foreach item="sc" collection="socialCategoryList"  open="" close="" separator=";">
+				INSERT INTO facility_charge(
+						            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+            						charge, social_category, facility)
+		    				VALUES (
+		    						(select uuid_generate_v4()), #{facilityObjectId},
+									(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+									(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+									#{sc.amount},(SELECT rec_id FROM social_category WHERE social_category_code = #{sc.socialCategoryCode} AND is_active = true),
+									(SELECT rec_id FROM facility WHERE facility_name = #{facilityName} AND is_active = true)
+									);
+			</foreach>
+		</if>
+	</insert>
+	
+	<select id="getAllFacilities" resultType="com.qts.icam.model.facility.Facility">
+		SELECT
+			facility_code as facilityCode,
+			facility_name as facilityName,
+			facility_desc as facilityDesc,
+			is_paid as ispaid
+		FROM
+			facility
+		WHERE
+			is_active = true;
+	</select>
+	
+	<select id="getFacilityDetailsForUnpaid" parameterType="java.lang.String" resultType = "com.qts.icam.model.facility.Facility">
+		SELECT 		
+			f.facility_code as facilityCode,
+			f.facility_name as facilityName,
+			f.facility_desc as facilityDesc,
+			f.is_paid as ispaid
+		FROM 
+			facility f
+		WHERE
+			f.facility_code = #{facilityCode}
+		AND
+			f.is_active = true;
+	</select>
+	
+	<resultMap id="getFacilityDetailsForPaidResultMap" type="com.qts.icam.model.facility.Facility">	
+		<id property="facilityCode" column="facility_code" jdbcType="VARCHAR"/>	
+		<result property="facilityName" column="facility_name" jdbcType="VARCHAR"/>	
+		<result property="facilityDesc" column="facility_desc" jdbcType="VARCHAR"/>
+		<result property="ispaid" column="is_paid" jdbcType="VARCHAR"/>
+		<collection property="socialCategoryList" ofType="com.qts.icam.model.common.SocialCategory">
+			<id property="socialCategoryCode" column="social_category_code" jdbcType="VARCHAR"/>
+			<result property="socialCategoryName" column="social_category_name" jdbcType="VARCHAR"/>
+			<result property="amount" column="charge" jdbcType="DOUBLE"/>
+		</collection>
+	</resultMap>
+	
+	<select id="getFacilityDetailsForPaid" parameterType="String" resultMap="getFacilityDetailsForPaidResultMap">	
+		SELECT 
+			f.facility_code,
+			f.facility_name,
+			f.facility_desc,
+			f.is_paid,
+			fc.charge,
+			sc.social_category_code,
+			sc.social_category_name
+		FROM 
+			facility f
+		JOIN 
+			 facility_charge fc ON (fc.facility = f.rec_id )	
+		JOIN
+			social_category sc ON (sc.rec_id = fc.social_category)
+		WHERE
+			f.facility_code = #{facilityCode}
+		AND
+			f.is_active = true
+		AND 
+			fc.is_active = true;
+	</select>
+	
+	<select id="selectPreviousPaymentStatus" parameterType="com.qts.icam.model.facility.Facility" resultType="java.lang.String">
+		SELECT
+			is_paid 
+		FROM
+			facility
+		WHERE
+			facility_code = #{facilityCode}
+		AND
+			is_active = true;
+	</select>
+	
+	<update id="updateFacilityDetailsForPaidToUnpaid" parameterType="com.qts.icam.model.facility.Facility">
+		DELETE FROM 
+			facility_charge
+		WHERE
+			facility = (SELECT rec_id FROM facility WHERE facility_code = #{facilityCode})	
+		AND
+			is_active = true;
+		
+		UPDATE
+			facility 
+		SET
+			facility_name = #{facilityName},
+			facility_desc = #{facilityDesc},
+			is_paid = false
+		WHERE
+			facility_code = #{facilityCode}
+		AND
+			is_active = true;
+	</update>
+	
+	<update id="updateFacilityDetailsForUnpaid" parameterType="com.qts.icam.model.facility.Facility">
+		UPDATE
+			facility 
+		SET
+			facility_name = #{facilityName},
+			facility_desc = #{facilityDesc}
+		WHERE
+			facility_code = #{facilityCode}	
+		AND
+			is_active = true;
+	</update>
+	
+	<update id="updateFacilityForPaid" parameterType="com.qts.icam.model.facility.Facility">
+		UPDATE 
+			facility 
+		SET
+			facility_name = #{facilityName},
+			facility_desc = #{facilityDesc},
+			is_paid = true
+		WHERE
+			facility_code = #{facilityCode}	
+		AND
+			is_active = true;
+			
+		DELETE FROM 
+			facility_charge
+		WHERE
+			facility = (SELECT rec_id FROM facility WHERE facility_code = #{facilityCode})	
+		AND
+			is_active = true;
+		<!-- 		
+		<if test="ispaid == true">
+			<foreach item="sc" collection="socialCategoryList"  open="" close="" separator=";">
+				UPDATE facility_charge SET
+											is_active = true,
+						            		charge = #{sc.amount},
+						            		social_category = (SELECT rec_id FROM social_category WHERE social_category_code = #{sc.socialCategoryCode} AND is_active = true)
+				WHERE
+					facility = (SELECT rec_id FROM facility WHERE facility_code = #{facilityCode} AND is_active = true)
+				AND
+					is_active = true;
+			</foreach>
+		</if> -->
+	</update>
+	
+	<update id="updateFacilityForUnpaidToPaid" parameterType="com.qts.icam.model.facility.Facility">
+		UPDATE
+			facility 
+		SET
+			facility_name = #{facilityName},
+			facility_desc = #{facilityDesc},
+			is_paid = true
+		WHERE
+			facility_code = #{facilityCode}	
+		AND
+			is_active = true;
+	</update>
+	
+	<insert id="insertFacilityChargeForUnpaidToPaid" parameterType="com.qts.icam.model.facility.Facility">
+		<foreach item="sc" collection="socialCategoryList"  open="" close="" separator=";">
+			INSERT INTO facility_charge(
+					            rec_id, obj_id, updated_by, updated_on, date_of_creation, 
+           						charge, social_category, facility)
+	    				VALUES (
+	    						(select uuid_generate_v4()), #{facilityObjectId},
+								(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
+								(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
+								#{sc.amount},(SELECT rec_id FROM social_category WHERE social_category_code = #{sc.socialCategoryCode} AND is_active = true),
+								(SELECT rec_id FROM facility WHERE facility_name = #{facilityName} AND is_active = true)
+								);
+		</foreach>
+	</insert>
+	
+	<select id="getAllVenues" resultType="com.qts.icam.model.venue.Venue">
+		SELECT
+			venue_code as venueCode,
+			venue_name as venueName
+		FROM
+			venue v
+		JOIN
+			venue_type vt ON (v.venue_type = vt.rec_id AND vt.is_active = true)
+		WHERE
+			venue_type_code = 'hostel'
+		AND
+			parent_venue IS NULL
+		AND
+			v.is_active = true;
+	</select>
+	
+	<select id="getBlocksOfVenue" parameterType="java.lang.String" resultType="com.qts.icam.model.venue.Venue">
+		SELECT
+			venue_code as venueCode,
+			venue_name as venueName
+		FROM
+			venue
+		WHERE
+			parent_venue = (SELECT rec_id FROM venue where venue_code = #{venueName})
+		AND
+			is_active = true;
+	</select>
+	
+	<select id="getAvailableRoomOfBlock" parameterType="java.lang.String" resultType="com.qts.icam.model.venue.Venue">
+		SELECT
+			venue_code as venueCode,
+			room_no as roomNo
+		FROM
+			venue
+		WHERE
+			parent_venue = (SELECT rec_id FROM venue WHERE venue_code = #{block}) 
+		AND
+			is_active = true
+	</select>
+	
+	<select id="getAvailableBedsInRoom" parameterType="java.lang.String" resultType="com.qts.icam.model.common.Room">
+		SELECT
+			available_seats as bedVaccent,
+			no_of_seats as bedTotal
+		FROM
+			venue
+		WHERE
+			venue_code = #{roomNo}
+		AND
+			is_active = true;
+	</select>
+	
+	<select id="getResourceIdList" resultType="com.qts.icam.model.common.Resource">
+		SELECT
+			user_id as userId
+ 		FROM
+ 			resource r
+		JOIN
+			resource_type rt ON (r.resource_type = rt.rec_id AND rt.is_active = true)
+		AND	
+			rt.resource_type_code = 'STUDENT'
+		AND
+			r.venue_assigned_to_resource = 'FALSE'	
+		AND
+			r.is_active = true;
+	</select>
+	
+	<select id="getResourceDetails" parameterType ="java.lang.String" resultType = "com.qts.icam.model.common.Resource">	
+		SELECT
+			r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || COALESCE(r.last_name) as resourceName
+			<!-- st.standard_name as klass,
+			sec.section_name as sectionName -->
+		FROM
+			resource r
+		<!-- JOIN 
+			section sec ON (r.section = sec.rec_id) AND (sec.is_active = true)
+		JOIN 
+			standard st ON (sec.standard = st.rec_id) AND (st.is_active = true) -->
+		WHERE
+			r.user_id = #{userId}
+		AND 
+			r.is_active = true;
+	</select>
+	
+	<insert id="assignVenueToResource" parameterType="com.qts.icam.model.venue.Venue">
+		INSERT INTO venue_resource_mapping(
+											rec_id, obj_id, updated_by, updated_on, date_of_creation, resource, venue)
+		 							VALUES (
+												uuid_generate_v4(),
+												#{objectId},
+												(SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+												(SELECT extract(epoch FROM now())),
+												(SELECT extract(epoch FROM now())),
+												(SELECT rec_id FROM resource WHERE user_id = #{resource.userId}),
+												(SELECT rec_id FROM venue WHERE venue_code = #{roomNo} AND is_active = true)
+											);
+	</insert>
+	<update id="updateResource" parameterType="com.qts.icam.model.venue.Venue">
+		UPDATE
+			resource
+		SET
+			venue_assigned_to_resource = 'TRUE'
+		WHERE
+			user_id = #{resource.userId}
+		AND
+			is_active = true;	
+	</update>
+	
+	<update id="updateVacancies" parameterType="java.lang.String">
+		UPDATE
+			venue
+		SET
+			alloted_seats = alloted_seats+1,
+	    	available_seats = available_seats-1
+		WHERE
+			venue_code = #{code}
+		AND 
+			is_active = true;
+	</update>
+	
+	
+	<select id="getListVenuesAssignedToResource" resultType="com.qts.icam.model.venue.Venue">
+		SELECT
+			v.venue_code as venueCode,
+			v.venue_name as venueName,
+			v1.venue_name as building,
+			r.first_name || ' ' || COALESCE(r.middle_name,'') || ' ' || COALESCE(r.last_name) as "resource.resourceName",
+			r.user_id as "resource.userId"
+		FROM
+			venue_resource_mapping vrm
+		JOIN
+			venue v ON (vrm.venue = v.rec_id AND v.is_active = true)
+		JOIN
+			resource r ON (vrm.resource = r.rec_id AND r.is_active = true)
+		JOIN
+			venue v1 ON (v.parent_venue = v1.rec_id AND v1.is_active = true)
+		WHERE	
+			vrm.is_active = true				
+	</select>
+	
+	<update id="deAllocateVenueFromResource" parameterType="com.qts.icam.model.venue.Venue">
+		UPDATE
+			venue_resource_mapping
+		SET
+			updated_on = (SELECT extract(epoch FROM now())),
+			updated_by = (SELECT rec_id FROM resource WHERE user_id = #{updatedBy} AND is_active = true),
+			is_active = false
+		WHERE
+			resource = (SELECT rec_id FROM resource WHERE user_id = #{resource.userId} AND is_active = true)
+		AND
+			venue = (SELECT rec_id FROM venue WHERE venue_code = #{venueCode} AND is_active = true)
+		AND
+			is_active = true;
+			
+		UPDATE
+			venue
+		SET
+			available_seats = available_seats+1,
+			alloted_seats = alloted_seats-1
+		WHERE
+			venue_code = #{venueCode}
+		AND 
+			is_active = true;
+			
+		UPDATE
+			resource
+		SET
+			venue_assigned_to_resource = false
+		WHERE
+			user_id = #{resource.userId}
+		AND
+			is_active = true;		
+	</update>
+	
+	<update id="facilityDeactivation" parameterType="java.lang.String">
+		UPDATE
+			facility_charge 
+		SET
+			is_active = false
+		WHERE
+			facility = (SELECT rec_id FROM facility f where f.facility_code = #{facilityCode} AND f.is_active = true)	
+		AND	
+			is_active = true;
+			
+		UPDATE
+			facility 
+		SET
+			is_active = false
+		WHERE
+			facility_code = #{facilityCode}
+		AND
+			is_active = true;				
+			
+	</update>
+</mapper>

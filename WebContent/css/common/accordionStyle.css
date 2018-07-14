@@ -1,0 +1,217 @@
+/* Flexible Slide-to-top Accordion Style*/
+.bullet {
+	content: "• ";
+	color: #FC1501;
+	 font-size: 24px;	
+}
+
+.accordionWrapper {
+	width: 90%;
+	max-width: 90%;
+}
+
+.st-accordion {
+	width: 90%;
+	min-width: 90%;
+}
+
+.st-accordion ul li {
+	height: 50px;
+	border-bottom: 1px solid #828282;
+	border-top: 1px solid #828282;
+	overflow: hidden;
+}
+
+.overBorder{
+	height: 50px;
+    width: 250px;
+    border-top-left-radius: 10px;
+    position: relative;
+    border-top: 2px solid;
+	border-left: 2px solid;
+}
+.in{
+	border-right: 4px solid;
+    content: " ";
+    height: 50px;
+    position: absolute;
+    right: -25px;
+    top: -2px;
+    transform: skewX(45deg);
+}
+
+.st-accordion ul li:first-child {
+	border-top: none;
+}
+
+.st-accordion ul li>a {
+	font-family: bahamas,Georgia, serif;
+	color:#9fda58;
+	text-decoration: none;
+	font-size: 18px;
+	display: block;
+	position: relative;
+	line-height: 60px;
+	outline: none;
+	-webkit-transition: color 0.2s ease-in-out;
+	-moz-transition: color 0.2s ease-in-out;
+	-o-transition: color 0.2s ease-in-out;
+	-ms-transition: color 0.2s ease-in-out;
+	transition: color 0.2s ease-in-out;
+}
+
+.st-accordion ul li>a span {
+	background: transparent url(/icam/images/down.png) no-repeat center
+		center;
+	text-indent: -9000px;
+	width: 26px;
+	height: 14px;
+	position: absolute;
+	top: 50%;
+	right: -26px;
+	margin-top: -7px;
+	opacity: 0;
+	-webkit-transition: all 0.2s ease-in-out;
+	-moz-transition: all 0.2s ease-in-out;
+	-o-transition: all 0.2s ease-in-out;
+	-ms-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+}
+
+.st-accordion ul li>a:hover {
+	color: #FF9912;
+	text-decoration: none;
+}
+
+.st-accordion ul li>a:hover span {
+	opacity: 1;
+	right: 10px;
+}
+
+.st-accordion ul li.st-open>a {
+	color: #FF9912;
+	text-decoration: none;
+}
+
+.st-accordion ul li.st-open>a span {
+	-webkit-transform: rotate(180deg);
+	-moz-transform: rotate(180deg);
+	transform: rotate(180deg);
+	right: 10px;
+	opacity: 1;
+}
+
+.st-content {
+	padding: 5px 0px 30px 0px;
+}
+
+.st-content p {
+	font-size: 16px;
+	font-family: bahamas,Georgia, serif;
+	font-style: italic;
+	line-height: 28px;
+	padding: 0px 4px 15px 4px;
+	color: white;
+}
+
+.clr {
+	clear: both;
+}
+
+h1 span {
+	font-size: 18px;
+	color: #FF9912;
+}
+
+address,caption,cite,code,dfn,th,var {
+	font-style: normal;
+	font-weight: normal;
+}
+
+ol,ul {
+	list-style: none;
+}
+
+caption,th {
+	text-align: left;
+}
+
+q:before,q:after {
+	content: '';
+}
+
+abbr,acronym {
+	border: 0;
+}
+
+.accord {
+	color: #ffffff;
+	text-decoration: none;
+	font-family: bahamas,Georgia, serif;
+	}
+
+.accord :visited {
+	text-decoration: none;
+	color: #ffffff;
+}
+
+
+
+
+
+
+#back-top {
+	position: fixed;
+	bottom: 10%;
+	margin-left:60%;
+}
+
+#back-top a {
+	width: 50px;
+	display: block;
+	text-align: center;
+	font: 11px/100% bahamas,Arial, Helvetica, sans-serif;
+	text-transform: uppercase;
+	text-decoration: none;
+	color: black;
+	z-index:200;
+	/* transition */
+	-webkit-transition: 1s;
+	-moz-transition: 1s;
+	transition: 1s;
+}
+#back-top a:hover {
+	color: #000;
+}
+
+/* arrow icon (span tag) */
+#back-top span {
+	width: 40px;
+	height: 40px;
+	display: block;
+	margin-bottom: 7px;	
+	//background: #ddd url(/icam/images/up-arrow.png) no-repeat center center;
+	background:transparent;
+
+	/* rounded corners */
+	/*
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+*/
+	/* transition */
+	-webkit-transition: 1s;
+	-moz-transition: 1s;
+	transition: 1s;
+	
+}
+#back-top a:hover span {
+	background-color: #777;
+}
+
+@media screen and (max-width: 320px) {
+	.st-accordion ul li>a {
+		font-size: 12px;
+		text-decoration: none;
+	}
+}

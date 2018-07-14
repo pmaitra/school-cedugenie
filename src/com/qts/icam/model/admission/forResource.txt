@@ -1,0 +1,18 @@
+private String klass;
+private String admissionYear;
+
+
+
+
+public String getKlass() {
+		return klass;
+	}
+	public void setKlass(String klass) {
+		this.klass = klass;
+	}
+	public String getAdmissionYear() {
+		return admissionYear;
+	}
+	public void setAdmissionYear(String admissionYear) {
+		this.admissionYear = admissionYear;
+	}
