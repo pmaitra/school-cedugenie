@@ -1,7 +1,7 @@
 $(function(){
     $("#venueCode0").change(function() {
 				$.ajax({
-			        url: '/icam/getVenueDetailsAgainstVenueCode.html',
+			        url: '/cedugenie/getVenueDetailsAgainstVenueCode.html',
 			        dataType: 'json',
 			        data: "venueCode=" + ($(this).val()),
 			        success: function(dataDB) {
@@ -15,7 +15,7 @@ $(function(){
   
     $("#exam").change(function() {
 		$.ajax({
-	        url: '/icam/getVenueDetailsAgainstExam.html',
+	        url: '/cedugenie/getVenueDetailsAgainstExam.html',
 	        dataType: 'json',
 	        data: "exam=" + ($(this).val()),
 	        success: function(dataDB) {
@@ -85,7 +85,7 @@ function Validation(){
 $("#programName0").change(function() {
 	
 	$.ajax({
-		url: '/icam/getTotalNoOfStudentForAProgram.html',
+		url: '/cedugenie/getTotalNoOfStudentForAProgram.html',
 		dataType: 'json',
 		data: "programCode=" + $("#programName0").val(),
 	    success: function(data) {
@@ -170,7 +170,7 @@ function getTotalCapacityOfProgram(thisClassNode){
 	if($("#programName"+index).val()!=null){
 		
 			$.ajax({
-				url: '/icam/getTotalNoOfStudentForAProgram.html',
+				url: '/cedugenie/getTotalNoOfStudentForAProgram.html',
 				dataType: 'json',
 				data: "programCode=" + $("#programName"+index).val(),
 			    success: function(data) {
@@ -315,7 +315,7 @@ function getTotalCapacityOfVenue(thisClassNode){
 		//alert("hiiii");
 		// $("#venueCode"+index).change(function() {
 				$.ajax({
-			        url: '/icam/getVenueDetailsAgainstVenueCode.html',
+			        url: '/cedugenie/getVenueDetailsAgainstVenueCode.html',
 			        dataType: 'json',
 			        data: "venueCode=" + ($("#venueCode"+index).val()),
 			        success: function(dataDB) {

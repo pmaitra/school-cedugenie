@@ -142,7 +142,7 @@ var flag = 0;
               				var copiedEventObject = $.extend({}, originalEventObject);
               				copiedEventObject.start = date;
              				 $.ajax({
-      		        	        url: '/icam/getDurationForValidationForParticularSlot.html',
+      		        	        url: '/cedugenie/getDurationForValidationForParticularSlot.html',
       		        	        data: "standard=" + ($("#hiddenclasstoset").val()) + "&section=" + ($("#hiddensectiontoset").val()) +"&timeSlot=" + cellHour +"&year=" + ($("#radioYearId").val()),
       		        	        dataType: 'json',
       		        	        success: function(data) {
@@ -169,7 +169,7 @@ var flag = 0;
   			        					 	for(var index = 0;index<splitedPeriodTime.length-1;index++){
   			        					 		var  splitedTime = splitedPeriodTime[index].split(",");
   			        					 		$.ajax({
-	     			         		        	        url: '/icam/getTeacherConflictionForTimeTable.html',
+	     			         		        	        url: '/cedugenie/getTeacherConflictionForTimeTable.html',
 	     			         		        	        data: "standard=" + ($("#hiddenclasstoset").val()) + "&section=" + ($("#hiddensectiontoset").val()) +"&daySlot=" + (date.getDay()) +"&year=" + ($("#radioYearId").val()) +"&userId=" + originalEventTeacherUserId+"&periodStartTime=" + splitedTime[0]+"&periodEndTime=" + splitedTime[1],
 	     			         		        	        dataType: 'json',
 	     			         		        	        success: function(data) {
@@ -264,7 +264,7 @@ var flag = 0;
 					    				$("#infomsgbox").css('visibility','collapse');
 					     				$("#infomsg").text("");
 					     				$.ajax({
-		         		        	        url: '/icam/getDurationForValidationForParticularSlot.html',
+		         		        	        url: '/cedugenie/getDurationForValidationForParticularSlot.html',
 		         		        	        data: "standard=" + ($("#hiddenclasstoset").val()) + "&section=" + ($("#hiddensectiontoset").val()) +"&timeSlot=" + (event.start.getHours()) +"&year=" + ($("#radioYearId").val()),
 		         		        	        dataType: 'json',
 		         		        	        success: function(data) {
@@ -279,7 +279,7 @@ var flag = 0;
 		     			        					 	for(var index = 0;index<splitedPeriodTime.length-1;index++){
 		     			        					 		var  splitedTime = splitedPeriodTime[index].split(",");
 		     			        					 			$.ajax({
-		     			        					 				url: '/icam/getTeacherConflictionForTimeTable.html',
+		     			        					 				url: '/cedugenie/getTeacherConflictionForTimeTable.html',
 		    	     			         		        	        data: "standard=" + ($("#hiddenclasstoset").val()) + "&section=" + ($("#hiddensectiontoset").val()) +"&daySlot=" + (date.getDay()) +"&year=" + ($("#radioYearId").val()) +"&userId=" + originalEventTeacherUserId+"&periodStartTime=" + splitedTime[0]+"&periodEndTime=" + splitedTime[1],
 			     			         		        	        dataType: 'json',
 			     			         		        	        success: function(data) {

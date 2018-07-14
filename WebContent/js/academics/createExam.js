@@ -87,7 +87,7 @@ var y = 1;
 
 	$("#className0").change(function (){
 		$.ajax({
-			    url: '/icam/getSubjectsForACourse.html',
+			    url: '/cedugenie/getSubjectsForACourse.html',
 			    dataType: 'json',
 			    data:"course=" + $("#className0").val(),
 			    success: function(data) {
@@ -105,7 +105,7 @@ var y = 1;
 			    }
 			}); 
 		$.ajax({
-		    url: '/icam/getTermsForACourse.html',
+		    url: '/cedugenie/getTermsForACourse.html',
 		    dataType: 'json',
 		    data:"course=" +  $("#className0").val(),
 		    success: function(data) {
@@ -131,7 +131,7 @@ var index = 0;
 		index = rowId;
 		document.getElementById("examTypeName"+rowId).removeAttribute("disabled");
 		$.ajax({
-		    url: '/icam/getTermsForACourse.html',
+		    url: '/cedugenie/getTermsForACourse.html',
 		    dataType: 'json',
 		    data:"course=" + courseCode,
 		    success: function(data) {
@@ -183,7 +183,7 @@ var index = 0;
 function validatingExam(){
 	var progName= document.getElementById("className0").value;
 	$.ajax({
-	    url: '/icam/getNameAgainstCode.html',
+	    url: '/cedugenie/getNameAgainstCode.html',
 	    dataType: 'json',
 	    data:"course=" +  progName,
 	    success: function(data) {

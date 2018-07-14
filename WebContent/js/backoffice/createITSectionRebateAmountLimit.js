@@ -3,7 +3,7 @@ $(document).ready(function() {
 		removeSelectData();			
 		if(($(this).val()) != ''){
 			$.ajax({
-		        url: '/icam/getITSectionGroupsForIncomeAge.html',
+		        url: '/cedugenie/getITSectionGroupsForIncomeAge.html',
 		        dataType: 'json',
 		        data: {	'incomeAge.incomeAgeCode': $("#incomeAge").val(),	'financialYear.financialYearCode': $("#finYear").val() },
 		        success: function(dataDB) {		        	
@@ -25,7 +25,7 @@ $(document).ready(function() {
 		if(($(this).val()) != ''){			
 			
 			$.ajax({
-		        url: '/icam/checkITSecDetailAmount.html',
+		        url: '/cedugenie/checkITSecDetailAmount.html',
 		        dataType: 'json',
 		        data: {	'status': $("#itSecGroup").val(), 
 		        		'incomeAge.incomeAgeCode': $("#incomeAge").val(),	
@@ -35,7 +35,7 @@ $(document).ready(function() {
 		        		if(dataDB == 0){
         		        	document.getElementById('infomsgbox').style.visibility = 'collapse';
 		        			$.ajax({
-		        		        url: '/icam/getITSectionForITGroups.html',
+		        		        url: '/cedugenie/getITSectionForITGroups.html',
 		        		        dataType: 'json',
 		        		        data: {	'status': $("#itSecGroup").val(), 
 		        		        		'incomeAge.incomeAgeCode': $("#incomeAge").val(),	

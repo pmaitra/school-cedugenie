@@ -18,7 +18,7 @@
 		$("#admissionFormId").autocomplete({
 			source: function(request, response) {
 			      $.ajax({
-			    	 url: '/icam/getAdmissionFormId.html',
+			    	 url: '/cedugenie/getAdmissionFormId.html',
 			         dataType: "json",
 			         data: {
 			        	 term: request.term,
@@ -33,7 +33,7 @@
 		}); 
 		$("#submit").click(function() {
 	      $.ajax({
-		    	 url: '/icam/getCandidateDetailsForMeritList.html',
+		    	 url: '/cedugenie/getCandidateDetailsForMeritList.html',
 		         dataType: "json",
 		         data: {
 		        	 admissionFormId: $("#admissionFormId").val(),

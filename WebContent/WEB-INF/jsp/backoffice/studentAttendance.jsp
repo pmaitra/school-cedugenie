@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
 <title>Read QR Code</title>
 <%@ include file="/include/include.jsp" %>
-<link rel="stylesheet" href="/icam/assets/stylesheets/calender.css" />
+<link rel="stylesheet" href="/cedugenie/assets/stylesheets/calender.css" />
 <%@ include file="/include/js-include.jsp" %>
 <script type="text/javascript">
 $(document).ready(function(){
@@ -64,7 +64,7 @@ $(document).ready(function(){
 			var monthvalue = $('#month :selected').val();
 			
 			$.ajax({
-		        url: '/icam/getTeacherAttendanceForCalendar.html',
+		        url: '/cedugenie/getTeacherAttendanceForCalendar.html',
 		    	data:	"resourceName=" + ($(this).val())+ "&year=" + yearvalue + "&month=" + monthvalue,
 		        dataType: 'json',
 		        success: function(data) {
@@ -82,7 +82,7 @@ $(document).ready(function(){
 	
 		$("#course").change(function (){
 			$.ajax({
-		        url: '/icam/getStudentBatchAgainstCourse.html',
+		        url: '/cedugenie/getStudentBatchAgainstCourse.html',
 		        
 		        dataType: 'json',
 		        data:"course=" + $("#course").val(),
@@ -125,7 +125,7 @@ function getDetails()
 			x = $("#year").val()+"/"+$("#course").val()+"/"+$("#batch").val();
 			
 			$.ajax({
-				 url: '/icam/resourceStudentAttendanceDownload.html',
+				 url: '/cedugenie/resourceStudentAttendanceDownload.html',
 				dataType: 'json',
 			
 				data: "paperDirName="+( $("#year").val()+"/"+$("#course").val()+"/"+$("#batch").val())+"&fileParam="+("noFile"),
@@ -476,7 +476,7 @@ function validate(){
 	}
 
 </script>					
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 </body>
 </html>

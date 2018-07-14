@@ -26,7 +26,7 @@ $(document).ready(function(){
 		
 		 var sectionObject=document.getElementById("section");	
 		$.ajax({
-	        url: '/icam/getSectionAgainstStandard.html',
+	        url: '/cedugenie/getSectionAgainstStandard.html',
 	        dataType: 'json',
 	        data: "standard=" + ($(this).val()),
 	        success: function(dataDB) {
@@ -53,7 +53,7 @@ $(document).ready(function(){
 			//removeOption(termObject);
 			document.getElementById("warningbox").style.visibility='collapse';
 			$.ajax({
-		        url: '/icam/getTermForStandard.html',
+		        url: '/cedugenie/getTermForStandard.html',
 		        dataType: 'json',
 		        data: "standard=" + ($("#standard").val()),
 		        success: function(dataDB) {
@@ -92,7 +92,7 @@ $(document).ready(function(){
 	 $("#section").change(function(){
 		
 			$.ajax({
-		        url: '/icam/getStudentsAgainstStandardAndSectionForNewReport.html',
+		        url: '/cedugenie/getStudentsAgainstStandardAndSectionForNewReport.html',
 		        dataType: 'json',
 		        data: {
 	        		"standard":$("#standard").val(),
@@ -133,7 +133,7 @@ $(document).ready(function(){
 	 });
 	 $("#studentName").change(function(){
 		 $.ajax({
-		        url: '/icam/getCoScolasticResultAgainsRollNumber.html',
+		        url: '/cedugenie/getCoScolasticResultAgainsRollNumber.html',
 		        dataType: 'json',
 		        data: {
 	        		"rollName":$("#studentName").val(),

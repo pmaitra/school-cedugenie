@@ -2,7 +2,7 @@ function viewMyTimeTableData(){
 	//alert("hii");
 	//alert($("#semsterName").val());
 	$.ajax({
-		url:"http://localhost:8080/icam/getMyTimeTableGridData.html", 
+		url:"http://localhost:8080/cedugenie/getMyTimeTableGridData.html", 
         dataType:"text",
         data:"semester=" + ($("#semsterName").val())+ "&userId="+($("#userId").val()), 
         success:function(data){

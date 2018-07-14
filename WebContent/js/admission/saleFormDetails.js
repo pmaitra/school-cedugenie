@@ -3,7 +3,7 @@
 			function() {
 				/*document.getElementById("infomsgbox").style.visibility="collapse";*/
 				$.ajax({
-			        url: '/icam/getDriveList.html',
+			        url: '/cedugenie/getDriveList.html',
 			        dataType: 'json',
 			        data: "klass=" + ($(this).val())+"&year=" + ($("#year").val()),
 			        success: function(dataDB) {	
@@ -32,7 +32,7 @@
 				function() {
 					/*document.getElementById("infomsgbox").style.visibility="collapse";*/
 					$.ajax({
-				        url: '/icam/getFormDetails.html',
+				        url: '/cedugenie/getFormDetails.html',
 				        dataType: 'json',
 				        data: "driveName=" + ($(this).val())+"&year=" + ($("#year").val())+"&klass=" + ($("#klass").val()),
 				        success: function(dataDB) {	

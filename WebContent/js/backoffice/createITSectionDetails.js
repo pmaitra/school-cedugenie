@@ -100,7 +100,7 @@ function inactiveRow(obj){
 	var itSectionCode = obj.getAttribute("value");
 	var p = obj.parentNode.parentNode;
 	$.ajax({
-        url: '/icam/inactiveITRebate.html',
+        url: '/cedugenie/inactiveITRebate.html',
         dataType: 'json',
         data: "itSection=" + itSectionCode,
         success: function(dataDB) {
@@ -113,7 +113,7 @@ $(document).ready(function() {
 	$("#itSectionCode").change(function(){	
 		if(($(this).val()) != ''){
 			$.ajax({
-		        url: '/icam/getRebatesForITSection.html',
+		        url: '/cedugenie/getRebatesForITSection.html',
 		        dataType: 'json',
 		        data: "itSection=" + ($("#itSectionCode").val()),
 		        success: function(dataDB) {

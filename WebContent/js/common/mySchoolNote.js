@@ -5,7 +5,7 @@ $("#recipients").change(function() {
 	if(recepient === 'standard'){
 			$("#standardtableBody").empty();
 			$.ajax({
-			url: '/icam/getSectionAndStandardList.html',
+			url: '/cedugenie/getSectionAndStandardList.html',
 			dataType: 'json',
 			success: function(data){ 
 				//alert(data);

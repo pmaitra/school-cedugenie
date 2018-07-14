@@ -25,7 +25,7 @@ $(document).ready(function(){
 		    console.log("opening socket");
 		    //on http server use document.domain instead od "localhost"
 		    //Start the websocket client
-		    socket = new WebSocket("ws://" +document.domain + ":8080/icam/chat");
+		    socket = new WebSocket("ws://" +document.domain + ":8080/cedugenie/chat");
 		    
 		    //When the connection is opened, login.
 		    socket.onopen = function() { 		      

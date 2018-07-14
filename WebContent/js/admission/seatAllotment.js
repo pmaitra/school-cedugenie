@@ -10,7 +10,7 @@
 	  		document.getElementById("prevEndSeatRollNo").value='0';
 			var venue=$("#venue").val();	
 			 $.ajax({
-		     url: '/icam/getVenueSeatAllotmentDetails.html',
+		     url: '/cedugenie/getVenueSeatAllotmentDetails.html',
 		     dataType: 'json',
 		     data: "venue=" +venue,
 		     success: function(data) {
@@ -97,7 +97,7 @@
 				return false;
 			}
 			 $.ajax({
-		     url: '/icam/getVenueSeatAllotmentDetails.html',
+		     url: '/cedugenie/getVenueSeatAllotmentDetails.html',
 		     dataType: 'json',
 		     data: {
 		    	 venue: venue,
@@ -133,7 +133,7 @@
 					venueWiseFormStatus="checked";
 				}
 			      $.ajax({
-			    	 url: '/icam/getAutoEndSeatRollNoForExamVenue.html',
+			    	 url: '/cedugenie/getAutoEndSeatRollNoForExamVenue.html',
 			         dataType: "json",
 			         data: {
 			        	 term: request.term,
@@ -150,7 +150,7 @@
 		});
 		
 //		$("#endSeatRollNo").autocomplete({
-//		 	source: '/icam/getAutoEndSeatRollNoForExamVenue.html'}); 
+//		 	source: '/cedugenie/getAutoEndSeatRollNoForExamVenue.html'}); 
 //		
 		
 		
@@ -170,7 +170,7 @@
 		}
 		 var checker=false;
 		 $.ajax({
-		     url: '/icam/validateSeatRollNo.html',
+		     url: '/cedugenie/validateSeatRollNo.html',
 		     dataType: 'json',
 		     data: "seatRollNo=" +seatRollNo+"&venueId=" +$("#venue").val()+"&venueWiseFormStatus=" +venueWiseFormStatus,
 		     success: function(data) {
@@ -199,7 +199,7 @@
 			venueWiseFormStatus="checked";
 		}
 		 $.ajax({
-		     url: '/icam/getNumberOfAdmissionFormId.html',
+		     url: '/cedugenie/getNumberOfAdmissionFormId.html',
 		     dataType: 'json',
 		     data: "startSeatRollNo=" +startSeatRollNo+"&endSeatRollNo=" +endSeatRollNo+"&venueWiseFormStatus=" +venueWiseFormStatus+"&venueId=" +$("#venue").val(),
 		     success: function(data) {

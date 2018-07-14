@@ -61,7 +61,7 @@ function activeInactiveFieldsForChequeCash(val){
 $(document).ready(function() {		
 	$("#formId").change(function() {				 
 		$.ajax({
-	        url: '/icam/getFeeStructureForStudent.html',
+	        url: '/cedugenie/getFeeStructureForStudent.html',
 	        dataType: 'json',
 	        data: "klass=" + ($("#klass").val()) + "&formId=" + ($(this).val()) + "&year=" + ($("#year").val())+ "&driveName=" + ($("#driveName").val())+ "&courseName=" + ($("#courseName").val()),
 	        success: function(dataDB) {	

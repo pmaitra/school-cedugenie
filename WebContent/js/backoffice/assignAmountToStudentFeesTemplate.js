@@ -5,7 +5,7 @@ $(document).ready(function(){
 	
 	$("#templateName").change(function(){  
 		/*$.ajax({
-			url: '/icam/getUnmappedStandardsToFeesTemplate.html',
+			url: '/cedugenie/getUnmappedStandardsToFeesTemplate.html',
 			dataType: 'json',
 			data: "templateCode="+($(this).val()),
 			success: function(dataDb){
@@ -25,7 +25,7 @@ $(document).ready(function(){
 		});*/
 		
     	$.ajax({
-	        url: '/icam/getTemplateWiseFeesStructure.html',
+	        url: '/cedugenie/getTemplateWiseFeesStructure.html',
 	        dataType: 'json',
 	        data: "templateCode=" + ($(this).val()),
 	        success: function(dataDB) {	

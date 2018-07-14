@@ -1,6 +1,6 @@
 $("#termName").change(function(){
 	$.ajax({
-	    url: '/icam/getExamTypesForATerm.html',
+	    url: '/cedugenie/getExamTypesForATerm.html',
 	    dataType: 'json',
 	    data:"term=" + $(this).val(),
 	    success: function(data) {

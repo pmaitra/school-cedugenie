@@ -27,7 +27,7 @@ $("#vendorTypeSelect").change(function(){
 	}
 	if($(this).val() != ""){
 	$.ajax({
-        url: '/icam/getVendorPloicyToShow.html',
+        url: '/cedugenie/getVendorPloicyToShow.html',
         data: "vendorTypeSelect=" + ($(this).val()),
         dataType: 'json',
         success: function(data) {        		

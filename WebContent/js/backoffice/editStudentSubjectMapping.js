@@ -13,7 +13,7 @@ $(document).ready(function(){
 		 uncheckSubjects();
 		 if(($(this).val())!=""){
 			$.ajax({
-		        url: '/icam/getSubjectsStudiedByStudent.html',
+		        url: '/cedugenie/getSubjectsStudiedByStudent.html',
 		        dataType: 'json',
 		        data: "rollNumber=" + ($("#rollNumber").val()),
 		        success: function(data) {		        	

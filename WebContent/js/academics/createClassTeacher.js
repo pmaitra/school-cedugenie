@@ -4,7 +4,7 @@ $("#standardCode").change(function(){
 	removeOption(sectionObject);
 	
 	$.ajax({
-        url: '/icam/getSectionAgainstStandard.html',
+        url: '/cedugenie/getSectionAgainstStandard.html',
         dataType: 'json',
         data: "standard=" + ($(this).val()),
         success: function(dataDB) {
@@ -32,12 +32,12 @@ function removeOption(x){
 
 $(document).ready(function() {	
 	 $("#desc").autocomplete({
-	 	source: '/icam/getStaffUserIdList.html',
+	 	source: '/cedugenie/getStaffUserIdList.html',
 	 	select: function (event, ui){
 			var userId = ui.item.value;
 			
 			$.ajax({
-				url: '/icam/getUserNameForId.html',
+				url: '/cedugenie/getUserNameForId.html',
 				dataType: 'json',
 				data: "userId=" + userId,
 				success: function(data) {

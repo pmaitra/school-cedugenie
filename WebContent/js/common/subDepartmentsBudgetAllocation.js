@@ -11,7 +11,7 @@ $("#financialYear").change(function() {
 	deleteRow(table);
 	if($("#financialYear").val()!=""){
 		$.ajax({
-	        url: '/icam/getBudgetOfSubDeptsForAFinancialYear.html',
+	        url: '/cedugenie/getBudgetOfSubDeptsForAFinancialYear.html',
 	        data: "financialYear="+($("#financialYear").val()) + "&department="+($("#department").val()),
 	        dataType: 'json',
 	        success: function(data) {

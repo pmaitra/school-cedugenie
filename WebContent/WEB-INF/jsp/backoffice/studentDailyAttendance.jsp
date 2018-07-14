@@ -12,7 +12,7 @@
 <title>Student Attendance</title>
 <%@ include file="/include/include.jsp" %>
 <%@ include file="/include/js-include.jsp" %>
-<link rel="stylesheet" href="/icam/assets/stylesheets/calender.css" />
+<link rel="stylesheet" href="/cedugenie/assets/stylesheets/calender.css" />
 <style type="text/css">
        .scroll-to-top{
            display: none !important;
@@ -109,8 +109,8 @@
 		</form>
 	</div>	
 	</div>				
-	<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+	<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 	<%@ include file="/include/js-include.jsp" %>
-	<script src="/icam/js/backoffice/studentDailyAttendance.js"></script>
+	<script src="/cedugenie/js/backoffice/studentDailyAttendance.js"></script>
 </body>
 </html>

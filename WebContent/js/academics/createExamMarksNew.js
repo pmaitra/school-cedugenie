@@ -14,7 +14,7 @@ $(document).ready(function(){
 			removeOption(termObject);
 			document.getElementById("warningbox").style.display='none';
 			$.ajax({
-		        url: '/icam/getTermForStandard.html',
+		        url: '/cedugenie/getTermForStandard.html',
 		        dataType: 'json',
 		        data: "standard=" + ($("#standard").val()),
 		        success: function(dataDB) {		        
@@ -39,7 +39,7 @@ $(document).ready(function(){
 			removeOption(examObject);
 			document.getElementById("warningbox").style.display='none';			
 			$.ajax({
-		        url: '/icam/getExamsForStandard.html',
+		        url: '/cedugenie/getExamsForStandard.html',
 		        dataType: 'json',
 		        data: "standard=" + ($("#standard").val()),
 		        success: function(dataDB) {
@@ -65,7 +65,7 @@ $(document).ready(function(){
 		
 		
 		$.ajax({
-	        url: '/icam/getExamForStandardAndTerm.html',
+	        url: '/cedugenie/getExamForStandardAndTerm.html',
 	        dataType: 'json',
 	        data: "standard=" + ($("#standard").val())+ "&term="+($("#term").val()),
 	        success: function(dataDB) {
@@ -89,7 +89,7 @@ $(document).ready(function(){
 		deleteRow(tableBody);
 		document.getElementById("warningbox").style.display='none';
 		$.ajax({
-	        url: '/icam/getSubjectsAndMarksForStandardAndExam.html',
+	        url: '/cedugenie/getSubjectsAndMarksForStandardAndExam.html',
 	        data: "standard=" + ($("#standard").val())+ "&exam=" + ($(this).val()),
 	        dataType: 'json',
 	        success: function(data) {

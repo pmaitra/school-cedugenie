@@ -5,7 +5,7 @@ $("#course").change(function (){
 		//document.getElementById("term").removeAttribute("disabled");
 				//alert($("#course").val());
 				$.ajax({
-			        url: '/icam/getSectionAgainstCourse.html',
+			        url: '/cedugenie/getSectionAgainstCourse.html',
 			        dataType: 'json',
 			        data: "course=" + ($(this).val()),
 			        success: function(dataDB) {
@@ -23,7 +23,7 @@ $("#course").change(function (){
 				});
 
 				$.ajax({
-				    url: '/icam/getTermsForACourse.html',
+				    url: '/cedugenie/getTermsForACourse.html',
 				    dataType: 'json',
 				    data:"course=" +  $("#course").val(),
 				    success: function(data) {	
@@ -52,7 +52,7 @@ $("#course").change(function (){
 				
 				
 				/*$.ajax({
-					url: '/icam/getExamsForCourse.html',
+					url: '/cedugenie/getExamsForCourse.html',
 					dataType: 'json',
 					data: "course=" + $("#course").val(),
 					success: function(data) {
@@ -70,7 +70,7 @@ $("#course").change(function (){
 		/*	$("#section").change(function (){
 						//alert("section=="+$("#section").val());
 						$.ajax({
-						url: '/icam/getSubjectsForCourse.html',
+						url: '/cedugenie/getSubjectsForCourse.html',
 						dataType: 'json',
 						data: "course=" + $("#course").val()+"&section=" + ($("#section").val()),
 						success: function(data) {
@@ -106,7 +106,7 @@ $("#course").change(function (){
 		document.getElementById("subject").removeAttribute("disabled");
 		//document.getElementById("exam").removeAttribute("disabled");
 			$.ajax({
-				url: '/icam/getExamsForTermAndCourse.html',
+				url: '/cedugenie/getExamsForTermAndCourse.html',
 				dataType: 'json',
 				data: "course=" + $("#course").val()+ "&term=" + ($("#term").val()),
 				success: function(data) {
@@ -123,7 +123,7 @@ $("#course").change(function (){
 			});
 			
 			$.ajax({
-				url: '/icam/getSubjectsForACourseAndTermAndTeacher.html',
+				url: '/cedugenie/getSubjectsForACourseAndTermAndTeacher.html',
 				dataType: 'json',
 				data: "course=" + $("#course").val()+"&term=" + ($("#term").val())+"&section=" + ($("#section").val()),
 				success: function(data) {
@@ -157,7 +157,7 @@ $("#course").change(function (){
 				document.getElementById("createResultDiv").style.display = "block";
 				$("#tableBody").empty();
 				$.ajax({
-				url: '/icam/getStudentsAndMarks.html',
+				url: '/cedugenie/getStudentsAndMarks.html',
 				dataType: 'json',
 				data: "course=" + ($("#course").val())+ "&exam=" + ($("#exam").val())+ "&subject=" + ($("#subject").val())+ "&section=" + ($("#section").val()) + "&term=" + ($("#term").val()),
 				success: function(allData) {

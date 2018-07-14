@@ -7,7 +7,7 @@ var div_id="";
 				 //var p='';
 				 var msg='';
 				 $.ajax({
-		    	url:'/icam/getNotifyForItemThresold.html',/*the function name of controller by which the data is retrieved*/
+		    	url:'/cedugenie/getNotifyForItemThresold.html',/*the function name of controller by which the data is retrieved*/
 		    	dataType: 'json',
 		    	success: function(data) {
 		    		
@@ -33,7 +33,7 @@ var div_id="";
 		        	  //--------------------UPDATING FROM--------------------------
 		        	var insuranceTaxData="";
 		        	  $.ajax({
-		        	  url:'/icam/getNotifyForInsuranceAndTaxDate.html',/*the function name of controller by which the data is retrieved*/
+		        	  url:'/cedugenie/getNotifyForInsuranceAndTaxDate.html',/*the function name of controller by which the data is retrieved*/
 				    	dataType: 'json',
 				    	success: function(data) {
 				    		

@@ -2,7 +2,7 @@ $(document).ready(function(){
 	$("#standard").change(function(){
 		
 			$.ajax({
-		        url: '/icam/getSubjectsForStandardQP.html',
+		        url: '/cedugenie/getSubjectsForStandardQP.html',
 		        data: "standard=" + ($(this).val()),
 		        dataType: 'json',
 		        success: function(data) {
@@ -19,7 +19,7 @@ $(document).ready(function(){
 		     });
 			
 			$.ajax({
-		        url: '/icam/getExamForStandard.html',
+		        url: '/cedugenie/getExamForStandard.html',
 		        dataType: 'json',
 		        data: "standard=" + ($("#standard").val()),
 		        success: function(dataDB) {

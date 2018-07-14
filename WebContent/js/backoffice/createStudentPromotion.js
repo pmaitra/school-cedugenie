@@ -11,7 +11,7 @@ $(document).ready(function(){
 			sectionObject.innerHTML=options;
 		}
 		$.ajax({
-	        url: '/icam/getSectionAgainstStandard.html',
+	        url: '/cedugenie/getSectionAgainstStandard.html',
 	        dataType: 'json',
 	        data: "standard=" + ($(this).val()),
 	        success: function(dataDB) {
@@ -41,7 +41,7 @@ $(document).ready(function(){
 	 
 	 $("#section").change(function(){
 		 $.ajax({
-	        url: '/icam/getStudentsResultForPromotion.html',
+	        url: '/cedugenie/getStudentsResultForPromotion.html',
 	        dataType: 'json',
 	        data: "standard=" + ($("#standard").val())+ "&section=" + ($(this).val()),
 	        success: function(dataDB) {

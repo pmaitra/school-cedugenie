@@ -56,7 +56,7 @@ $("#eventName").change(function() {
 	//removeOption(commodityName);
 	
 	$.ajax({
-		url: '/icam/getEventDescription.html',
+		url: '/cedugenie/getEventDescription.html',
 		dataType: 'text',
 		data: "eventName="+($("#eventName").val()),
 		success: function(data){ 
@@ -68,7 +68,7 @@ $("#eventName").change(function() {
 
 $(document).ready(function (){
 	$("#eventIncharge").autocomplete({
-		source: '/icam/getAllUserId.html' ,
+		source: '/cedugenie/getAllUserId.html' ,
 		/*select: function (event, ui){
 			var userId0 = ui.item.value;
 		}*/

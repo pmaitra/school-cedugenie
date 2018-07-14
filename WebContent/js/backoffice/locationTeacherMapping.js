@@ -4,7 +4,7 @@ var resourceIndex = 0;
 $("#venueTypeCode").change(function (){
 		var venueType = $("#venueTypeCode").val();
 			$.ajax({
-				url: '/icam/getVenueAgainstVenueType.html',
+				url: '/cedugenie/getVenueAgainstVenueType.html',
 				dataType: 'json',
 				data: "venueTypeCode=" + $("#venueTypeCode").val(),
 				success: function(data) {
@@ -30,12 +30,12 @@ $("#venueTypeCode").change(function (){
 		if(($("#resourceTypeName").val()!=null)){
 			
 			$("#userId0").autocomplete({
-				source: '/icam/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()) ,
+				source: '/cedugenie/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()) ,
 				select: function (event, ui){
 					var userId = ui.item.value;
 					//alert("userId0==="+userId);
 					$.ajax({
-						url: '/icam/getUserNameForId.html',
+						url: '/cedugenie/getUserNameForId.html',
 						dataType: 'json',
 						data: "userId=" + userId,
 						success: function(data) {
@@ -57,12 +57,12 @@ $("#venueTypeCode").change(function (){
 		if(($("#resourceType"+index).val()!=null)){
 			
 			$("#userId"+index).autocomplete({
-				source: '/icam/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()) ,
+				source: '/cedugenie/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()) ,
 				select: function (event, ui){
 					var userId = ui.item.value;
 					
 					$.ajax({
-						url: '/icam/getUserNameForId.html',
+						url: '/cedugenie/getUserNameForId.html',
 						dataType: 'json',
 						data: "userId=" + userId,
 						success: function(data) {
@@ -80,11 +80,11 @@ $("#venueTypeCode").change(function (){
 	function auto(userId,name){
 		//alert("Phase2");
 		$(userId).autocomplete({	 
-			source: '/icam/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()),
+			source: '/cedugenie/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()),
 			select: function (event, ui){
 			var userId = ui.item.value;
 			$.ajax({
-				url: '/icam/getUserNameForId.html',
+				url: '/cedugenie/getUserNameForId.html',
 				dataType: 'json',
 				data: "userId=" + userId,
 			    success: function(data) {
@@ -180,7 +180,7 @@ $("#venueTypeCode").change(function (){
 		
 		var cell3= row.insertCell(3);
 		/*var element2 = document.createElement("img");
-		element2.setAttribute("src","/icam/images/minus_icon.png");		
+		element2.setAttribute("src","/cedugenie/images/minus_icon.png");		
 		element2.setAttribute("onclick", "deleteRow(this);");	*/	
 		var element4 = document.createElement('a');
 		element4.setAttribute("class","fa fa-minus-square");

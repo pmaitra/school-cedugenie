@@ -1,7 +1,7 @@
 
 	 $("#exam").change(function() {
 			$.ajax({
-		        url: '/icam/getProgramAndExamDetailsAgainstExam.html',
+		        url: '/cedugenie/getProgramAndExamDetailsAgainstExam.html',
 		        dataType:"text",
 		        data: "exam=" + ($(this).val()),
 		        success: function(dataDB) {
@@ -108,7 +108,7 @@ function callEvent(){
 	                	//alert(rowcolID);
 	                	
 	                	$.ajax({
-	                        url:'/icam/insertRoutineGridData.html',
+	                        url:'/cedugenie/insertRoutineGridData.html',
 	                        dataType:"text",
 	                        data:"cellid=" + rowcolID + "&celldata=" + newContent,
 	                        success:function(data){

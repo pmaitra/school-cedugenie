@@ -3,7 +3,7 @@
 				function() {
 					removePresentStateOption();
 					$.ajax({
-						url: '/icam/getStateList.html',
+						url: '/cedugenie/getStateList.html',
 						dataType: 'json',
 						data: "country=" + ($(this).val()),
 						success: function(dataDB) {
@@ -38,7 +38,7 @@
 			document.getElementById("warningmsg").innerHTML="";
 			var venue=$("#venue").val();	
 			 $.ajax({
-		     url: '/icam/existingVenueChecking.html',
+		     url: '/cedugenie/existingVenueChecking.html',
 		     dataType: 'json',
 		     data: "venue=" +venue,
 		     success: function(data) {

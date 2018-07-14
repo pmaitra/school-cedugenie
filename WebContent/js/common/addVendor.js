@@ -3,7 +3,7 @@ $(document).ready(function(){
 $("#emailId").bind('keyup blur',function(){
 	var emailId=$("#emailId").val();	
 	$.ajax({
-	     url: '/icam/serverSideValidationOfVendorEmailId.html',
+	     url: '/cedugenie/serverSideValidationOfVendorEmailId.html',
 	     dataType: 'json',
 	     data: "emailId=" +emailId,
 	     success: function(data) {

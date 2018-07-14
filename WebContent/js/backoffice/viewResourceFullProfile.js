@@ -1,7 +1,7 @@
 $(document).ready(function(){
 	var presentRole = $("#currentRole").val();
 	$.ajax({
-		 url: '/icam/getModulesForRole.html',
+		 url: '/cedugenie/getModulesForRole.html',
 	     dataType: 'json',
 	     data: "currentRole=" + presentRole,
 	     success: function(dataDB){
@@ -14,7 +14,7 @@ $(document).ready(function(){
 	})
 	var presentUserId = $("#currentUserId").val();
 	$.ajax({
-		url: '/icam/getPersonalDetailsForOwnProfile.html',
+		url: '/cedugenie/getPersonalDetailsForOwnProfile.html',
 		dataType: 'json',
 		data: "currentUserId="+presentUserId,
 		success: function(dataDB){

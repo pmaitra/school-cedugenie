@@ -5,7 +5,7 @@ $(document).ready( function(){
 				//alert("ajax call");
 				$.ajax({
 					
-				    url: '/icam/getTermNameForCourse.html',
+				    url: '/cedugenie/getTermNameForCourse.html',
 				    dataType: 'json',
 				    data:"course=" +  $("#course").val(),
 				    success: function(data) {	
@@ -31,7 +31,7 @@ $(document).ready( function(){
 			$("#term").change(function (){
 				//alert("ajax call for term");
 				$.ajax({
-				url: '/icam/getSubjectsForTermAndCourse.html',
+				url: '/cedugenie/getSubjectsForTermAndCourse.html',
 				dataType: 'json',
 				data: "course=" + ($("#course").val())+ "&term=" + ($("#term").val()),
 				success: function(data) {

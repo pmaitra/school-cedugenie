@@ -3,7 +3,7 @@ $(document).ready( function(){
 			//alert("within js");
 			var table = document.getElementById("assignRollTable");
 			$.ajax({
-				    url: '/icam/getStudentsForAssignRollNumber.html',
+				    url: '/cedugenie/getStudentsForAssignRollNumber.html',
 				    dataType: 'json',
 				    data:"course=" + $("#courseName").val(),
 				    success: function(data) {	

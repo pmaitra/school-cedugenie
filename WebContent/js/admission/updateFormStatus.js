@@ -30,7 +30,7 @@
 //		$("#admissionFormId").autocomplete({
 //			source: function(request, response) {
 //			      $.ajax({
-//			    	 url: '/icam/getAdmissionFormIdForUpdateFormStatus.html',
+//			    	 url: '/cedugenie/getAdmissionFormIdForUpdateFormStatus.html',
 //			         dataType: "json",
 //			         data: {
 //			        	 term: request.term,

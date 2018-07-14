@@ -4,7 +4,7 @@ $(document).ready(function(){
 		var s3 = $(this).val();
 		$("#hiddenclasstoset").val(s3);
 			$.ajax({
-			        url: '/icam/getSectionAgainstStandard.html',
+			        url: '/cedugenie/getSectionAgainstStandard.html',
 			        data: "standard=" + ($(this).val()),
 			        dataType: 'json',
 			        success: function(data) {	
@@ -99,7 +99,7 @@ $(document).ready(function(){
 			
 		
 	 	$.ajax({
-	        url: '/icam/getSubjectsBasedOnStandardAndSubjectGroup.html',
+	        url: '/cedugenie/getSubjectsBasedOnStandardAndSubjectGroup.html',
 	        data: "standard=" + standard+ "&subjectGroup=" + SubjectTypeName,
 	        dataType: 'json',
 	        success: function(data) {	
@@ -166,7 +166,7 @@ $(document).ready(function(){
 	//Get Teacher Per SubjectGroup and Subject subjectIndividualselected  ($("#hidCourseToSet").val())+ "&subjectType=" + SubjectTypeName,
 	$("#subjectIndividualselected").change(function(){
 		$.ajax({
-	        url: '/icam/getTeacherPerSubject.html',
+	        url: '/cedugenie/getTeacherPerSubject.html',
 	        dataType: 'json',
 	        data: "subjectName="+($("#subjectIndividualselected :selected").text()),
 	        success: function(data) {

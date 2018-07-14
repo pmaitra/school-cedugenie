@@ -81,7 +81,7 @@ $(document).ready(function(){
 	
 	/*$("#standardName").change(function(){
 		$.ajax({
-	        url: '/icam/getCourseForClass.html',
+	        url: '/cedugenie/getCourseForClass.html',
 	        data: "standard=" + ($(this).val()),
 	        dataType: 'json',
 	        success: function(data) {
@@ -108,7 +108,7 @@ $(document).ready(function(){
 	
 	$("#standardName").change(function(){
 		$.ajax({
-	        url: '/icam/getSectionForStandard.html',
+	        url: '/cedugenie/getSectionForStandard.html',
 	        data:"standard=" + ($(this).val()),
 	        dataType: 'json',
 	        success: function(data) {
@@ -135,7 +135,7 @@ $(document).ready(function(){
 	
 	$("#sectionName").change(function(){
 		$.ajax({
-	        url: '/icam/getStudentAgainstSection.html',
+	        url: '/cedugenie/getStudentAgainstSection.html',
 	        data:"standard=" +($("#standardName").val())+"&section=" + ($(this).val()),
 	        dataType: 'json',
 	        success: function(data) {
@@ -163,7 +163,7 @@ $(document).ready(function(){
 		$('#rollNumber').val($(this).val());
 		$('#netTotAmount').val("0.00");
 		$.ajax({
-	        url: '/icam/getFeeStructureAgainstStudent.html',
+	        url: '/cedugenie/getFeeStructureAgainstStudent.html',
 	        data: "standard=" +($("#standardName").val())+"&academicSession=" +($("#academicSsession").val())+"&rollNumber=" +($("#rollNumber").val()),
 	        dataType: 'json',
 	        success: function(data) {

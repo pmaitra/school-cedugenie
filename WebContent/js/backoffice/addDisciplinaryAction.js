@@ -3,7 +3,7 @@ $("#standard").change(function(){
 	var sectionObject=document.getElementById("section");
 	var options=" <select class='form-control' name='className' id = 'className0' onclick='valuedetails()'><option value=''>Select...</option>";
 	$.ajax({
-        url: '/icam/getSectionsAgainstCourse.html',
+        url: '/cedugenie/getSectionsAgainstCourse.html',
         dataType: 'json',
         data: "standard=" + ($(this).val()),
         success: function(dataDB) {
@@ -28,7 +28,7 @@ $("#section").change(function(){
 	var section= $("#section").val();
 	var options=" <select class='form-control' name='sectionName' id = 'sectionName0' onclick='valuedetails()'><option value=''>Select...</option>";
 	$.ajax({
-        url: '/icam/getStudentRollAgainstStandardAndSection.html',
+        url: '/cedugenie/getStudentRollAgainstStandardAndSection.html',
         dataType: 'json',
         data: "standard=" + standard+ "&section=" + section,
         success: function(dataDB) {
@@ -53,7 +53,7 @@ $("#section").change(function(){
 $("#disciplinaryCode").change(function(){
 	
 	$.ajax({
-        url: '/icam/getDescriptionAgainstDisciplinaryCode.html',
+        url: '/cedugenie/getDescriptionAgainstDisciplinaryCode.html',
         dataType: 'json',
         data: "disciplinaryCode=" +$("#disciplinaryCode").val(),
         success: function(dataDB) {

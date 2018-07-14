@@ -4,7 +4,7 @@ $(document).ready(function() {
 		$("#title").hide();
 		$("#emptyMsg").hide();
 		$.ajax({
-	        url: '/icam/getSectionForAttendance.html',
+	        url: '/cedugenie/getSectionForAttendance.html',
 	        data:"class=" + ($("#class").val()),
 	        dataType: 'json',
 	        success: function(data) {
@@ -45,7 +45,7 @@ $(document).ready(function() {
 		var year = d.getYear();
 		/* ajax call to get the roll numbers of the students who are already present for the current date */
 		$.ajax({
-	        url: '/icam/getStudentsRollNumbersForAlreadyAttendedStudents.html',
+	        url: '/cedugenie/getStudentsRollNumbersForAlreadyAttendedStudents.html',
 	        data:"class=" + ($("#class").val()) + "&section=" + ($(this).val()) + "&currentDate=" + ($("#currentDate").val()),
 	        dataType: 'json',
 	        success: function(dataNew) { 
@@ -54,7 +54,7 @@ $(document).ready(function() {
 		});
 		/* ajax call to get the roll numbers of all students */
 	   	$.ajax({
-	        url: '/icam/getStudentsForDailyAttendance.html',
+	        url: '/cedugenie/getStudentsForDailyAttendance.html',
 	        data:"class=" + ($("#class").val()) + "&section=" + ($(this).val()) + "&currentDate=" + ($("#currentDate").val()),
 	        dataType: 'json',
 	        success: function(data) { 

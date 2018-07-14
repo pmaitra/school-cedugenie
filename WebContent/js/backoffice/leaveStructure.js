@@ -45,7 +45,7 @@ $(document).ready(function(){
 		}
 		
 		$.ajax({
-	        url: '/icam/getEmployeeCompleteLeaveDetails.html',
+	        url: '/cedugenie/getEmployeeCompleteLeaveDetails.html',
 	        data: "jobTypeName=" +($(this).val())+ "&employeeType=" + ($("#employeeTypeName").val())+ "&academicYear=" + ($("#year").val()),
 	        success: function(data) {
 	        	if(null!=data && data!=""){

@@ -7,7 +7,7 @@
 
 
 var ddaccordion={
-	ajaxloadingmsg: '<img src="/icam/images/loading.gif" /><br />Loading Content...', //customize HTML to output while Ajax content is being fetched (if applicable)
+	ajaxloadingmsg: '<img src="/cedugenie/images/loading.gif" /><br />Loading Content...', //customize HTML to output while Ajax content is being fetched (if applicable)
 
 	headergroup: {}, //object to store corresponding header group based on headerclass value
 	contentgroup: {}, //object to store corresponding content group based on headerclass value

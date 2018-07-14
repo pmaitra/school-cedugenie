@@ -121,7 +121,7 @@ function getCourse(thisClassNode){
 	alert(thisClassNode.value);
 	if((thisClassNode.value)!=''){
 	$.ajax({
-		    url: '/icam/getCourseForStandard.html',
+		    url: '/cedugenie/getCourseForStandard.html',
 		    dataType: 'json',
 		    data:"standard=" + (thisClassNode.value),
 		    success: function(data) {	
@@ -156,7 +156,7 @@ function getExamType(thisCourseNode){
     	var className = document.getElementById("className" + index);
     if((className.value)!='' && (courseCode)!=''){    
 	$.ajax({
-	    url: '/icam/getExamTypeForClassCourse.html',
+	    url: '/cedugenie/getExamTypeForClassCourse.html',
 	    dataType: 'json',
 	    data:"strClass=" + (className.value) + "&strCourse=" + (courseCode.value),
 	    success: function(data) {
@@ -205,7 +205,7 @@ function getExam(thisExamTypeNode){
 	//document.getElementById("Div"+index).innerHTML="";
 	document.getElementById("examName"+index).value="";
 		$.ajax({
-		    url: '/icam/getExamForClassCourseExamType.html',
+		    url: '/cedugenie/getExamForClassCourseExamType.html',
 		    dataType: 'json',
 		    data:"strClass=" + (className.value) + "&strCourse=" + (courseCode.value) + "&strExamType=" + (examTypeNode),
 		    success: function(data) {

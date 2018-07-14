@@ -75,7 +75,7 @@ $(document).ready(function(){
 				document.getElementById("warningmsg").innerHTML="Only Numeric Roll Number Allowed";
 			}else{
 				$.ajax({
-			        url: '/icam/checkAvailableRollNumber.html',
+			        url: '/cedugenie/checkAvailableRollNumber.html',
 			        data: "rollNumber=" + rNum,
 			        dataType: 'json',
 			        success: function(data){

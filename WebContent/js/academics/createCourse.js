@@ -97,7 +97,7 @@ $("#courseName").change(function(){
 	var table = document.getElementById("sectionbody");
 	//alert($("#courseName").val());
     $.ajax({
-    	url: '/icam/getSectionAgainstStandard.html',
+    	url: '/cedugenie/getSectionAgainstStandard.html',
         dataType: 'json',
         data: "standard=" + ($(this).val()),
         success: function(dataDB) {

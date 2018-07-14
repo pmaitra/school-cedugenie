@@ -2,7 +2,7 @@ $(document).ready(function() {
 	$("#assetName").bind('keyup blur',function(){
 		var assetName = $("#assetName").val();	
 		$.ajax({
-		    url: '/icam/assetNameValidation.html',
+		    url: '/cedugenie/assetNameValidation.html',
 		    data: "assetName=" +assetName,
 		    dataType: 'json',
 		    success: function(data) {
@@ -22,7 +22,7 @@ $(document).ready(function() {
 		document.getElementById("assetSubType").innerHTML="<option value=''>Select...</option>";
 		var options="<option value=''>Select...</option>";
 		$.ajax({
-		    url: '/icam/getAssetSubTypeForAssetType.html',		   
+		    url: '/cedugenie/getAssetSubTypeForAssetType.html',		   
 		    dataType: 'json',
 		    data: "assetType=" + ($(this).val()),
 		    success: function(data) {		    	

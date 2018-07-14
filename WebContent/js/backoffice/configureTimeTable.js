@@ -203,7 +203,7 @@ $(document).ready(function() {
 	
 		
    $.ajax({
-		url:"http://localhost:8080/icam/getTeacherListForTimeTable.html", 
+		url:"http://localhost:8080/cedugenie/getTeacherListForTimeTable.html", 
         dataType:"text",
         success:function(data){
         	teacherData = data;
@@ -215,7 +215,7 @@ $(document).ready(function() {
     });
    
    /*$.ajax({
-		url:"http://localhost:8080/icam/getClassSectionListForTimeTable.html", 
+		url:"http://localhost:8080/cedugenie/getClassSectionListForTimeTable.html", 
        dataType:"text",
        success:function(data){
        		classSectionData = data;
@@ -227,7 +227,7 @@ $(document).ready(function() {
    });*/
    
    /*$.ajax({
-		url:"http://localhost:8080/icam/getSubjectListForTimeTable.html", 
+		url:"http://localhost:8080/cedugenie/getSubjectListForTimeTable.html", 
       dataType:"text",
       success:function(data){
     	  subjectData = data;
@@ -259,7 +259,7 @@ function callalert(){
 		
 		var sem = $("#semsterName").val();
 		$.ajax({
-		    url: '/icam/getProgramNameAgainstSemesterAndTeacher.html',
+		    url: '/cedugenie/getProgramNameAgainstSemesterAndTeacher.html',
 		    dataType: 'json',
 		    data:"teacherID=" + teacherName + "&semsterName=" + sem,
 		    success: function(data) {
@@ -285,7 +285,7 @@ function callalert(){
 		var sectionName = $(this).val();
 		
 		$.ajax({
-		    url: '/icam/getCourseNameAgainstProgramTeacherAndSemester.html',
+		    url: '/cedugenie/getCourseNameAgainstProgramTeacherAndSemester.html',
 		    dataType: 'json',
 		    data:"teacherID=" + teacherName + "&semsterName=" + sem + "&sectionName=" + sectionName,
 		    success: function(data) {

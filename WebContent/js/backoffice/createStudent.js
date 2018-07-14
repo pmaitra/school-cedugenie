@@ -2,7 +2,7 @@ $(document).ready(function() {
 	/*$("#courseId").change(function(){
 		var courseId = $("#courseId").val();
 		$.ajax({
-			url: '/icam/getAdmissionDriveNameAgainstCourseId.html',
+			url: '/cedugenie/getAdmissionDriveNameAgainstCourseId.html',
 			dataType: 'json',
 			data: "courseId="+courseId,
 			success: function (data){
@@ -23,7 +23,7 @@ $(document).ready(function() {
 	$("#userId").bind('keyup blur',function(){
 		var userId=$("#userId").val();	
 		 $.ajax({
-	     url: '/icam/serverSideValidationOfUserId.html',
+	     url: '/cedugenie/serverSideValidationOfUserId.html',
 	     dataType: 'json',
 	     data: "userId=" +userId,
 	     success: function(data) {
@@ -42,7 +42,7 @@ $(document).ready(function() {
 	$("#driveId").change(function(){
 		var courseId = $("#courseId").val();
 		$.ajax({
-			url: '/icam/getFormIdAgainstCourseId.html',
+			url: '/cedugenie/getFormIdAgainstCourseId.html',
 			dataType: 'json',
 			data: "courseId="+courseId+"&driveName="+$("#driveId").val(),
 			success: function (data){
@@ -60,7 +60,7 @@ $(document).ready(function() {
 		});
 		
 		/*$.ajax({
-		    url: '/icam/getTermsForACourse.html',
+		    url: '/cedugenie/getTermsForACourse.html',
 		    dataType: 'json',
 		    data:"course=" +  $("#courseId").val(),
 		    success: function(data) {	
@@ -89,7 +89,7 @@ $(document).ready(function() {
 		 var formId = $(this).val();
 		 
 		$.ajax({
-	        url: '/icam/getCandidateDetailsAgainstFromId.html',
+	        url: '/cedugenie/getCandidateDetailsAgainstFromId.html',
 	        dataType: 'json',
 	        data: "formId=" + ($(this).val())+"&driveName="+$("#driveId").val()+"&courseId="+$("#courseId").val(),
 	        success: function(data) {
@@ -139,7 +139,7 @@ $(document).ready(function() {
 			removeOption(stateObject);
 			
 			$.ajax({
-		        url: '/icam/getStateList.html',
+		        url: '/cedugenie/getStateList.html',
 		        dataType: 'json',
 		        data: "country=" + ($(this).val()),
 		        success: function(dataDB) {
@@ -161,7 +161,7 @@ $(document).ready(function() {
 	 
 	 $("#standard").change(function(){
 			$.ajax({
-		        url: '/icam/getSubjectsForStandard.html',
+		        url: '/cedugenie/getSubjectsForStandard.html',
 		        dataType: 'json',
 		        data: "standard=" + ($(this).val()),
 			});
@@ -191,7 +191,7 @@ $(document).ready(function() {
 				}else{
 					if(formId == ""){
 						$.ajax({
-					        url: '/icam/checkAvailableRollNumber.html',
+					        url: '/cedugenie/checkAvailableRollNumber.html',
 					        data: "rollNumber=" + rNum,
 					        dataType: 'json',
 					        success: function(data){

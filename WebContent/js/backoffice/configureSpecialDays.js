@@ -135,7 +135,7 @@ $(document).ready(function() {
 //	
 	$("#courseId").change(function(){
 		$.ajax({
-	        url: '/icam/getTermForCourse.html',
+	        url: '/cedugenie/getTermForCourse.html',
 	        data: "course=" + ($(this).val()),
 	        dataType: 'json',
 	        success: function(data) {
@@ -175,7 +175,7 @@ $(document).ready(function() {
 	
 	$("#sterm").change(function(){
 		$.ajax({
-	    	url: '/icam/getWorkingDays.html',
+	    	url: '/cedugenie/getWorkingDays.html',
 	    	dataType: 'json',
 	    	data: "sterm=" + ($(this).val()),
 	    	success: function(data) {

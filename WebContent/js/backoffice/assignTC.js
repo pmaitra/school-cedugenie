@@ -39,7 +39,7 @@ $(document).ready(function(){
 				document.getElementById("submit").setAttribute("disabled","disabled");
 				document.getElementById("warningbox").style.visibility="collapse";
 				$.ajax({
-			        url: '/icam/getSectionAgainstClassAndStream.html',
+			        url: '/cedugenie/getSectionAgainstClassAndStream.html',
 			        data:"class=" + ($("#class").val()) + "&stream=" + ($(this).val()),
 			        dataType: 'json',
 			        success: function(data) {
@@ -82,7 +82,7 @@ $(document).ready(function(){
 				document.getElementById("submit").setAttribute("disabled","disabled");
 				document.getElementById("warningbox").style.visibility="collapse";
 				$.ajax({
-			        url: '/icam/getResourceAgainstSection.html',
+			        url: '/cedugenie/getResourceAgainstSection.html',
 			        data:"sectionCode=" + ($("#section").val()),
 			        dataType: 'json',
 			        success: function(data) {
@@ -118,7 +118,7 @@ $(document).ready(function(){
 				document.getElementById("warningbox").style.visibility="collapse";
 				$('#stuID').val($(this).val());
 				$.ajax({
-			        url: '/icam/checkWheatherFeesPaid.html',
+			        url: '/cedugenie/checkWheatherFeesPaid.html',
 			        data: "student=" +($(this).val())+"&session=" +($("#session").val()),
 			        dataType: 'json',
 			        success: function(data) {

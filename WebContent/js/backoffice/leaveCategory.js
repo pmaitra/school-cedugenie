@@ -52,7 +52,7 @@ function showenable(){
 function validText(text_id){
 	var leaveTypeName=document.getElementById(text_id).value;		
 	$.ajax({
-	    url: '/icam/getLeaveCategoryTypeNameForValidation.html',
+	    url: '/cedugenie/getLeaveCategoryTypeNameForValidation.html',
 	    dataType: 'json',
 	    data: "leaveTypeName=" +leaveTypeName,		   
 	    success: function(data) {		
@@ -73,7 +73,7 @@ function validText(text_id){
 function validTextAnother(text_id){
 	var leaveTypeName=document.getElementById(text_id).value;	
 	$.ajax({
-	    url: '/icam/getLeaveCategoryTypeNameForValidation.html',
+	    url: '/cedugenie/getLeaveCategoryTypeNameForValidation.html',
 	    dataType: 'json',
 	    data: "leaveTypeName=" +leaveTypeName,		   
 	    success: function(data) {	
@@ -102,7 +102,7 @@ $(document).ready(function() {
 
 	/*Get Previous leave type*/
 		$.ajax({
-	    url: '/icam/getPreviousLeaveType.html',
+	    url: '/cedugenie/getPreviousLeaveType.html',
 	    	dataType: 'json',
 	    	success: function(data) {
 	    	if(data != null){
@@ -163,7 +163,7 @@ $(document).ready(function() {
 			$("#leaveType").bind('keyup blur',function(){
 				var leaveTypeName=$("#leaveType").val();			
 				$.ajax({
-				    url: '/icam/getLeaveCategoryTypeNameForValidation.html',
+				    url: '/cedugenie/getLeaveCategoryTypeNameForValidation.html',
 				    dataType: 'json',
 				    data: "leaveTypeName=" +leaveTypeName,		   
 				    success: function(data) {		    

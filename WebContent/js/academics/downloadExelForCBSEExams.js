@@ -12,7 +12,7 @@ $(document).ready(function(){
 		document.getElementById("btnDiv").style.visibility='collapse';
 		
 		$.ajax({
-	        url: '/icam/getSectionAgainstStandard.html',
+	        url: '/cedugenie/getSectionAgainstStandard.html',
 	        dataType: 'json',
 	        data: "standard=" + ($(this).val()),
 	        success: function(dataDB) {
@@ -41,7 +41,7 @@ $(document).ready(function(){
 		document.getElementById("infomsg1").innerHTML="";
 		document.getElementById("btnDiv").style.visibility='collapse';
 		$.ajax({
-	        url: '/icam/getSubjectGroupForStandard.html',
+	        url: '/cedugenie/getSubjectGroupForStandard.html',
 	        dataType: 'json',
 	        data: "standard=" + ($("#standard").val()),
 	        success: function(dataDB) {
@@ -67,7 +67,7 @@ $(document).ready(function(){
 		document.getElementById("btnDiv").style.visibility='collapse';
 		
 		$.ajax({
-	        url: '/icam/getExamForStandard.html',
+	        url: '/cedugenie/getExamForStandard.html',
 	        dataType: 'json',
 	        data: "standard=" + ($("#standard").val()),
 	        success: function(dataDB) {

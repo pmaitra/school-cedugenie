@@ -10,7 +10,7 @@ $(document).ready(function(){
 	$("#class").change(
 			function() {
 			$.ajax({
-		        url: '/icam/getCourseInClass.html',
+		        url: '/cedugenie/getCourseInClass.html',
 		        data: "class=" + ($(this).val()),
 		        dataType: 'json',
 		        success: function(data) {
@@ -41,7 +41,7 @@ $(document).ready(function(){
 			var examName = document.getElementById("examName");
 			if($("#class").val()!= "" && $("#course").val()!= ""){
 				$.ajax({
-			        url: '/icam/getExamsForTermCourseAndExamType.html',
+			        url: '/cedugenie/getExamsForTermCourseAndExamType.html',
 			        data: "courseCode=" + ($("#course").val())+ "&classCode=" + ($("#class").val()),
 			        dataType: 'json',
 			        success: function(data){
@@ -78,7 +78,7 @@ $(document).ready(function(){
 			var section = document.getElementById("section");
 			if($(this).val()!= ""){
 				$.ajax({
-			        url: '/icam/getSectionForClassAndStream.html',
+			        url: '/cedugenie/getSectionForClassAndStream.html',
 			        data: "classCode=" + ($("#class").val()),
 			        dataType: 'json',
 			        success: function(data){
@@ -114,7 +114,7 @@ $(document).ready(function(){
 			if($(this).val()!= ""){
 				alert($(this).val());				
 				$.ajax({
-			        url: '/icam/getStudentForClassStreamSectionAndCourse.html',
+			        url: '/cedugenie/getStudentForClassStreamSectionAndCourse.html',
 			        data: "classCode=" + ($("#class").val())+"&sectionCode="+($("#section").val())+ "&courseCode=" + ($("#course").val()),
 			        method: 'GET',
 			        dataType: 'json',

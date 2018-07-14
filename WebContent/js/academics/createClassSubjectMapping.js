@@ -8,7 +8,7 @@ $(document).ready(function(){
 			checkBoxes[subjectBox].checked=false;
 		if($(this).val()!=''){
 			$.ajax({
-		        url: '/icam/getSubjectsForStandard.html',
+		        url: '/cedugenie/getSubjectsForStandard.html',
 		        data: "standard=" + ($(this).val()),
 		        dataType: 'json',
 		        success: function(data) {

@@ -70,7 +70,7 @@ $(document).ready(function() {
 				 $("#roleNames").css('visibility','collapse');
 				 $("#labelText").css('visibility','collapse');
 				 	$.ajax({
-			    	    url: '/icam/getCalendarEventFromDBForAllUser.html',
+			    	    url: '/cedugenie/getCalendarEventFromDBForAllUser.html',
 			    	    	dataType: 'json',
 			    	    	data: "eventType="+eventType,
 			    	    	success: function(data) {
@@ -218,7 +218,7 @@ $(document).ready(function() {
 				 $("#roleNames").css('visibility','collapse');
 				 $("#labelText").css('visibility','collapse');
 				 	$.ajax({
-			    	    url: '/icam/getCalendarEventFromDBForPersonal.html',
+			    	    url: '/cedugenie/getCalendarEventFromDBForPersonal.html',
 			    	    	dataType: 'json',
 			    	    	data: "eventType="+eventType,
 			    	    	success: function(data) {
@@ -375,7 +375,7 @@ $(document).ready(function() {
 				 $("#infomsgAnother").css('visibility', 'collapse');
 				 $("#infomsgAnother").text("");
 				 	$.ajax({
-			    	    url: '/icam/getCalendarEventFromDBForRoleBased.html',
+			    	    url: '/cedugenie/getCalendarEventFromDBForRoleBased.html',
 			    	    	dataType: 'json',
 			    	    	data: "rollName="+rollName+ "&eventType=" + eventType,
 			    	    	success: function(data) {

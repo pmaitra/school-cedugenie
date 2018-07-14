@@ -27,7 +27,7 @@ function addRow()
         
         var cell1 = row.insertCell(2);
     	var element1 = document.createElement("img");
-    	element1.setAttribute("src","/icam/images/minus_icon.png");		
+    	element1.setAttribute("src","/cedugenie/images/minus_icon.png");		
     	element1.setAttribute("onclick", "deleteRow(this);");		
     	cell1.appendChild(element1);
     	

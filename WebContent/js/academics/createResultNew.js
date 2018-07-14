@@ -19,7 +19,7 @@ $(document).ready(function(){
 		document.getElementById("infomsg1").innerHTML="";
 		
 		$.ajax({
-	        url: '/icam/getSectionAgainstStandard.html',
+	        url: '/cedugenie/getSectionAgainstStandard.html',
 	        dataType: 'json',
 	        data: "standard=" + ($(this).val()),
 	        success: function(dataDB) {
@@ -44,7 +44,7 @@ $(document).ready(function(){
 			removeOption(termObject);
 			document.getElementById("warningbox").style.display = "none";
 			$.ajax({
-		        url: '/icam/getTermForStandard.html',
+		        url: '/cedugenie/getTermForStandard.html',
 		        dataType: 'json',
 		        data: "standard=" + ($("#standard").val()),
 		        success: function(dataDB) {		        
@@ -79,7 +79,7 @@ $(document).ready(function(){
 		document.getElementById("infomsg1").innerHTML="";
 		
 		$.ajax({
-	        url: '/icam/getSubjectGroupForStandard.html',
+	        url: '/cedugenie/getSubjectGroupForStandard.html',
 	        dataType: 'json',
 	        data: "standard=" + ($("#standard").val()),
 	        success: function(dataDB) {
@@ -109,7 +109,7 @@ $(document).ready(function(){
 		var standardValue = ($("#standard").val());
 		if(standardValue=='VI'||standardValue == 'VII'||standardValue=='VIII'){		
 			$.ajax({
-		        url: '/icam/getExamForStandardAndTerm.html',
+		        url: '/cedugenie/getExamForStandardAndTerm.html',
 		        dataType: 'json',
 		        data: "standard=" + ($("#standard").val())+ "&term="+($("#term").val()),
 		        success: function(dataDB) {		        	
@@ -127,7 +127,7 @@ $(document).ready(function(){
 		}
 		if(standardValue=='IX'||standardValue == 'X' || standardValue=='XI'||standardValue == 'XII'){
 			$.ajax({
-		        url: '/icam/getExamsForStandard.html',
+		        url: '/cedugenie/getExamsForStandard.html',
 		        dataType: 'json',
 		        data: "standard=" + ($("#standard").val()),
 		        success: function(dataDB) {
@@ -171,7 +171,7 @@ $(document).ready(function(){
 		}
 		
 		$.ajax({
-	        url: '/icam/getMarksForStudentsNew.html',
+	        url: '/cedugenie/getMarksForStudentsNew.html',
 	        dataType: 'json',
 	        data: "standard=" + ($("#standard").val())+ "&exam=" + ($(this).val())+ "&subject=" + ($("#subject").val())+ "&section=" + ($("#section").val())+ "&loggedInUser=" + ($("#loggedInUser").val()),
 	        success: function(dataDB) {

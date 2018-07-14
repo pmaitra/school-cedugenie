@@ -8,7 +8,7 @@ $(document).ready(function(){
 			checkBoxes[subjectBox].checked=false;
 		if($(this).val()!=''){
 			$.ajax({
-		        url: '/icam/getSubjectsForTeacher.html',
+		        url: '/cedugenie/getSubjectsForTeacher.html',
 		        data: "teacher=" + ($(this).val()),
 		        dataType: 'json',
 		        success: function(data) {

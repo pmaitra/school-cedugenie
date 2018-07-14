@@ -7,7 +7,7 @@ $(document).ready(function(){
 		}
 		if($(this).val()!=''){
 			$.ajax({
-		        url: '/icam/getGradingSystemForStandard.html',
+		        url: '/cedugenie/getGradingSystemForStandard.html',
 		        data: "standard=" + ($(this).val()),
 		        dataType: 'json',
 		        success: function(data) {

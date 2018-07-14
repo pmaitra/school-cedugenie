@@ -3,7 +3,7 @@
 			
 			/*$("#standard").change(function (){
 				$.ajax({
-				url: '/icam/getCourseForStandard.html',
+				url: '/cedugenie/getCourseForStandard.html',
 				dataType: 'json',
 				data: "standard=" + $("#standard").val(),
 				success: function(data) {
@@ -25,7 +25,7 @@
 			$("#course").change(function (){
 				
 				$.ajax({
-				    url: '/icam/getTermsForACourse.html',
+				    url: '/cedugenie/getTermsForACourse.html',
 				    dataType: 'json',
 				    data:"course=" +  $("#course").val(),
 				    success: function(data) {	
@@ -55,7 +55,7 @@
 				
 				
 				$.ajax({
-					url: '/icam/getExamsForCourse.html',
+					url: '/cedugenie/getExamsForCourse.html',
 					dataType: 'json',
 					data: "course=" + $("#course").val(),
 					success: function(data) {
@@ -77,10 +77,10 @@
 				$("#tableBody").empty();
 				var tableBody=document.getElementById("tableBody");
 				$.ajax({
-				/*url: '/icam/getSubjectsForACourse.html',
+				/*url: '/cedugenie/getSubjectsForACourse.html',
 				dataType: 'json',
 				data: "course=" + $("#course").val(),*/
-				url: '/icam/getSubjectsForTermAndCourse.html',
+				url: '/cedugenie/getSubjectsForTermAndCourse.html',
 				dataType: 'json',
 				data: "course=" + ($("#course").val())+ "&term=" + ($("#term").val()),
 				success: function(data) {
@@ -117,7 +117,7 @@
 			
 			$("#exam").change(function (){
 				$.ajax({
-				url: '/icam/getSubjectAndMarksForUserDefinedExams.html',
+				url: '/cedugenie/getSubjectAndMarksForUserDefinedExams.html',
 				dataType: 'json',
 				data: "course=" + ($("#course").val())+ "&exam=" + ($("#exam").val()),
 				success: function(data) {

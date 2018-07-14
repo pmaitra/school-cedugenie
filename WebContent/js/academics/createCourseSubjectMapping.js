@@ -3,7 +3,7 @@ $(document).ready( function(){
 		/*	
 			$("#standard").change(function (){
 				$.ajax({
-				url: '/icam/getCourseForStandard.html',
+				url: '/cedugenie/getCourseForStandard.html',
 				dataType: 'json',
 				data: "standard=" + $("#standard").val(),
 				success: function(data) {
@@ -28,7 +28,7 @@ $(document).ready( function(){
 			
 			$("#course").change(function (){
 				$.ajax({
-				url: '/icam/getSubjectsForACourse.html',
+				url: '/cedugenie/getSubjectsForACourse.html',
 				dataType: 'json',
 				data: "course=" + $("#course").val(),
 				success: function(data) {

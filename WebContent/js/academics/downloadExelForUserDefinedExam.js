@@ -11,7 +11,7 @@ $(document).ready(function(){
 		
 		
 		$.ajax({
-	        url: '/icam/getSectionAgainstStandard.html',
+	        url: '/cedugenie/getSectionAgainstStandard.html',
 	        dataType: 'json',
 	        data: "standard=" + ($(this).val()),
 	        success: function(dataDB) {
@@ -39,7 +39,7 @@ $(document).ready(function(){
 		document.getElementById("infomsg1").innerHTML="";
 		
 		$.ajax({
-	        url: '/icam/getSubjectGroupForStandard.html',
+	        url: '/cedugenie/getSubjectGroupForStandard.html',
 	        dataType: 'json',
 	        data: "standard=" + ($("#standard").val()),
 	        success: function(dataDB) {
@@ -64,7 +64,7 @@ $(document).ready(function(){
 		
 		if($(this).val()!=''){
 			$.ajax({
-		        url: '/icam/getUserDefinedExamsForStandard.html',
+		        url: '/cedugenie/getUserDefinedExamsForStandard.html',
 		        data: "standard=" + ($("#standard").val()),
 		        dataType: 'json',
 		        success: function(data) {

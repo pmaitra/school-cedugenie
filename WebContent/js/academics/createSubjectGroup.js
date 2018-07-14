@@ -299,7 +299,7 @@ function validating()
 $("#taskNo").change(function(){
 	
 	$.ajax({
-	    url: '/icam/getTicketNoAgainstTaskCode.html',
+	    url: '/cedugenie/getTicketNoAgainstTaskCode.html',
 	    	dataType: 'json',
 	    	data: "taskCode="+$(this).val(),		    	
 	    	success: function(data) {
@@ -314,7 +314,7 @@ $("#taskNo").change(function(){
 $("#taskNoEdit").change(function(){
 	alert("hii");
 	$.ajax({
-	    url: '/icam/getTicketNoAgainstTaskCode.html',
+	    url: '/cedugenie/getTicketNoAgainstTaskCode.html',
 	    	dataType: 'json',
 	    	data: "taskCode="+$(this).val(),		    	
 	    	success: function(data) {

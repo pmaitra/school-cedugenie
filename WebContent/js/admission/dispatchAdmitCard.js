@@ -39,7 +39,7 @@ $(document).ready(function() {
 //			document.getElementById("endSeatRollNo").value="";
 //			var venue=$("#venue").val();	
 //			 $.ajax({
-//		     url: '/icam/getSeatAllotmentForVenue.html',
+//		     url: '/cedugenie/getSeatAllotmentForVenue.html',
 //		     dataType: 'json',
 //		     data: "venue=" +venue,
 //		     success: function(data) {

@@ -46,7 +46,7 @@
 			var r=confirm("Are You Sure??") ;
 			if (r==true){				
 		     	 $.ajax({
-		        	url: '/icam/closeOnProcess.html',
+		        	url: '/cedugenie/closeOnProcess.html',
 		       		dataType: 'json',
 		        	data: "admissionDrive=" + ($("#admissionDrive").val()),
 		        	success: function(data) {		        		

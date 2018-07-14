@@ -10,7 +10,7 @@ $(document).ready(function(){
 			document.getElementById("rollNumber").value="";
 		}else{
 		$.ajax({
-	        url: '/icam/getNameStandardSectionForRollNumber.html',
+	        url: '/cedugenie/getNameStandardSectionForRollNumber.html',
 	        dataType: 'json',
 	        data: "rollNumber=" + ($("#rollNumber").val()),
 	        success: function(dataDB) {
@@ -24,7 +24,7 @@ $(document).ready(function(){
 	        		document.getElementById("section").value=dataDB[2];
 	        		
 	        		$.ajax({
-	    		        url: '/icam/getStudentFeesPaymentStatus.html',
+	    		        url: '/cedugenie/getStudentFeesPaymentStatus.html',
 	    		        dataType: 'json',
 	    		        data: "rollNumber=" + ($("#rollNumber").val()),
 	    		        success: function(data) {
@@ -60,7 +60,7 @@ $(document).ready(function(){
 	  
 	 
 	 $("#rollNumber").autocomplete({
-			source: '/icam/getUserIdForResourceType.html?resourceType=STUDENT',
+			source: '/cedugenie/getUserIdForResourceType.html?resourceType=STUDENT',
 			success: function(data) {
 			        	 var results=$.ui.autocomplete.filter(data,request.term);
 		      			 response(results.slice(0,5));

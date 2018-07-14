@@ -2,7 +2,7 @@ function viewTimeTableData(){
 	//alert("hii");
 	//alert($("#semsterName").val());
 	$.ajax({
-		url:"http://localhost:8080/icam/getAllTimeTableGridData.html", 
+		url:"http://localhost:8080/cedugenie/getAllTimeTableGridData.html", 
         dataType:"text",
         data:"semester=" + ($("#semsterName").val()),
         success:function(data){
@@ -121,7 +121,7 @@ function viewTimeTableData(){
                 	alert(rowcolID);
                 	
                 	$.ajax({
-                        url:"http://localhost:8080/icam/insertTimeTableGridData.html",
+                        url:"http://localhost:8080/cedugenie/insertTimeTableGridData.html",
                         dataType:"text",
                         data:"cellid=" + rowcolID + "&celldata=" + newContent,
                         success:function(data){

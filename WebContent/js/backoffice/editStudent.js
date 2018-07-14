@@ -39,7 +39,7 @@ $(document).ready(function() {
 			removeOption(stateObject);
 			
 			$.ajax({
-		        url: '/icam/getStateList.html',
+		        url: '/cedugenie/getStateList.html',
 		        dataType: 'json',
 		        data: "country=" + ($(this).val()),
 		        success: function(dataDB) {
@@ -76,7 +76,7 @@ $(document).ready(function() {
 		 var secondLanguageObject=document.getElementById("secondLanguage");				
 			removeOption(secondLanguageObject);
 			$.ajax({
-		        url: '/icam/getSubjectsForStandard.html',
+		        url: '/cedugenie/getSubjectsForStandard.html',
 		        dataType: 'json',
 		        data: "standard=" + ($(this).val()),
 		        success: function(dataDB) {

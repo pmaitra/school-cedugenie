@@ -11,7 +11,7 @@ $(document).ready(function(){
 		document.getElementById("warningbox").style.visibility='collapse';
 		
 		$.ajax({
-	        url: '/icam/getExamForStandard.html',
+	        url: '/cedugenie/getExamForStandard.html',
 	        dataType: 'json',
 	        data: "standard=" + ($("#standard").val()),
 	        success: function(dataDB) {
@@ -37,7 +37,7 @@ $(document).ready(function(){
 				document.getElementById("warningbox").style.visibility='collapse';
 				
 					$.ajax({
-				        url: '/icam/getSubjectsAndMarksForStandard.html',
+				        url: '/cedugenie/getSubjectsAndMarksForStandard.html',
 				        data: "standard=" + ($("#standard").val())+ "&exam=" + ($(this).val()),
 				        dataType: 'json',
 				        success: function(data) {

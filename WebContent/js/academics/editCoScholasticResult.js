@@ -23,7 +23,7 @@ $(document).ready(function(){
 		showName(sel);
 		
 		$.ajax({
-	        url: '/icam/getStudentsCoScholasticResult.html',
+	        url: '/cedugenie/getStudentsCoScholasticResult.html',
 	        dataType: 'json',
 	        data: "roll=" + sel.options[sel.selectedIndex].text + "&loggedInUser="+ ($("#loggedInUser").val()),
 	        success: function(dataDB) {

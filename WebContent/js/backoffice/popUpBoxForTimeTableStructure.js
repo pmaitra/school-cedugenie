@@ -87,7 +87,7 @@ $(document).ready(function(){
 			    				var copiedEventObject = $.extend({}, originalEventObject);
 			    				copiedEventObject.start = date;
 	              				 $.ajax({
-	       		        	        url: '/icam/getDurationForValidationForParticularSlot.html',
+	       		        	        url: '/cedugenie/getDurationForValidationForParticularSlot.html',
 	       		        	        data: "standard=" + ($("#hiddenclasstoset").val()) + "&section=" + ($("#hiddensectiontoset").val()) +"&timeSlot=" + cellHour +"&year=" + ($("#radioYearId").val()),
 	       		        	        dataType: 'json',
 	       		        	        success: function(data) {

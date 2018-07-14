@@ -15,7 +15,7 @@ function getQuestionFolderNames(element, dirName){
 			paperDirName = $("#year").val()+"/"+$("#standard").val()+"/"+$("#exam").val()+"/"+$(element).val();
 		}
 		$.ajax({
-	        url: '/icam/getQuestionFolderNames.html',
+	        url: '/cedugenie/getQuestionFolderNames.html',
 	        data: "paperDirName=" + paperDirName,
 	        dataType: 'json',
 	        success: function(data) {

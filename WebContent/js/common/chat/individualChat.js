@@ -47,7 +47,7 @@
 		$message.val('').focus();
 		
 		$.ajax({
-	        url: '/icam/storeChatDetails.html',
+	        url: '/cedugenie/storeChatDetails.html',
 	        data:{
 	        	From:id,
 	        	To:from,
@@ -62,7 +62,7 @@
 	 
 	function connectToChatserver(IP) {
 		//alert("IP!===="+IP);
-		serviceLocation = "ws://" + IP + ":" + port + "/icam/chatRoom/";
+		serviceLocation = "ws://" + IP + ":" + port + "/cedugenie/chatRoom/";
 		//alert(serviceLocation);
 		wsocket = new WebSocket(serviceLocation + room);
 		//alert("wsocket==="+wsocket);
@@ -83,7 +83,7 @@
 		$nickName.focus();
 		box = null;
 		$.ajax({
-	        url: '/icam/markChatRead.html',
+	        url: '/cedugenie/markChatRead.html',
 	        data:{
 	        	user:user
 	        },
@@ -118,7 +118,7 @@
 				$('#modalInfo').show();
 				//alert("hello");
 			$.ajax({
-		        url: '/icam/individualChat.html',
+		        url: '/cedugenie/individualChat.html',
 		        success: function(data){
 		        	if(data != ""){
 		        		//alert(data);
@@ -188,7 +188,7 @@
 			//alert("hello12");
 			//room = $('#chatroom option:selected').val();
 			$.ajax({
-		        url: '/icam/notifyChat.html',
+		        url: '/cedugenie/notifyChat.html',
 		        data:{
 		        	From:$("#nickname").val(),
 		        	To:$('#chatroom option:selected').val()			        	

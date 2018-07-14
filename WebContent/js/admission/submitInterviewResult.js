@@ -102,7 +102,7 @@
 		$("#strFormID").change(
 			function() {
 				$.ajax({
-			        url: '/icam/getName.html',
+			        url: '/cedugenie/getName.html',
 			        dataType: 'json',
 			        data: "strParam=" + ($(this).val() + ":" + $("#strCourseClass").val() + ":" + $("#strFormName").val() + ":" + $("#strAdmissionYear").val()),
 			        success: function(data) {

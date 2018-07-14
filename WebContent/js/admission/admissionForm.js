@@ -182,7 +182,7 @@ $(document).ready(function() {
 			function() {
 				removePresentStateOption();
 				$.ajax({
-			        url: '/icam/getStateList.html',
+			        url: '/cedugenie/getStateList.html',
 			        dataType: 'json',
 			        data: "country=" + ($(this).val()),
 			        success: function(dataDB) {
@@ -203,7 +203,7 @@ $(document).ready(function() {
 	        	removePermanentStateOption();
 
 				$.ajax({
-			        url: '/icam/getStateList.html',
+			        url: '/cedugenie/getStateList.html',
 			        dataType: 'json',
 			        data: "country=" + ($(this).val()),
 			        success: function(dataDB) {
