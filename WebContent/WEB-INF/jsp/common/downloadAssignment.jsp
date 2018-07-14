@@ -12,8 +12,8 @@
 	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
 	<title></title>
 	<%@ include file="/include/include.jsp" %>
-	<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-	<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+	<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
 	<style type="text/css">
 	       .scroll-to-top{
 	           display: none !important;
@@ -28,7 +28,7 @@
 			//alert("in");
 
 			/* $.ajax({
-		        url: '/icam/getSectionAgainstCourse.html',
+		        url: '/cedugenie/getSectionAgainstCourse.html',
 		        dataType: 'json',
 		        data:"course=" + $("#course").val(),
 		        success: function(dataDB) {
@@ -48,7 +48,7 @@
 			
 			
 			/* $.ajax({
-				url: '/icam/getExamsForCoursesession.html',
+				url: '/cedugenie/getExamsForCoursesession.html',
 				dataType: 'json',
 				data: "course=" + $("#course").val(),
 				success: function(data) {
@@ -66,7 +66,7 @@
 			
 			
 			$.ajax({
-			    url: '/icam/getTermsForACourse.html',
+			    url: '/cedugenie/getTermsForACourse.html',
 			    dataType: 'json',
 			    data:"course=" + $("#course").val(),
 			    success: function(data) {	
@@ -100,7 +100,7 @@
 			
 			//alert("1");
 			$.ajax({
-				url: '/icam/getSubjectsForTermAndCourse.html',
+				url: '/cedugenie/getSubjectsForTermAndCourse.html',
 				dataType: 'json',
 				data: "course=" + $("#course").val()+"&term=" + ($("#term").val()),
 				success: function(data) {					
@@ -118,7 +118,7 @@
 			});
 			//alert("2");
 			$.ajax({
-				url: '/icam/getExamsForTermAndCourse.html',
+				url: '/cedugenie/getExamsForTermAndCourse.html',
 				dataType: 'json',
 				data: "course=" + $("#course").val()+ "&term=" + ($("#term").val()),
 				success: function(data) {
@@ -145,7 +145,7 @@
 			
 			//alert("hiiiiiii");
 			$.ajax({
-				url: '/icam/getTeacherAgainstCourse.html',
+				url: '/cedugenie/getTeacherAgainstCourse.html',
 				dataType: 'json',
 				data: "course=" + $("#course").val()+ "&term=" + ($("#term").val())+ "&subject=" + ($("#subject").val()),
 				success: function(data) {
@@ -194,7 +194,7 @@
 				//alert("paperDirName"+paperDirName);
 			}
 			$.ajax({
-		        url: '/icam/getAssignmentFolderNames.html',
+		        url: '/cedugenie/getAssignmentFolderNames.html',
 		        data: "paperDirName=" + paperDirName,
 		        dataType: 'json',
 		        success: function(data) {
@@ -368,7 +368,7 @@
 			<%-- </c:otherwise>
 			</c:choose> --%>
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 	</body>
 

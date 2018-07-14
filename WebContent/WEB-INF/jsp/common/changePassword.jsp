@@ -18,14 +18,14 @@
 <meta name="revisit-after" content="7 days" />
 <meta name="robots" content="index,follow" />
 <title>Change Password</title>
-<link rel="icon" href="/icam/images/favicon.ico" type="image/x-icon">
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" /> 
+<link rel="icon" href="/cedugenie/images/favicon.ico" type="image/x-icon">
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" /> 
 
 
-<link rel="stylesheet" 	href="/icam/css/login/fluid-grid16-1100px-login.css" />
-<link rel="stylesheet" href="/icam/css/login/eve-styles-login.css" />
-<link href="/icam/css/login/jquery.mCustomScrollbar.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" 	href="/cedugenie/css/login/fluid-grid16-1100px-login.css" />
+<link rel="stylesheet" href="/cedugenie/css/login/eve-styles-login.css" />
+<link href="/cedugenie/css/login/jquery.mCustomScrollbar.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
 
 
     
@@ -63,7 +63,7 @@
 <div class="slide-out-div">
 	           <article>               
 	        	<div class="loginbx">            
-	            	<h2><img src="/icam/images/login-icon.png" />&nbsp;Change Password<input type="hidden" id="status" name="status" value="status" /></h2>                
+	            	<h2><img src="/cedugenie/images/login-icon.png" />&nbsp;Change Password<input type="hidden" id="status" name="status" value="status" /></h2>                
 	                <div class="field">  
 		                <c:if test="${NewPassword ne null}">
 		                <input type="hidden" class="txtfld" id="message" name="message" value=""> 
@@ -86,7 +86,7 @@
 	            <div id="warningbox" class="warningbox" >
 	            	<span id="warningmsg" class="warningmsg"></span>
 				</div>				
-<!-- 	            <img src="/icam/images/login-shadow.png" class="shadow"/>         -->
+<!-- 	            <img src="/cedugenie/images/login-shadow.png" class="shadow"/>         -->
 	        </article>
 </div>
 

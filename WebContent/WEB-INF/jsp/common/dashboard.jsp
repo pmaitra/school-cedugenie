@@ -179,14 +179,14 @@
 
 	
 	
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/fusionchart/fusioncharts.js"></script>
-<!-- <script type="text/javascript" src="/icam/js/fusionchart/fusioncharts.theme.fint.js"></script> -->
+<script type="text/javascript" src="/cedugenie/js/fusionchart/fusioncharts.js"></script>
+<!-- <script type="text/javascript" src="/cedugenie/js/fusionchart/fusioncharts.theme.fint.js"></script> -->
 
-<script src="/icam/js/login/saveSvgAsPng.js"></script>
-<script src="/icam/js/login/jspdf.debug.js"></script>
-<script src="/icam/js/login/svg_to_pdf.js"></script>
+<script src="/cedugenie/js/login/saveSvgAsPng.js"></script>
+<script src="/cedugenie/js/login/jspdf.debug.js"></script>
+<script src="/cedugenie/js/login/svg_to_pdf.js"></script>
 
 <script type="text/javascript">
 
@@ -217,7 +217,7 @@
     
 	
     $.ajax({
-        url:"http://localhost:8080/icam/chart1Data.html",
+        url:"http://localhost:8080/cedugenie/chart1Data.html",
         dataType:"text",
         success:function(xmldata1){
         	arraydata1 = xmldata1.split("||"); 
@@ -233,7 +233,7 @@
     
     
     $.ajax({
-        url:"http://localhost:8080/icam/chart2Data.html",
+        url:"http://localhost:8080/cedugenie/chart2Data.html",
         dataType:"text",
         success:function(xmldata2){
         	arraydata2 = xmldata2.split("||"); 

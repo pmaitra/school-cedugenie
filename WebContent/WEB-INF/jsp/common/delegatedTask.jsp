@@ -45,7 +45,7 @@
 					<input type = "hidden" id = "taskId" name = "taskId"/>
 					<input type = "hidden" id = "taskName" name = "taskName"/>
 					<input type = "hidden" id = "taskComment" name = "taskComment"/>
-					<table id="datatable-tabletools" class="table table-bordered table-striped mb-none" data-swf-path="/icam/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
+					<table id="datatable-tabletools" class="table table-bordered table-striped mb-none" data-swf-path="/cedugenie/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
 						<thead>
 							<tr>
 								<th>Task No</th>
@@ -126,11 +126,11 @@
 		</div>
 	</div>
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/administrator/delegatedTask.js"></script> 
+<script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/administrator/delegatedTask.js"></script> 
 </body>
 </html>

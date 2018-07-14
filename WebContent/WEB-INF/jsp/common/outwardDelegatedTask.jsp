@@ -19,7 +19,7 @@
        	   display: none;
        }
 </style>
-<!-- <script type="text/javascript" src="/icam/js/admission/currentOpeningList.js"></script> -->
+<!-- <script type="text/javascript" src="/cedugenie/js/admission/currentOpeningList.js"></script> -->
 </head>
 <body>
 
@@ -63,7 +63,7 @@
 																				<input type="hidden" name="admissionFormSubmissionLastDate" value="<c:out value="${admissionFormlist.admissionFormSubmissionLastDate}"/>" />
 																				<input type="hidden" name="admissionDriveName" value="<c:out value="${admissionFormlist.admissionDriveName}"/>" />
 																				<!-- <button type="submit" style="border: 0; background: transparent;">
-																					<img src="/icam/images/blank_page.png" style="border-style: none; width:50px; height:50px;">
+																					<img src="/cedugenie/images/blank_page.png" style="border-style: none; width:50px; height:50px;">
 																				</button> -->
 																				<input type="hidden" name="control" value="admissionForm"/>
 																				<a href="generateAdmissionForm.html?courseClass=${admissionFormlist.courseClass}&admissionFormYear=${admissionFormlist.admissionFormYear}&courseName=${admissionFormlist.courseName}&courseType=${admissionFormlist.courseType}&admissionFormSubmissionLastDate=${admissionFormlist.admissionFormSubmissionLastDate}&admissionDriveName=${admissionFormlist.admissionDriveName}&control=admissionForm" class="on-default"><i class="fa fa-file-text"></i></a>
@@ -80,7 +80,7 @@
 							</div>
 						
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 </body>
 </html>

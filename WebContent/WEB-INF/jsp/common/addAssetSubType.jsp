@@ -13,23 +13,23 @@
 <meta name="revisit-after" content="7 days" />
 <meta name="robots" content="index,follow" />
 <title>Add Asset Sub Type</title>
-<link rel="stylesheet" href="/icam/css/common/assetSubType.css" />
+<link rel="stylesheet" href="/cedugenie/css/common/assetSubType.css" />
 
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/radio.js"></script>
-<script type="text/javascript" src="/icam/js/common/assetSubType.js"></script>
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/radio.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/assetSubType.js"></script>
 
 </head>
 <body>
 	<div class="ttlarea">	
 		<h1>
-			<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;Add Asset Sub Type
+			<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;Add Asset Sub Type
 		</h1>
 	</div>
 	
@@ -56,7 +56,7 @@
 			</tr>
 			<tr>
 				<th>
-					Select Asset Type<img class="required" src="/icam/images/required.gif" alt="Required">
+					Select Asset Type<img class="required" src="/cedugenie/images/required.gif" alt="Required">
 				</th>
 				<td>
 					<select name="assetType" id="assetType" class="defaultselect" >
@@ -69,7 +69,7 @@
 			</tr>
 			<tr>
 				<th>
-					Enter Asset Sub Type Name<img class="required" src="/icam/images/required.gif" alt="Required">
+					Enter Asset Sub Type Name<img class="required" src="/cedugenie/images/required.gif" alt="Required">
 				</th>
 				<td>
 					<input type="text" class="textfield1" name="assetSubTypeName" id="assetSubTypeName" >

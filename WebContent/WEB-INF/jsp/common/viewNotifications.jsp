@@ -20,15 +20,15 @@ pageEncoding="ISO-8859-1"%>
 <meta name="revisit-after" content="7 days" />
 <meta name="robots" content="index,follow" />
 <title>View Notifications</title>
-<link rel="stylesheet" href="/icam/css/common/viewNotification.css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<link rel="stylesheet" href="/icam/css/common/popup.css">
+<link rel="stylesheet" href="/cedugenie/css/common/viewNotification.css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="/cedugenie/css/common/popup.css">
 </head>
 <script>
 window.onload = function(){
@@ -40,7 +40,7 @@ window.onload = function(){
 			$(this).click(function(){
 				var notificationId=this.id;
 				$.ajax({
-					url:'/icam/getNotificationDetails.html',
+					url:'/cedugenie/getNotificationDetails.html',
 					data:"notificationId=" + notificationId,
 					dataType: 'json',
 					success: function(data){
@@ -107,7 +107,7 @@ window.onload = function(){
 <body>
 <div class="ttlarea">	
 		<h1>
-		<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;View Notifications
+		<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;View Notifications
 		</h1>
 </div>
 <br/>

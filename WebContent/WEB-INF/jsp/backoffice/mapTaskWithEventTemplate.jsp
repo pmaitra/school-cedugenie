@@ -126,7 +126,7 @@
 		</div>  
 	</div>	
 </div>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 
 <script>
@@ -136,7 +136,7 @@
 		removeOption(template);
 		
 		$.ajax({
-	        url: '/icam/getTemplateForATemplateType.html',
+	        url: '/cedugenie/getTemplateForATemplateType.html',
 	        dataType: 'json',
 	        data: "templateType=" + ($(this).val()),
 	        success: function(dataDB) {
@@ -159,7 +159,7 @@
 		var status = document.getElementById("status");
 		removeOption(status);
 		$.ajax({
-	        url: '/icam/getTaskStatusAgainstTaskType.html',
+	        url: '/cedugenie/getTaskStatusAgainstTaskType.html',
 	        dataType: 'json',
 	        data: "category=" + ($(this).val()),
 	        success: function(dataDB) {

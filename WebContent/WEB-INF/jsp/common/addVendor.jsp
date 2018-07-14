@@ -470,11 +470,11 @@ function closeWarning()
 
 
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/common/addVendor.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/addVendor.js"></script>
  
- <script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script>
-<script src="/icam/js/backoffice/addVendor.editable.js"></script>
+ <script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script>
+<script src="/cedugenie/js/backoffice/addVendor.editable.js"></script>
 </body>
 </html>

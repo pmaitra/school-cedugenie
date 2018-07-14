@@ -25,8 +25,8 @@
 		<!-- Mobile Metas -->
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 		<%@ include file="/include/include.jsp" %>
-		  <link type="text/css" href="/icam/css/common/chat/jquery.ui.chatbox.css" rel="stylesheet" />
-		  <link href="/icam/css/common/chat/individualChat.css" rel="stylesheet">
+		  <link type="text/css" href="/cedugenie/css/common/chat/jquery.ui.chatbox.css" rel="stylesheet" />
+		  <link href="/cedugenie/css/common/chat/individualChat.css" rel="stylesheet">
 		  
 	 <style>		
 		/*  #chatInfo{
@@ -38,7 +38,7 @@
 	    position:relative;
 	    color: #00529B;    
 		background-color: #dfeff5;
-	    background-image: url(/icam/images/info.png);
+	    background-image: url(/cedugenie/images/info.png);
 	    display: none;
 		}  */
 `</style>
@@ -47,7 +47,7 @@
 			//alert("hii");
 				document.getElementById("notification").innerHTML='<i class="fa fa-bell"></i>';			
 			$.ajax({
-				url: '/icam/updateTaskNotification.html',
+				url: '/cedugenie/updateTaskNotification.html',
 				 dataType: 'json',			       
 				success: function(dataDB) {	
 					if(dataDB != "null" && dataDB !=""){
@@ -84,7 +84,7 @@
 		function hideAlerts(){
 			document.getElementById("alerts").innerHTML='<i class="fa fa-tasks"></i>';			
 			$.ajax({
-				url: '/icam/viewAlerts.html',
+				url: '/cedugenie/viewAlerts.html',
 				 dataType: 'json',
 				success: function(dataDB) {
 					if(dataDB != "null" && dataDB !=""){
@@ -116,7 +116,7 @@
 		function hideEmails(){
 			document.getElementById("emails").innerHTML='<i class="fa fa-envelope"></i>';			
 			$.ajax({
-				url: '/icam/viewEmails.html',
+				url: '/cedugenie/viewEmails.html',
 				 dataType: 'json',
 				success: function(dataDB) {
 					if(dataDB != "null" && dataDB !=""){
@@ -2447,19 +2447,19 @@
     </div>
 	<!-- Group Chat Box Body end-->	
         <%@ include file="/include/js-include.jsp" %>
-        <script src="/icam/assets/vendor/autosize/iframeResizer.min.js"></script>
-        <script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script>
+        <script src="/cedugenie/assets/vendor/autosize/iframeResizer.min.js"></script>
+        <script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script>
         <!--Group Chat -->
-		<!--     <script type="text/javascript" src="/icam/js/common/chat/jquery-ui-1.8.2.custom.min.js"></script> -->
+		<!--     <script type="text/javascript" src="/cedugenie/js/common/chat/jquery-ui-1.8.2.custom.min.js"></script> -->
 		  
-		    <script type="text/javascript" src="/icam/js/common/chat/jquery.ui.chatbox.js"></script>    
-		 	<script type="text/javascript" src="/icam/js/common/chat/groupChat.js"></script>
+		    <script type="text/javascript" src="/cedugenie/js/common/chat/jquery.ui.chatbox.js"></script>    
+		 	<script type="text/javascript" src="/cedugenie/js/common/chat/groupChat.js"></script>
 		<!-- Group Chat Ends -->
 		
 		<!-- Individual Chat  --> 
 		
-		<script src="/icam/js/common/chat/jquery.ui.individualChatbox.js"></script>
-		<script src="/icam/js/common/chat/individualChat.js"></script>
+		<script src="/cedugenie/js/common/chat/jquery.ui.individualChatbox.js"></script>
+		<script src="/cedugenie/js/common/chat/individualChat.js"></script>
          <script type="text/javascript">
 
 			iFrameResize({
@@ -2488,7 +2488,7 @@
 					var from = document.getElementById("chatTo").value
 					
 					$.ajax({
-				        url: '/icam/notifyChat.html',
+				        url: '/cedugenie/notifyChat.html',
 				        data:{
 				        	From:from,
 				        	To:to			        	
@@ -2513,7 +2513,7 @@
 					else{
 						
 						$.ajax({
-					        url: '/icam/getChatDetailsForIndividualChatForAUser.html',
+					        url: '/cedugenie/getChatDetailsForIndividualChatForAUser.html',
 					        data:{
 					        	from:from,
 					        	to:to			        	
@@ -2562,7 +2562,7 @@
 			  function ChatDetails(){
 					 // alert("hiiii");
 						$.ajax({
-							url: '/icam/getChatCall.html',
+							url: '/cedugenie/getChatCall.html',
 							data:"userName=<c:out value="${sessionScope.sessionObject.userName}"/>",			       
 							success: function(dataDB) {	
 								//alert("within=="+dataDB);

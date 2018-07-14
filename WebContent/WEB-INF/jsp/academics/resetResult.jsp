@@ -28,7 +28,7 @@
 			
 			/* $("#standard").change(function (){
 				$.ajax({
-				url: '/icam/getCourseForStandard.html',
+				url: '/cedugenie/getCourseForStandard.html',
 				dataType: 'json',
 				data: "standard=" + $("#standard").val(),
 				success: function(data) {

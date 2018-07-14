@@ -23,15 +23,15 @@ pageEncoding="ISO-8859-1"%>
 <meta name="robots" content="index,follow" />
 <title>JSP NOT FOUND</title>
 
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/css/common/pagination.css" rel="stylesheet" type="text/css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/css/common/pagination.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
 </head>
 <body>
 <div class="ttlarea">	
-	<h1><img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;PAGE NOT FOUND
+	<h1><img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;PAGE NOT FOUND
 	</h1>
 </div>
 <div class="btnsarea01">

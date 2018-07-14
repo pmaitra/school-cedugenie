@@ -190,10 +190,10 @@ function closeWarning(){
 				
 					
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/js/backoffice/createStatusOfItem.editable.js"></script>
-<script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script>
-<script src="/icam/js/backoffice/createStatusOfItem.js"></script>
+<script src="/cedugenie/js/backoffice/createStatusOfItem.editable.js"></script>
+<script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script>
+<script src="/cedugenie/js/backoffice/createStatusOfItem.js"></script>
 </body>
 </html>

@@ -32,7 +32,7 @@
 <body>
 <div class="ttlarea">	
 	<h1>
-		<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;Create Co-Scholastic Result
+		<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;Create Co-Scholastic Result
 	</h1>
 </div>
 	<div class="btnsarea01">

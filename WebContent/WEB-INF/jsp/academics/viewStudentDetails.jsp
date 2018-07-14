@@ -366,7 +366,7 @@
 				<td><input type="text" class="textfield1" id="permanentAddressRailwayStation" name="address.permanentAddressRailwayStation" value="${student.address.permanentAddressRailwayStation}" /></td>
 			</tr>			
 			<tr>
-				<th>Post Office <img class="required" src="/icam/images/required.gif" alt="Required"></th>				
+				<th>Post Office <img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>				
 				<td><input type="text" class="textfield1" id="permanentAddressPostOffice" name="address.permanentAddressPostOffice" value="${student.address.permanentAddressPostOffice}" /></td>
 				<th>Police Station <img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>				
 				<td><input type="text" class="textfield1" id="permanentAddressPoliceStation" name="address.permanentAddressPoliceStation" value="${student.address.permanentAddressPoliceStation}" /></td>
