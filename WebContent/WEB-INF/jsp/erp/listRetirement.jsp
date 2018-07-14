@@ -41,7 +41,7 @@
 						<h2 class="panel-title">List Retirement</h2>
 					</header>
 					<div class="panel-body">
-						<table class="table table-bordered table-striped mb-none" id="datatable-tabletools" data-swf-path="/icam/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
+						<table class="table table-bordered table-striped mb-none" id="datatable-tabletools" data-swf-path="/cedugenie/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
 							<thead>
 								<tr>
 									<th>Code</th>
@@ -71,7 +71,7 @@
 		</form:form>
 	</c:otherwise>
 </c:choose>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 </body>
 </html>

@@ -109,9 +109,9 @@
 		</div>
 	</div>
 	</div>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/js/erp/editDesignationLevelMapping.editable.js"></script>
+<script src="/cedugenie/js/erp/editDesignationLevelMapping.editable.js"></script>
 <script type="text/javascript">
 function makeEditable(rowId){	
 	rowId=rowId.replace("edit","");	

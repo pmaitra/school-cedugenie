@@ -37,7 +37,7 @@
 								<h2 class="panel-title">Template List</h2>
 							</header>
 							<div class="panel-body">
-								<table class="table table-bordered table-striped mb-none" id="datatable-tabletools" data-swf-path="/icam/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
+								<table class="table table-bordered table-striped mb-none" id="datatable-tabletools" data-swf-path="/cedugenie/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
 									<tr>
 										<th colspan="4">
 											Slab Details for ${taxTypeName}
@@ -94,7 +94,7 @@
 												<input type="text" class="form-control" name="taxAmount" id="taxAmount${i.index}" readonly="readonly" onblur="setZero(this);" value="${misc.taxRate}" style="text-align: right;">
 											</td>
 											<td>
-												<input type="image" src="/icam/images/minus_icon.png" name="deleteButton" onclick="return deleteRow(this);" disabled="disabled">
+												<input type="image" src="/cedugenie/images/minus_icon.png" name="deleteButton" onclick="return deleteRow(this);" disabled="disabled">
 											</td>							
 										</tr>
 									</c:forEach>	
@@ -108,15 +108,15 @@
 						</section>			
 					</section>					
 					<footer style="display: block;" class="panel-footer">						
-						<input type="button" class="btn btn-default" name="submit" value="BACK" onClick="window.location='/icam/viewMiscTaxSlab.html?' " />
+						<input type="button" class="btn btn-default" name="submit" value="BACK" onClick="window.location='/cedugenie/viewMiscTaxSlab.html?' " />
 						<input type="submit" class="btn btn-primary" value="SUBMIT" id="submitButton" disabled="disabled"/>
 						<input type="button" id="editButton"  value="edit" class="btn btn-default" onclick="return removeDisabled();">			
 					</footer>			
 		</form:form>
 	</c:otherwise>
 </c:choose>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/erp/editMiscTaxSlab.js"></script>
+<script type="text/javascript" src="/cedugenie/js/erp/editMiscTaxSlab.js"></script>
 </body>
 </html>

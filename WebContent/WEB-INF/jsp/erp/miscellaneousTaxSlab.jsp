@@ -116,9 +116,9 @@
 				</div>
 		</div>
 				
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/js/erp/designation.editable.js"></script>
-<script type="text/javascript" src="/icam/js/erp/pTaxSlab.js"></script>
+<script src="/cedugenie/js/erp/designation.editable.js"></script>
+<script type="text/javascript" src="/cedugenie/js/erp/pTaxSlab.js"></script>
 </body>
 </html>

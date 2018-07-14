@@ -14,16 +14,16 @@ pageEncoding="ISO-8859-1"%>
 <meta name="revisit-after" content="7 days" />
 <meta name="robots" content="index,follow" />
 <title>View Fixation Of Pay</title>
-<link rel="stylesheet" href="/icam/css/erp/viewFixationOfPayDetails.css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
-<link rel="stylesheet" href="/icam/css/common/pagination.css">
-<script src= "/icam/js/common/validateSearch.js" type="text/javascript"></script>
-<script type="text/javascript" src="/icam/js/common/getElementsByClassName.js"></script>
-<script type="text/javascript" src="/icam/js/common/showHideField.js"></script>
+<link rel="stylesheet" href="/cedugenie/css/erp/viewFixationOfPayDetails.css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
+<link rel="stylesheet" href="/cedugenie/css/common/pagination.css">
+<script src= "/cedugenie/js/common/validateSearch.js" type="text/javascript"></script>
+<script type="text/javascript" src="/cedugenie/js/common/getElementsByClassName.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/showHideField.js"></script>
 
 </head>
 <script>
@@ -49,7 +49,7 @@ function validate(){
 <body>
 	<div class="ttlarea">	
 		<h1>
-			<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;View Fixation Of Pay
+			<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;View Fixation Of Pay
 		</h1>
 	</div>	
 	<c:choose>

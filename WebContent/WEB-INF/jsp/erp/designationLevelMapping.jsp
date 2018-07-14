@@ -181,10 +181,10 @@
 </section>
 	</div>
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/js/erp/designationLevelMapping.js"></script>
-<script src="/icam/js/erp/designationLevelMapping.editable.js"></script>
+<script src="/cedugenie/js/erp/designationLevelMapping.js"></script>
+<script src="/cedugenie/js/erp/designationLevelMapping.editable.js"></script>
 <script type="text/javascript">
 function makeEditable(rowId){	
 	rowId=rowId.replace("edit","");	

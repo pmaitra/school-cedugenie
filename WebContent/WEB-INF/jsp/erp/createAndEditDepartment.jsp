@@ -223,10 +223,10 @@ function closeWarning(){
 			</c:otherwise>
 		</c:choose>
 	</div>	
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/js/erp/createAndEditDepartment.editable.js"></script>
-<script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script>
-<script src="/icam/js/erp/createDepartment.js"></script>
+<script src="/cedugenie/js/erp/createAndEditDepartment.editable.js"></script>
+<script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script>
+<script src="/cedugenie/js/erp/createDepartment.js"></script>
 </body>
 </html> 

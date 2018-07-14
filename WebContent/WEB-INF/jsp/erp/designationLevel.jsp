@@ -324,10 +324,10 @@ function saveData(rowId,designationLevelName){
 					
 
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/js/erp/designationLevel.editable.js"></script>
-<script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script>
-<!-- <script src="/icam/js/erp/designationLevel.js"></script> -->
+<script src="/cedugenie/js/erp/designationLevel.editable.js"></script>
+<script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script>
+<!-- <script src="/cedugenie/js/erp/designationLevel.js"></script> -->
 </body>
 </html>

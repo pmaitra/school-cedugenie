@@ -125,9 +125,9 @@
 					</div>
 		</div>
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/erp/manualLeaveUpdate.js"></script>
-<script type="text/javascript" src="/icam/js/erp/leaveRequest.js"></script>
+<script type="text/javascript" src="/cedugenie/js/erp/manualLeaveUpdate.js"></script>
+<script type="text/javascript" src="/cedugenie/js/erp/leaveRequest.js"></script>
 </body>
 </html>

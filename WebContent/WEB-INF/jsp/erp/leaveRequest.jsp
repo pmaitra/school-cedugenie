@@ -13,19 +13,19 @@
 <meta name="revisit-after" content="7 days" />
 <meta name="robots" content="index,follow" />
 <title>Create Leave Request</title>
-<link rel="stylesheet" href="/icam/css/erp/leaveRequest.css" />
+<link rel="stylesheet" href="/cedugenie/css/erp/leaveRequest.css" />
 
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/radio.js"></script>
-<script type="text/javascript" src="/icam/js/erp/leaveRequest.js"></script>
-<script type="text/javascript" src="/icam/Cal/zebra_datepicker.js"></script>
-<link rel="stylesheet" href="/icam/Cal/default.css" type="text/css">
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/radio.js"></script>
+<script type="text/javascript" src="/cedugenie/js/erp/leaveRequest.js"></script>
+<script type="text/javascript" src="/cedugenie/Cal/zebra_datepicker.js"></script>
+<link rel="stylesheet" href="/cedugenie/Cal/default.css" type="text/css">
 
 </head>
 <body>
@@ -64,15 +64,15 @@
    <input type="hidden" id="totalRequestedLeave" name="totalRequestedLeave"/>	  	
    		<table cellspacing="0" cellpadding="0" class="midsec">
 			<tr>
-				<th>Subject<img class="required" src="/icam/images/required.gif" alt="Required"></th>
+				<th>Subject<img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>
 				<td><input type="text" class="textfield2" name="title" id="title"/></td>
 			</tr>		
 			<tr>
-				<th >Start Date<img class="required" src="/icam/images/required.gif" alt="Required"></th>
+				<th >Start Date<img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>
 				<td><input type="text" class="textfield2" name="startDate" id="startDate"/></td>
 			</tr>    
 			<tr>
-				<th>End Date<img class="required" src="/icam/images/required.gif" alt="Required"></th>
+				<th>End Date<img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>
 				<td>
 					<input class="textfield2" type="text" name="endDate" id="endDate" />
 					<b><span id="requestedNumberOfLeave" style="color:red;margin-left: 5%;"></span></b>
@@ -80,7 +80,7 @@
 				
 			</tr>			
 			<tr>
-				<th>Select Leave Type<img class="required" src="/icam/images/required.gif" alt="Required"></th>
+				<th>Select Leave Type<img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>
 				<td>
 				<select id="leaveType" name="leaveType" class="defaultselect">
 					<option value="">Please Select</option>
@@ -92,14 +92,14 @@
 				</td>
 			</tr>
 			<tr>
-				<th>Description<img class="required" src="/icam/images/required.gif" alt="Required"></th>
+				<th>Description<img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>
 				<td><textarea name="desc" id="desc" class="txtarea"></textarea></td>
 			</tr>	
 			<tr>	
 			<th>
 					Upload Related Document
 			</th>					
-			<td><input type="file" name="fileData"/></td><td><img class="addFileClassName" src="/icam/images/plus_icon.png" /></td>
+			<td><input type="file" name="fileData"/></td><td><img class="addFileClassName" src="/cedugenie/images/plus_icon.png" /></td>
 		</tr>		
 		</table>
 		<p/>		

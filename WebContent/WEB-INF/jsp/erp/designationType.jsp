@@ -187,10 +187,10 @@ function makeEditable(rowId){
 	</div>	
 	</div>
 	
-	<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+	<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 	<%@ include file="/include/js-include.jsp" %>
-	<script src="/icam/js/erp/designationType.editable.js"></script>
-	<script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script>
-	<script src="/icam/js/erp/designationType.js"></script>
+	<script src="/cedugenie/js/erp/designationType.editable.js"></script>
+	<script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script>
+	<script src="/cedugenie/js/erp/designationType.js"></script>
 </body>
 </html>

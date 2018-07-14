@@ -135,17 +135,17 @@
 			</div>					
 		</div>
 	</div>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/erp/viewStaffSalarySlip.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/erp/viewStaffSalarySlip.js"></script>
 <script type=text/javascript>
 $("#resourceTypeName").change(function(){
 	 var table = document.getElementById("disburseStaffSalary");
 	//alert("hii");
 	$.ajax({
-	    url: '/icam/getResourceDetailsForSalary.html',
+	    url: '/cedugenie/getResourceDetailsForSalary.html',
 	    dataType: 'json',
 	    data:"resourceTypeName=" + $("#resourceTypeName").val(), /* + "&year=" + $("#year").val() + "&month="+ $("#month").val(), */
 	    success: function(dataDB) {
@@ -246,7 +246,7 @@ $("#resourceTypeName").change(function(){
 
 $("#month").change(function(){
 	$.ajax({
-	    url: '/icam/getPaymentStatusForEmployeeForAYearAndMonth.html',
+	    url: '/cedugenie/getPaymentStatusForEmployeeForAYearAndMonth.html',
 	    dataType: 'json',
 	    data:"resourceTypeName=" + $("#resourceTypeName").val() + "&year=" + $("#year").val() + "&month="+ $("#month").val(),
 	    success: function(dataDB) {

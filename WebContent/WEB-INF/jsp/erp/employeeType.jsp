@@ -15,23 +15,23 @@
 <meta name="revisit-after" content="7 days" />
 <meta name="robots" content="index,follow" />
 <title>Add Employee Type</title>
-<link rel="stylesheet" href="/icam/css/erp/employeeType.css" />
+<link rel="stylesheet" href="/cedugenie/css/erp/employeeType.css" />
 
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/radio.js"></script>
-<script type="text/javascript" src="/icam/js/erp/employeeType.js"></script>
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/radio.js"></script>
+<script type="text/javascript" src="/cedugenie/js/erp/employeeType.js"></script>
 
 </head>
 <body>
 	<div class="ttlarea">	
 		<h1>
-			<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;Add Employee Type
+			<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;Add Employee Type
 		</h1>
 	</div>
 		
@@ -45,7 +45,7 @@
 			</tr>				
 			<tr>
 				<th>
-					Enter Employee Type<img class="required" src="/icam/images/required.gif" alt="Required">
+					Enter Employee Type<img class="required" src="/cedugenie/images/required.gif" alt="Required">
 				</th>
 				<td>
 					<input type="text" class="textfield1" name="employeeTypeName" id="employeeTypeName" >

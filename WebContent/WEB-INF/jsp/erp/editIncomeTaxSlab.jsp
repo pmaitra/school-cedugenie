@@ -11,8 +11,8 @@
 <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
 <title>View Income Tax Salary Slab</title>
 <%@ include file="/include/include.jsp" %>
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
 
 <style type="text/css">
        .scroll-to-top{
@@ -25,7 +25,7 @@
 		<c:when test="${itIncomeTaxSlabsDetails.incomeTaxSlabList == null}">		
 				<div class="errorbox" id="errorbox" style="visibility: visible;">
 					<span id="errormsg">Income Tax Salary Slab Not Found</span>	
-					<input type="button" class="submitbtn" name="submit" value="CREATE NEW" onClick="window.location='/icam/incomeTaxSalarySlab.html?calculationFor=<c:out value="${calCulationFor}"/>&incomeAge=<c:out value="${strIncomeAge}"/>' " />
+					<input type="button" class="submitbtn" name="submit" value="CREATE NEW" onClick="window.location='/cedugenie/incomeTaxSalarySlab.html?calculationFor=<c:out value="${calCulationFor}"/>&incomeAge=<c:out value="${strIncomeAge}"/>' " />
 				</div>		
 		</c:when>
 		<c:otherwise>
@@ -108,7 +108,7 @@
 																		<input class="form-control" type="text" style="text-align: right" name="${itParameter.incomeTaxParamCode}" value="${itParameter.figure}" readonly="readonly" />
 																	</td>
 																</c:forEach>
-																<td><input type="image" src="/icam/images/minus_icon.png" name="deleteButton" onclick="return deleteRow(this);" disabled="disabled"></td>
+																<td><input type="image" src="/cedugenie/images/minus_icon.png" name="deleteButton" onclick="return deleteRow(this);" disabled="disabled"></td>
 															</tr>							
 														</c:forEach>
 														<tr>
@@ -123,7 +123,7 @@
 										</div>									
 									</div>						
 								<footer style="display: block;" class="panel-footer">		
-									<input type="button" class="btn btn-primary" name="submit" value="BACK" onClick="window.location='/icam/editIncomeTaxSalarySlab.html?calculationFor=<c:out value="${calCulationFor}"/>' " />
+									<input type="button" class="btn btn-primary" name="submit" value="BACK" onClick="window.location='/cedugenie/editIncomeTaxSalarySlab.html?calculationFor=<c:out value="${calCulationFor}"/>' " />
 									<input type="button" class="btn btn-warning" value="EDIT" id="editButton" onclick="makepageEditbale();"/>
 									<input type="submit" class="btn btn-error" value="SUBMIT" id="submitButton" disabled="disabled"/>
 									<input type="reset" class="btn btn-default" value="clear" />	
@@ -135,9 +135,9 @@
 			</div>
 		</c:otherwise>
 	</c:choose>			
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/erp/editIncomeTaxSalarySlab.js"></script>
-<script type="text/javascript" src="/icam/js/erp/commonIncomeTaxSalarySlab.js"></script>
+<script type="text/javascript" src="/cedugenie/js/erp/editIncomeTaxSalarySlab.js"></script>
+<script type="text/javascript" src="/cedugenie/js/erp/commonIncomeTaxSalarySlab.js"></script>
 </body>
 </html>

@@ -10,7 +10,7 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Template List</title>
-<link rel="stylesheet" href="/icam/css/erp/salaryTemplate.css" />
+<link rel="stylesheet" href="/cedugenie/css/erp/salaryTemplate.css" />
 <%@ include file="/include/include.jsp" %>
 <style type="text/css">
        .scroll-to-top{
@@ -257,9 +257,9 @@
 	<input type="hidden" id="hidNextCell" name="hidNextCell" >
 
 <script src="assets/javascripts/ui-elements/examples.modals.js"></script>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 
-<script type="text/javascript" src="/icam/js/erp/editSalaryTemplate.js"></script>
+<script type="text/javascript" src="/cedugenie/js/erp/editSalaryTemplate.js"></script>
 </body>
 </html>
