@@ -16,19 +16,19 @@
 <meta name="robots" content="index,follow" />
 <title>Email</title>
 
-<link rel="stylesheet" href="/icam/css/common/emailContent.css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
-<link rel="stylesheet" type="text/css" media="all" href="/icam/Cal/default.css" />
+<link rel="stylesheet" href="/cedugenie/css/common/emailContent.css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
+<link rel="stylesheet" type="text/css" media="all" href="/cedugenie/Cal/default.css" />
 
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script src= "/icam/Cal/zebra_datepicker.js" type="text/javascript"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script src= "/cedugenie/Cal/zebra_datepicker.js" type="text/javascript"></script>
 
-<script src= "/icam/js/common/selectall.js" type="text/javascript"></script>
+<script src= "/cedugenie/js/common/selectall.js" type="text/javascript"></script>
 <script>
 
 function getReadyForReply(){
@@ -48,7 +48,7 @@ function getReadyForReply(){
 <body>
 	<div class="ttlarea">	
 			<h1>
-				<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;Email Details
+				<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;Email Details
 			</h1>
 		</div>
 <c:choose>

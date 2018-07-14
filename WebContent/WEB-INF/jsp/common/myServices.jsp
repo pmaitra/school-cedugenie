@@ -18,21 +18,21 @@
 <meta name="robots" content="index,follow" />
 <title>SCHOOL MANAGEMENT</title>
 <!--<link href='http://fonts.googleapis.com/css?family=Oswald:400,300,700' rel='stylesheet' type='text/css'>-->
-<link type='text/css' href='/icam/css/common/dropDownType1.css' rel='stylesheet' media='screen' />
-<link rel="icon" href="/icam/images/favicon.ico" type="image/x-icon">
-<link rel="stylesheet" href="/icam/css/common/inuit.css" />
-<link rel="stylesheet" href="/icam/css/common/fluid-grid16-1100px.css" />
-<link rel="stylesheet" href="/icam/css/common/eve-styles.css" />
-<link href="/icam/css/common/tab.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bootstrap.css" rel="stylesheet">
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
+<link type='text/css' href='/cedugenie/css/common/dropDownType1.css' rel='stylesheet' media='screen' />
+<link rel="icon" href="/cedugenie/images/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="/cedugenie/css/common/inuit.css" />
+<link rel="stylesheet" href="/cedugenie/css/common/fluid-grid16-1100px.css" />
+<link rel="stylesheet" href="/cedugenie/css/common/eve-styles.css" />
+<link href="/cedugenie/css/common/tab.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bootstrap.css" rel="stylesheet">
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
 <!--tabarea start-->
-<link rel="stylesheet" href="/icam/css/common/tabs.css">
-<link rel="stylesheet" href="/icam/css/common/style.css">
-<link type='text/css' href='/icam/css/common/osx.css' rel='stylesheet' media='screen' />
-<link type='text/css' href='/icam/css/common/modalTable.css' rel='stylesheet' media='screen' />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="/cedugenie/css/common/tabs.css">
+<link rel="stylesheet" href="/cedugenie/css/common/style.css">
+<link type='text/css' href='/cedugenie/css/common/osx.css' rel='stylesheet' media='screen' />
+<link type='text/css' href='/cedugenie/css/common/modalTable.css' rel='stylesheet' media='screen' />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
 <!--tabarea end-->
 <!--[if IE]>
 <script src="js/html5.js"></script>
@@ -49,12 +49,12 @@
 </style>
 <![endif]-->
 <!--side menu start-->
-<script src="/icam/js/common/jquery.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/ddaccordion.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/iframeHeight.js"></script>
-<script type="text/javascript" src="/icam/js/common/browserClose.js"></script>
+<script src="/cedugenie/js/common/jquery.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/ddaccordion.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/iframeHeight.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/browserClose.js"></script>
 <script type="text/javascript">
 ddaccordion.init({
 	headerclass: "expandable", //Shared CSS class name of headers group that are expandable
@@ -81,7 +81,7 @@ ddaccordion.init({
 <script>
 function ChatDetails(){
 	$.ajax({
-		url: '/icam/getChatCall.html',
+		url: '/cedugenie/getChatCall.html',
 		data:"userName=<c:out value="${sessionScope.sessionObject.userName}"/>",			       
 		success: function(dataDB) {	
 			if(dataDB!= ''){	        		
@@ -157,7 +157,7 @@ $(document).ready(function() {
 				}
 			});
 			$.ajax({
-				url:'/icam/getNotificationDetails.html',
+				url:'/cedugenie/getNotificationDetails.html',
 				data:"notificationId="+desc[0],
 				dataType: 'json'
 				});						
@@ -193,7 +193,7 @@ $(document).ready(function() {
 				}
 			});
 			$.ajax({
-				url:'/icam/changeMailReadStatus.html',
+				url:'/cedugenie/changeMailReadStatus.html',
 				data:"emailAlertCode="+emailContent[0]					
 				});					
 			emailContent[1]=emailContent[1].replace(/\n/g, "<br/>");
@@ -227,21 +227,21 @@ function hideNotification(){
 }
 </script>
 
-<link href="/icam/css/common/notificationCalendar/jquery-ui-1.9.2.custom.css" rel="stylesheet">
-<script src="/icam/js/common/notificationCalendar/jquery-ui-1.9.2.custom.js"></script>
+<link href="/cedugenie/css/common/notificationCalendar/jquery-ui-1.9.2.custom.css" rel="stylesheet">
+<script src="/cedugenie/js/common/notificationCalendar/jquery-ui-1.9.2.custom.js"></script>
 
 <!--Group Chat -->
- <!--   <script type="text/javascript" src="/icam/js/common/chat/jquery-ui-1.8.2.custom.min.js"></script>--> 
-    <link type="text/css" href="/icam/css/common/chat/jquery.ui.chatbox.css" rel="stylesheet" />
-    <script type="text/javascript" src="/icam/js/common/chat/jquery.ui.chatbox.js"></script>    
- 	<script type="text/javascript" src="/icam/js/common/chat/groupChat.js"></script>
+ <!--   <script type="text/javascript" src="/cedugenie/js/common/chat/jquery-ui-1.8.2.custom.min.js"></script>--> 
+    <link type="text/css" href="/cedugenie/css/common/chat/jquery.ui.chatbox.css" rel="stylesheet" />
+    <script type="text/javascript" src="/cedugenie/js/common/chat/jquery.ui.chatbox.js"></script>    
+ 	<script type="text/javascript" src="/cedugenie/js/common/chat/groupChat.js"></script>
 <!-- Group Chat Ends -->
 
 
 <!-- Individual Chat  --> 
-<link href="/icam/css/common/chat/individualChat.css" rel="stylesheet">
-<script src="/icam/js/common/chat/jquery.ui.individualChatbox.js"></script>
-<script src="/icam/js/common/chat/individualChat.js"></script>
+<link href="/cedugenie/css/common/chat/individualChat.css" rel="stylesheet">
+<script src="/cedugenie/js/common/chat/jquery.ui.individualChatbox.js"></script>
+<script src="/cedugenie/js/common/chat/individualChat.js"></script>
  <!-- Individual Chat Ends -->
  
 <style>	
@@ -260,7 +260,7 @@ function hideNotification(){
     position:relative;
     color: #00529B;    
 	background-color: #dfeff5;
-    background-image: url(/icam/images/info.png);
+    background-image: url(/cedugenie/images/info.png);
     display: none;
 	}
 </style>
@@ -501,7 +501,7 @@ function hideNotification(){
     <header>    
     	<div class="headlcon">        
         	<div id="logo">
-            <a href="#"><img src="/icam/images/logo.jpg" style="height:40px;width:140px;float:center;"  alt="school management" title="school management" /></a>
+            <a href="#"><img src="/cedugenie/images/logo.jpg" style="height:40px;width:140px;float:center;"  alt="school management" title="school management" /></a>
            </div>        
       </div>        
         <div class="headrcon">        
@@ -585,7 +585,7 @@ function hideNotification(){
         	<!--side menu start-->            
 			<div class="arrowlistmenu">				
                 <a href="notificationPage.html" target="_self" style="color: yellow; font-weight: bolder; text-decoration: none; ">
-	                <h3 class="menuheader" style="background:url('/icam/images/a.jpg');">
+	                <h3 class="menuheader" style="background:url('/cedugenie/images/a.jpg');">
 	                <i class="icon icon-home"></i>&nbsp;&nbsp;<span style="color:white;">HOME -> </span> <span style="color:#9fda58">My Services</span></h3>
                 </a>                
                 <h3 class="menuheader expandable">My Personal Details</h3>
@@ -693,13 +693,13 @@ function hideNotification(){
     </footer>
 	<!--footer end-->
 </section>
-<script type="text/javascript" src='/icam/js/common/jquery-ui-1.10.2.custom.min.js'></script>	
-<script type="text/javascript" src="/icam/js/common/bootstrap.min.js"></script>
-<script type="text/javascript" src='/icam/js/common/jquery.simplemodal.js'></script>
-<script type="text/javascript" src='/icam/js/common/osx.js'></script>	
-<script type="text/javascript" src="/icam/js/common/jquery.easing.1.3.js"></script>
+<script type="text/javascript" src='/cedugenie/js/common/jquery-ui-1.10.2.custom.min.js'></script>	
+<script type="text/javascript" src="/cedugenie/js/common/bootstrap.min.js"></script>
+<script type="text/javascript" src='/cedugenie/js/common/jquery.simplemodal.js'></script>
+<script type="text/javascript" src='/cedugenie/js/common/osx.js'></script>	
+<script type="text/javascript" src="/cedugenie/js/common/jquery.easing.1.3.js"></script>
 <!--tabarea start-->		
-<script src="/icam/js/common/responsiveTabs.js"></script>
+<script src="/cedugenie/js/common/responsiveTabs.js"></script>
 <script>
 $(document).ready(function() {
     RESPONSIVEUI.responsiveTabs();

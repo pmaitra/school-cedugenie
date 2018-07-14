@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
 <title>Salary Break Up</title>
 <%@ include file="/include/include.jsp" %>
-<link rel="stylesheet" href="/icam/assets/stylesheets/custom-print1.css"/>
+<link rel="stylesheet" href="/cedugenie/assets/stylesheets/custom-print1.css"/>
 <style type="text/css">
        .scroll-to-top{
            display: none !important;
@@ -277,7 +277,7 @@
 				             <%--  </form:form> --%>
 						</div>
 					</div>	
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 		<script type="text/javascript">
 
@@ -285,7 +285,7 @@
 	            var divContents = $("#salarySlip-printarea").html();
 	            var printWindow = window.open('', '', 'height=500,width=900');
 	            printWindow.document.write('<html><head><title>Salary Slip</title>');
-	            printWindow.document.write('<link rel="stylesheet" href="/icam/assets/stylesheets/custom-print.css"/>');
+	            printWindow.document.write('<link rel="stylesheet" href="/cedugenie/assets/stylesheets/custom-print.css"/>');
 	            printWindow.document.write('</head><body onload="window.print()">');
 	            printWindow.document.write(divContents);
 	            printWindow.document.write('</body></html>');
