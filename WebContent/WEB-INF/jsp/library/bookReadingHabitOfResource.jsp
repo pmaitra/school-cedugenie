@@ -32,7 +32,7 @@
 			</c:when>
 		<c:otherwise> 
 			<div class="col-md-12" id = "mainForm" style="display: block;">
- 				<form:form id="sicontents" name="sicontents" action="/icam/userForCheckBookReadingHabit.html" method="GET">
+ 				<form:form id="sicontents" name="sicontents" action="/cedugenie/userForCheckBookReadingHabit.html" method="GET">
  					<section class="panel">
 						<header class="panel-heading">
 							<div class="panel-actions">

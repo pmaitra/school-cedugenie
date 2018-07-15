@@ -197,16 +197,16 @@
                   
 
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script>
-<script type="text/javascript" src="/icam/js/inventory/commodityVendorMapping.js"></script>
+<script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script>
+<script type="text/javascript" src="/cedugenie/js/inventory/commodityVendorMapping.js"></script>
 <script type="text/javascript">
 function showBookPriceHistoryPopUp(id){
 	var commodityCode=id;
 	var vendorCode=document.getElementById("vendorCode").value;
 	$.ajax({
-		url:'/icam/vendorCommodityPriceHistory.html',
+		url:'/cedugenie/vendorCommodityPriceHistory.html',
 		dataType: 'json',
 		data:"vendorCode=" + vendorCode+ "&commodityCode=" +commodityCode,
 		success: function(data){

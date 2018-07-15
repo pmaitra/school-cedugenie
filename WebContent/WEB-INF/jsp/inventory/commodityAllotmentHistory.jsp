@@ -93,7 +93,7 @@
 					
 
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 <script type="text/javascript">
 $(document).ready(function(){	
@@ -109,7 +109,7 @@ $("#commodityCode").change(function(){
 	{
 		table.innerHTML="";
 	$.ajax({
-    	url: '/icam/getIndividualCommodityList.html',
+    	url: '/cedugenie/getIndividualCommodityList.html',
     	dataType: 'json',
     	data: "commodityCode=" + ($(this).val()),
     	success: function(data) {
@@ -150,7 +150,7 @@ $("#individualCommodity").change(function(){
 	{
 		table.innerHTML="";
 	$.ajax({
-    	url: '/icam/getCommodityAllotmentHistory.html',
+    	url: '/cedugenie/getCommodityAllotmentHistory.html',
     	dataType: 'json',
     	data: "individualCommodity=" + ($(this).val()),
     	success: function(data) {

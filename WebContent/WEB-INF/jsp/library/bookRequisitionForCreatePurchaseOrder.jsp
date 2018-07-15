@@ -19,7 +19,7 @@
         } 
 
 </style>
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
 </head>
 <body>
 
@@ -235,12 +235,12 @@
 </c:choose>
 
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/library/bookRequisitionForCreatePurchaseOrder.js"></script>
+<script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/library/bookRequisitionForCreatePurchaseOrder.js"></script>
 <script type="text/javascript">
 var buttonName = "";
 $(".editbtn").each(function(){
@@ -251,7 +251,7 @@ $(".editbtn").each(function(){
 		var vendorObject = $(this).parent().next().next().find('input');
 		var priceObject = $(this).parent().next().next().next().find('input');
 		$.ajax({
-	        url: '/icam/getVendorsForCreatePurchaseOrder.html',
+	        url: '/cedugenie/getVendorsForCreatePurchaseOrder.html',
 	        data: "strBookName=" + (bookName) + "&strAuthorName=" + (authorName),
 	        dataType: 'json',
 	        success: function(data) {

@@ -418,7 +418,7 @@
 			
 		</section>
         <%@ include file="/include/js-include.jsp" %>
-        <script src="/icam/assets/vendor/autosize/iframeResizer.min.js"></script>
+        <script src="/cedugenie/assets/vendor/autosize/iframeResizer.min.js"></script>
          <script type="text/javascript">
 
 			iFrameResize({

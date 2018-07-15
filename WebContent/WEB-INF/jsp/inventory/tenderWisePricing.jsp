@@ -117,9 +117,9 @@
                   
 
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script>
-<script type="text/javascript" src="/icam/js/inventory/termWisePricing.js"></script>
+<script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script>
+<script type="text/javascript" src="/cedugenie/js/inventory/termWisePricing.js"></script>
 </body>
 </html>

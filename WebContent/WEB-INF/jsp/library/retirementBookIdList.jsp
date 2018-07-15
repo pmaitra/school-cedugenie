@@ -84,7 +84,7 @@
 	                                    <h2 class="panel-title">Book ID(s) To Retire</h2>
 	                                </header>
 	                                	<div class="panel-body">
-			                                    <table id="datatable-tabletools" class="table table-bordered table-striped mb-none" data-swf-path="/icam/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
+			                                    <table id="datatable-tabletools" class="table table-bordered table-striped mb-none" data-swf-path="/cedugenie/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
 			                                        <thead>
 			                                            <tr>
 			                                                <th><div class="checkbox-custom checjbox-default">
@@ -139,9 +139,9 @@
          </c:otherwise>
      </c:choose>
  </div>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/library/retirementBookIdList.js"></script>
+<script type="text/javascript" src="/cedugenie/js/library/retirementBookIdList.js"></script>
 <script type="text/javascript">
 
 $(document).ready(function () {
