@@ -11,8 +11,8 @@
 <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
 <title>Create Transactions</title>
 <%@ include file="/include/include.jsp" %>
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
 
 <style type="text/css">
        .scroll-to-top{
@@ -101,7 +101,7 @@ function addRow(){
     element.setAttribute("onclick","return deleteRow(this);");
     element.setAttribute("class","fa fa-minus-square");
     element.setAttribute("href","#");
-    /* element = "<img src='/icam/images/minus_icon.png' onclick='deleteRow(this);'>"; */
+    /* element = "<img src='/cedugenie/images/minus_icon.png' onclick='deleteRow(this);'>"; */
     cell.appendChild(element);
     
     id1="#"+id1;
@@ -229,7 +229,7 @@ function deleteRow(obj){
 			</div>
 		</c:otherwise>
 	</c:choose>			
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 </body>
 </html>

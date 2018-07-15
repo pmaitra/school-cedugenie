@@ -15,23 +15,23 @@
 <meta name="robots" content="index,follow" />
 <title>Student Fees Payment</title>
 
-<link rel="stylesheet" type="text/css" href="/icam/css/finance/studentFeesPaymentTransactionPage.css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/Cal/default.css"/>
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/finance/studentFeesPaymentTransactionPage.css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/Cal/default.css"/>
 
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/finance/studentFeesPaymentTransactionPage.js"></script>
-<script type="text/javascript" src="/icam/js/finance/nullValidation.js"></script>
-<script src="/icam/Cal/zebra_datepicker.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/finance/studentFeesPaymentTransactionPage.js"></script>
+<script type="text/javascript" src="/cedugenie/js/finance/nullValidation.js"></script>
+<script src="/cedugenie/Cal/zebra_datepicker.js"></script>
 </head>
 <body>
 <div class="ttlarea">
 	<h1>
-	<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;Student Fees Payment
+	<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;Student Fees Payment
 	</h1>
 </div>
 <c:choose>
@@ -105,7 +105,7 @@
 							<td></td>
 							<td><input type="text" name="creditAmount" class="textfield" id="creditAmount0" ></td>
 							
-							<td><img src='/icam/images/minus_icon.png' onclick='deleteCredit(this);'></td>
+							<td><img src='/cedugenie/images/minus_icon.png' onclick='deleteCredit(this);'></td>
 						</tr>
 					</table>
 				</th>
@@ -131,7 +131,7 @@
 							<td></td>
 							<td><input type="text" name="debitAmount" class="textfield" id="debitAmount0" ></td>
 							
-							<td><img src='/icam/images/minus_icon.png' onclick='deleteDebit(this);'></td>
+							<td><img src='/cedugenie/images/minus_icon.png' onclick='deleteDebit(this);'></td>
 						</tr>
 					</table>
 				</th>

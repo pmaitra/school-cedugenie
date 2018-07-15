@@ -50,7 +50,7 @@
        	z-index:99999 !important;
        } */
 </style>
-<!-- <link href="/icam/assets/custom-caleder/jquery-ui.css" type="text/css" rel="stylesheet">  -->
+<!-- <link href="/cedugenie/assets/custom-caleder/jquery-ui.css" type="text/css" rel="stylesheet">  -->
 </head>
 <body>
 	<header class="page-header">
@@ -118,11 +118,11 @@
 			<%-- </c:otherwise>
 </c:choose> --%>	
 </div>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<!-- <script src="/icam/assets/custom-caleder/jquery-ui.js" type="text/javascript"></script> -->
-<script type="text/javascript" src="/icam/js/finance/balanceSheet.js"></script>
-<script type="text/javascript" src="/icam/js/finance/nullValidation.js"></script>
+<!-- <script src="/cedugenie/assets/custom-caleder/jquery-ui.js" type="text/javascript"></script> -->
+<script type="text/javascript" src="/cedugenie/js/finance/balanceSheet.js"></script>
+<script type="text/javascript" src="/cedugenie/js/finance/nullValidation.js"></script>
 <script type="text/javascript">
 		
 		/* $(document).ready( function(){

@@ -139,7 +139,7 @@ function saveData(rowId){
 					<c:forEach var="group" items="${groupList}" varStatus="j">
 					<input type="hidden" id="names" name="names" value="${group.groupName}">
 					</c:forEach>
-						<table class="table table-bordered table-striped mb-none" id="datatable-tabletools" data-swf-path="/icam/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
+						<table class="table table-bordered table-striped mb-none" id="datatable-tabletools" data-swf-path="/cedugenie/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
 							<thead>
 								<tr>
 									<th>Group Name</th>
@@ -176,10 +176,10 @@ function saveData(rowId){
 </div>
 
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/js/erp/designation.editable.js"></script>
-<script type="text/javascript" src="/icam/js/finance/groupAndLedgerCreate.js"></script>
-<script type="text/javascript" src="/icam/js/finance/nullValidation.js"></script>
+<script src="/cedugenie/js/erp/designation.editable.js"></script>
+<script type="text/javascript" src="/cedugenie/js/finance/groupAndLedgerCreate.js"></script>
+<script type="text/javascript" src="/cedugenie/js/finance/nullValidation.js"></script>
 </body>
 </html>

@@ -101,8 +101,8 @@
 			</c:choose>
 		</div>
 	</div>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/js/hostel/assignHouseMaster.js"></script>
+<script src="/cedugenie/js/hostel/assignHouseMaster.js"></script>
 </body>
 </html>

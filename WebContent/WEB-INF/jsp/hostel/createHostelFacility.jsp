@@ -152,9 +152,9 @@
 		</c:otherwise>
 		</c:choose>
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/js/hostel/createHostelFacility.editable.js"></script>
-<script src="/icam/js/hostel/createHostelFacility.js"></script>
+<script src="/cedugenie/js/hostel/createHostelFacility.editable.js"></script>
+<script src="/cedugenie/js/hostel/createHostelFacility.js"></script>
 </body>
 </html>

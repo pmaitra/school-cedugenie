@@ -15,26 +15,26 @@
 <meta name="robots" content="index,follow" />
 <title>Student Fees</title>
 
-<link rel="stylesheet" href="/icam/css/finance/studentFees.css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
-<link rel="stylesheet" type="text/css" href="/icam/Cal/default.css"/>
+<link rel="stylesheet" href="/cedugenie/css/finance/studentFees.css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/Cal/default.css"/>
 
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/getElementsByClassName.js"></script>
-<script type="text/javascript" src="/icam/js/finance/studentFees.js"></script>
-<script type="text/javascript" src="/icam/js/common/iframeHeight.js"></script>
-<script src="/icam/Cal/zebra_datepicker.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/getElementsByClassName.js"></script>
+<script type="text/javascript" src="/cedugenie/js/finance/studentFees.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/iframeHeight.js"></script>
+<script src="/cedugenie/Cal/zebra_datepicker.js"></script>
 </head>
 
 <body>
 <div class="ttlarea">
 	<h1>
-		<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;Student Fees
+		<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;Student Fees
 	</h1>
 </div>
 	<div class="btnsarea01">
@@ -136,7 +136,7 @@
 						<td>
 							<input type="text" name="chequeDraft" id="chequeDraft0" class="textfield2" readonly="readonly">
 						</td>
-						<td><img src='/icam/images/minus_icon.png' onclick='deleteLedger(this);'></td>
+						<td><img src='/cedugenie/images/minus_icon.png' onclick='deleteLedger(this);'></td>
 					</tr>
 				</table>
 				

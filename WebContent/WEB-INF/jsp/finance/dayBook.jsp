@@ -247,10 +247,10 @@
 			</c:if>	
 		</div>
 	</div>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
- <script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script>
-<script type="text/javascript" src="/icam/js/finance/dayBook.js"></script>
-<script type="text/javascript" src="/icam/js/finance/nullValidation.js"></script>
+ <script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script>
+<script type="text/javascript" src="/cedugenie/js/finance/dayBook.js"></script>
+<script type="text/javascript" src="/cedugenie/js/finance/nullValidation.js"></script>
 </body>
 </html>

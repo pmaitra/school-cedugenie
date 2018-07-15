@@ -42,7 +42,7 @@
 						<h2 class="panel-title">BRS For ${bank} From ${from} To ${to} </h2>
 					</header>
 					<div class="panel-body">
-						<table class="table table-bordered table-striped mb-none" id="groupList" data-swf-path="/icam/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
+						<table class="table table-bordered table-striped mb-none" id="groupList" data-swf-path="/cedugenie/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
 							<thead>
 								<tr>
 									<th>Cheque Number</th>
@@ -92,7 +92,7 @@
 		</section>		
 	</c:otherwise>
 </c:choose>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 </body>
 </html>

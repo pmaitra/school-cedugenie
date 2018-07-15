@@ -219,8 +219,8 @@
 
 					
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/js/hostel/assignHostelToStudent.js"></script>
+<script src="/cedugenie/js/hostel/assignHostelToStudent.js"></script>
 </body>
 </html>

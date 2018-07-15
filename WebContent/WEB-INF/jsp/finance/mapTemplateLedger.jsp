@@ -114,7 +114,7 @@
 	</c:otherwise>
 </c:choose>
 </div>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 
 <script type=text/javascript>
@@ -122,7 +122,7 @@ $("#resourceTypeName").change(function(){
 	 var table = document.getElementById("mapTemplateLedger");
 	//alert("hii");
 	$.ajax({
-	    url: '/icam/getResourceLedgerDetails.html',
+	    url: '/cedugenie/getResourceLedgerDetails.html',
 	    dataType: 'json',
 	    data:"resourceTypeName=" + $("#resourceTypeName").val()+ "&tempDetCode=" + ($("#templateCode").val()),
 	    success: function(dataDB) {

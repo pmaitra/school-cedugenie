@@ -22,26 +22,26 @@ pageEncoding="ISO-8859-1"%>
 <meta name="robots" content="index,follow" />
 <title>PURCHASE ORDERS LIST FOR PAYMENT</title>
 
-<link rel="stylesheet" href="/icam/css/finance/vendorPayment.css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/css/common/pagination.css" rel="stylesheet" type="text/css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
+<link rel="stylesheet" href="/cedugenie/css/finance/vendorPayment.css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/css/common/pagination.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
 
 
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/radio.js"></script>
-<script type="text/javascript" src="/icam/js/finance/vendorPayment.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/radio.js"></script>
+<script type="text/javascript" src="/cedugenie/js/finance/vendorPayment.js"></script>
 
 
 </head>
 <body>
 <div class="ttlarea">	
 	<h1>
-		<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;PURCHASE ORDERS LIST FOR PAYMENT
+		<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;PURCHASE ORDERS LIST FOR PAYMENT
 	</h1>
 </div>
 

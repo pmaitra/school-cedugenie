@@ -75,7 +75,7 @@
 							</header>
 							<div class="panel-body">
 							<input class = "form-control" type ="hidden" value = "" name = "saveId" id = "saveId" readonly>
-								<table class="table table-bordered table-striped mb-none" id="datatable-tabletools" data-swf-path="/icam/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
+								<table class="table table-bordered table-striped mb-none" id="datatable-tabletools" data-swf-path="/cedugenie/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
 									<thead>
 										<tr>
 											<th>Department</th>
@@ -204,8 +204,8 @@
 		</form:form>
 	</c:otherwise>
 </c:choose>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/finance/transactionWorkingArea.js"></script>
+<script type="text/javascript" src="/cedugenie/js/finance/transactionWorkingArea.js"></script>
 </body>
 </html>

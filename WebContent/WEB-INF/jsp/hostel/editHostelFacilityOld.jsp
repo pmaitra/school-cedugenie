@@ -15,23 +15,23 @@
 <meta name="robots" content="index,follow" />
 <title>Create Hostel Facility</title>
 
-<link rel="stylesheet" href="/icam/css/hostel/editHostelFacility.css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
+<link rel="stylesheet" href="/cedugenie/css/hostel/editHostelFacility.css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
 
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/hostel/editHostelFacility.js"></script> 
-<script type="text/javascript" src="/icam/js/common/iframeHeight.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/hostel/editHostelFacility.js"></script> 
+<script type="text/javascript" src="/cedugenie/js/common/iframeHeight.js"></script>
 </head>
 
 <body>
 <div class="ttlarea">	
 	<h1>
-		<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;Edit Hostel Facility
+		<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;Edit Hostel Facility
 	</h1>
 </div>
 <form name="hostelFacilityForm" id="hostelFacilityForm" method="post" action="editHostelFacility.html">

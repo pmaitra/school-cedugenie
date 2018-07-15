@@ -65,7 +65,7 @@
 						<h2 class="panel-title">Student Info</h2>
 					</header>
 					<div class="panel-body">
-						<table id="datatable-tabletools" class="table table-bordered table-striped mb-none" data-swf-path="/icam/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
+						<table id="datatable-tabletools" class="table table-bordered table-striped mb-none" data-swf-path="/cedugenie/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
 							<thead>
 								<tr>
 									<th>Roll Number</th>
@@ -98,7 +98,7 @@
 		</form>
 	</div>
 </div>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 <script type="text/javascript">
 	$("#userId").change(function(){
@@ -107,7 +107,7 @@
 			$("#errorBox").css("display" , "block");
 		}
 		$.ajax({
-			url:'/icam/getHouseAndInfoOfCadet.html',
+			url:'/cedugenie/getHouseAndInfoOfCadet.html',
 			data: "userId="+userId,
 			success : function(data){
 				if(data != ""){
@@ -129,7 +129,7 @@
 		$("#house").css("display","none");
 		$("#houseList").css("display","block");
 		$.ajax({
-			url:'/icam/getAllHostels.html',
+			url:'/cedugenie/getAllHostels.html',
 			success: function(data){
 				var options ='<option value="">Select..</option>';
 				if(data != ""){

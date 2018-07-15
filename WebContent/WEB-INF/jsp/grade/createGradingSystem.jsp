@@ -163,13 +163,13 @@
 					</div>
 					
 					
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 <script type="text/javascript">
 	$(document).ready( function(){
 		$("#standard").change(function (){
 			$.ajax({
-				url: '/icam/getCourseForStandard.html',
+				url: '/cedugenie/getCourseForStandard.html',
 				dataType: 'json',
 				data: "standard=" + $("#standard").val(),
 				success: function(data) {
@@ -188,7 +188,7 @@
 		
 		$("#course").change(function (){
 			$.ajax({
-				url: '/icam/getGradingSystemForCourse.html',
+				url: '/cedugenie/getGradingSystemForCourse.html',
 				dataType: 'json',
 				data: "course=" + $("#course").val(),
 				success: function(data) {

@@ -101,7 +101,7 @@
 								</div>
 							</c:when>
 							<c:otherwise>
-								<table id="datatable-tabletools" class="table table-bordered table-striped mb-none" data-swf-path="/icam/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
+								<table id="datatable-tabletools" class="table table-bordered table-striped mb-none" data-swf-path="/cedugenie/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
 									<thead>
 										<tr>
                                             <th>House Type</th>
@@ -133,9 +133,9 @@
 			</div>						
 		</div>
 	</div>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/js/hostel/createHouse.js"></script>
-<script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script>
+<script src="/cedugenie/js/hostel/createHouse.js"></script>
+<script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script>
 </body>
 </html>

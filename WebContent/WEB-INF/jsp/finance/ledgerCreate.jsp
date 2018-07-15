@@ -268,10 +268,10 @@
 
 
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/finance/groupAndLedgerCreate.js"></script>
-<script type="text/javascript" src="/icam/js/finance/nullValidation.js"></script>
+<script type="text/javascript" src="/cedugenie/js/finance/groupAndLedgerCreate.js"></script>
+<script type="text/javascript" src="/cedugenie/js/finance/nullValidation.js"></script>
 <script>
 	function functionEditable(rowId){
 		document.getElementById("saveId").value=rowId;

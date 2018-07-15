@@ -94,7 +94,7 @@
 							<h2 class="panel-title">Ledger List</h2>
 						</header>
 						<div class="panel-body" id="candidateTable">
-							<table class="table table-bordered table-striped mb-none" id="datatable-tabletools" data-swf-path="/icam/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
+							<table class="table table-bordered table-striped mb-none" id="datatable-tabletools" data-swf-path="/cedugenie/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
 								<thead>
 									<!-- added by sourav.bhadra on 22-08-2017 --> 
 									<tr>
@@ -231,7 +231,7 @@
 			</form:form> 
 		</div>	
 	</div>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 <script>
 	function functionEditable(rowId){

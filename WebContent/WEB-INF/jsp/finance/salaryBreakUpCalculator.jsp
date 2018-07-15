@@ -15,21 +15,21 @@
 <meta name="revisit-after" content="7 days" />
 <meta name="robots" content="index,follow" />
 <title>Salary Break Up Calculator</title>
-<link rel="stylesheet" href="/icam/css/finance/salaryBreakUpCalculator.css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="/cedugenie/css/finance/salaryBreakUpCalculator.css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
 
-<script type="text/javascript" src="/icam/js/finance/salaryBreakUpCalculator.js"></script>
+<script type="text/javascript" src="/cedugenie/js/finance/salaryBreakUpCalculator.js"></script>
 </head>
 <body>
 	<div class="ttlarea">	
 			<h1>
-			<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp; Salary Break Up Calculator
+			<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp; Salary Break Up Calculator
 			</h1>
 	</div>
 	<c:choose>
@@ -42,7 +42,7 @@
 		<form:form>
 			<table cellspacing="0" cellpadding="0" class="midsec">
 				<tr>
-					<th>Employee Code<img class="required" src="/icam/images/required.gif" alt="Required"></th>
+					<th>Employee Code<img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>
 					<td>
 						<select name="employeeCode" id="employeeCode" class="defaultselect">
 							<option value="">Select...</option>

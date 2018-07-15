@@ -15,27 +15,27 @@
 <meta name="revisit-after" content="7 days" />
 <meta name="robots" content="index,follow" />
 <title>Employee Salary Details</title>
-<link rel="stylesheet" href="/icam/css/finance/staffSalaryDetails.css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
+<link rel="stylesheet" href="/cedugenie/css/finance/staffSalaryDetails.css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
 
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
 
-<link rel="stylesheet" href="/icam/Cal/default.css" type="text/css">
-<link rel="stylesheet" href="/icam/Cal/jsDatePick_ltr.min.css">
-<script src="/icam/Cal/jsDatePick.min.1.3.js"></script>
-<script type="text/javascript" src="/icam/Cal/zebra_datepicker.js"></script>
+<link rel="stylesheet" href="/cedugenie/Cal/default.css" type="text/css">
+<link rel="stylesheet" href="/cedugenie/Cal/jsDatePick_ltr.min.css">
+<script src="/cedugenie/Cal/jsDatePick.min.1.3.js"></script>
+<script type="text/javascript" src="/cedugenie/Cal/zebra_datepicker.js"></script>
 
-<script src= "/icam/js/finance/staffSalaryDetails.js" type="text/javascript"></script>
+<script src= "/cedugenie/js/finance/staffSalaryDetails.js" type="text/javascript"></script>
 </head>
 <body>
 <div class="ttlarea">	
 		<h1>
-		<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;Employee Salary Details
+		<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;Employee Salary Details
 		</h1>
 </div>
 <c:if test="${insertStatus ne null}">				
@@ -65,7 +65,7 @@
 <form:form method="POST" action="submitStaffSalaryDetails.html">		
 	<table cellspacing="0" cellpadding="0" class="midsec">
 	<tr>
-		<th>Employee Name<img class="required" src="/icam/images/required.gif" alt="Required"></th>
+		<th>Employee Name<img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>
 		<td>
 			<select name="employee.employeeCode" id="employeeCode" class="defaultselect">
 				<option value="">Select...</option>

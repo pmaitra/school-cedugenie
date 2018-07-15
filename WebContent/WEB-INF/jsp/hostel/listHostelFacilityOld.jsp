@@ -23,23 +23,23 @@ pageEncoding="ISO-8859-1"%>
 <meta name="robots" content="index,follow" />
 <title>Hostel Facility List</title>
 
-<link rel="stylesheet" href="/icam/css/hostel/listHostelFacility.css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/css/common/pagination.css" rel="stylesheet" type="text/css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
+<link rel="stylesheet" href="/cedugenie/css/hostel/listHostelFacility.css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/css/common/pagination.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
 
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/radio.js"></script>
-<script type="text/javascript" src="/icam/js/hostel/listHostelFacility.js"></script>
-<script type="text/javascript" src="/icam/js/common/getElementsByClassName.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/radio.js"></script>
+<script type="text/javascript" src="/cedugenie/js/hostel/listHostelFacility.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/getElementsByClassName.js"></script>
 </head>
 <body>
 <div class="ttlarea">	
-	<h1><img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;Hostel Facility List
+	<h1><img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;Hostel Facility List
 	</h1>
 </div>
 <div class="btnsarea01">
