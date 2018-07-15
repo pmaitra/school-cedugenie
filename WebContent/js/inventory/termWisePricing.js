@@ -5,7 +5,7 @@ $(document).ready(function(){
 		//var financialYear = $("#financialYear").val();
 		//alert("financialYear=="+financialYear);
 		$.ajax({
-			url:' /icam/commodityListMappedForAFinancialYear.html',
+			url:' /cedugenie/commodityListMappedForAFinancialYear.html',
 			data:'financialYear='+($(this).val()),
 			dataType: 'json',
 			success: function(data)
@@ -31,7 +31,7 @@ $(document).ready(function(){
 		var table = document.getElementById("vendorPricingTable");
 		deleteRow(table);
 		$.ajax({
-			url:' /icam/vendorListMappedForAFinancialYearAndCommodity.html',
+			url:' /cedugenie/vendorListMappedForAFinancialYearAndCommodity.html',
 			data:'commodityName='+($(this).val())+'&financialYear='+financialYear,
 			dataType: 'json',
 			success: function(dataDB)

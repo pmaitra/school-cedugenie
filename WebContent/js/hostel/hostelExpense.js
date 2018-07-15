@@ -1,6 +1,6 @@
 $(document).ready(function(){
 	$.ajax({
-		url:'/icam/getCommodityListForHostelExpense.html',
+		url:'/cedugenie/getCommodityListForHostelExpense.html',
 		dataType:'json',
 		success:function(data){
 			alert(data);
@@ -10,7 +10,7 @@ $(document).ready(function(){
 				select: function (event, ui){
 					var commodity0 = ui.item.value;
 					$.ajax({
-						url: '/icam/getCommodityStock.html',
+						url: '/cedugenie/getCommodityStock.html',
 						dataType: 'json',
 						data: "commodityName=" + commodity0,
 						success: function(data) {
@@ -30,7 +30,7 @@ $(document).ready(function(){
 });
 function auto(commodityId,index){
 	$.ajax({
-		url:'/icam/getCommodityListForHostelExpense.html',
+		url:'/cedugenie/getCommodityListForHostelExpense.html',
 		dataType:'json',
 		success:function(data){
 			alert(data);
@@ -40,7 +40,7 @@ function auto(commodityId,index){
 				select: function (event, ui){
 					var commodityId = ui.item.value;
 					$.ajax({
-						url: '/icam/getCommodityStock.html',
+						url: '/cedugenie/getCommodityStock.html',
 						dataType: 'json',
 						data: "commodityName=" + commodityId,
 						success: function(data) {
@@ -155,7 +155,7 @@ function deleteRow(obj){
 
 /*function getCommodityAutoComplete(idBox){
 	$(idBox).autocomplete({
-		source: '/icam/getCommodityAutoComplete.html'
+		source: '/cedugenie/getCommodityAutoComplete.html'
 	});
 };*/
 

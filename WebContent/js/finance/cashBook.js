@@ -8,7 +8,7 @@ $(document).ready(function() {
 			 }else{
 				// document.getElementById("warningbox").style.visibility='collapse';
 				$.ajax({			
-			    url: '/icam/getCashBook.html',
+			    url: '/cedugenie/getCashBook.html',
 			    	dataType: 'json',
 			    	data: "from=" + ($("#fromDate").val())+ "&to=" + ($("#toDate").val()),		    	
 			    	success: function(data) {

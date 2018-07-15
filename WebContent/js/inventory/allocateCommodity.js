@@ -4,7 +4,7 @@ $(document).ready(function(){
 		var commodityCode=$(this).val();
 		if(commodityCode != ""){
 			$.ajax({
-			    url: '/icam/getIndividualNotAllotedCommodity.html',		   
+			    url: '/cedugenie/getIndividualNotAllotedCommodity.html',		   
 			    dataType: 'json',
 			    data: "commodityCode=" + ($(this).val()),
 			    success: function(data) {

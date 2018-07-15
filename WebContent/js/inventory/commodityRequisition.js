@@ -3,7 +3,7 @@
 		
 		if($("#vendor").val()!=""){
 			$.ajax({
-		    url: '/icam/vendorCommodityListAccordingToTender.html',
+		    url: '/cedugenie/vendorCommodityListAccordingToTender.html',
 		    	dataType: 'json',
 		    	data: "vendorCode=" + ($("#vendor").val())+'&financialYear='+($("#financialYear").val()),		    	
 		    	success: function(data) {
@@ -30,7 +30,7 @@ $("#departmentCode").change(function(){
 	document.getElementById("departmentBudgetTable").style.display="none";
 	var dept = $(this).val();
 	$.ajax({
-	    url: '/icam/getDepartmentBudgetDetails.html',
+	    url: '/cedugenie/getDepartmentBudgetDetails.html',
 	    	dataType: 'json',
 	    	data: "departmentCode=" + dept,		    	
 	    	success: function(data) {
@@ -56,7 +56,7 @@ $("#departmentCode").change(function(){
 
 $("#vendor").change(function(){
 	$.ajax({			
-    url: '/icam/vendorCommodityListAccordingToTender.html',
+    url: '/cedugenie/vendorCommodityListAccordingToTender.html',
     	dataType: 'json',
     	data: "vendorCode=" + ($("#vendor").val())+"&financialYear="+($("#financialYear").val()),		    	
     	success: function(datadB) {
@@ -212,7 +212,7 @@ function calculateTotal(p){
 $("#purchaseId").change(function(){
 	
 	$.ajax({
-	    url: '/icam/getTicketNoAgainstTaskCode.html',
+	    url: '/cedugenie/getTicketNoAgainstTaskCode.html',
 	    	dataType: 'json',
 	    	data: "taskCode="+$(this).val(),		    	
 	    	success: function(data) {

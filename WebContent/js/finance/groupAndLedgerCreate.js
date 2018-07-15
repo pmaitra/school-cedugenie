@@ -98,7 +98,7 @@ function validateLedger() {
 $("#parentGroupCode").change(function (){
 
 	$.ajax({
-        url: '/icam/getSubGroup.html',
+        url: '/cedugenie/getSubGroup.html',
         dataType: 'json',
         data:"parent=" + $("#parentGroupCode").val(),
         success: function(dataDB) {

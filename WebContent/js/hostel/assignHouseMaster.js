@@ -4,7 +4,7 @@ $(document).ready(function(){
 		deleteRow(tableBody);
 		document.getElementById("warningbox").style.display='none';
 		$.ajax({
-	        url: '/icam/fetchCreatedHouseMaster.html',
+	        url: '/cedugenie/fetchCreatedHouseMaster.html',
 	        data: "academicYear=" + ($(this).val()),
 	        dataType: 'text',
 	        success: function(data) {

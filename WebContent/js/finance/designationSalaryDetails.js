@@ -7,7 +7,7 @@ $("#designation").change(
 				return;
 			}
 			$.ajax({
-		        url: '/icam/getDesignationSalaryDetails.html',
+		        url: '/cedugenie/getDesignationSalaryDetails.html',
 		        data: "designation=" +($(this).val())+ "&parameter=DESIGNATION",
 		        success: function(data) {
 //		        	alert(data);

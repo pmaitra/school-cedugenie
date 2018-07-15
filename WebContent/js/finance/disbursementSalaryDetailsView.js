@@ -7,7 +7,7 @@ $("#employeeCode").change(
 				return;
 			}
 			$.ajax({
-		        url: '/icam/viewStaffDisbursedSalaryDetails.html',
+		        url: '/cedugenie/viewStaffDisbursedSalaryDetails.html',
 		        data: "employeeCode=" +($(this).val())+ "&month=" + ($("#month").val()),
 		        success: function(data) {
 		        	if(data != ""){

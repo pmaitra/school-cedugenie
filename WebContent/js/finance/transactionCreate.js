@@ -34,7 +34,7 @@ function addCredit(){
 	cell.appendChild(element);
 	
 	cell = row.insertCell(3);
-	element = "<img src='/icam/images/minus_icon.png' onclick='deleteCredit(this);'>";
+	element = "<img src='/cedugenie/images/minus_icon.png' onclick='deleteCredit(this);'>";
 	cell.innerHTML=element;
 	
 	credit++;
@@ -73,7 +73,7 @@ function addDebit(){
 	cell.appendChild(element);
 	
 	cell = row.insertCell(3);
-	element = "<img src='/icam/images/minus_icon.png' onclick='deleteDebit(this);'>";
+	element = "<img src='/cedugenie/images/minus_icon.png' onclick='deleteDebit(this);'>";
 	cell.innerHTML=element;
 	
 	debit++;
@@ -109,7 +109,7 @@ function deleteDebit(obj){
 
 function createCheckNumber(sel){
 	$.ajax({			
-	    url: '/icam/checkForBankGroup.html',
+	    url: '/cedugenie/checkForBankGroup.html',
 	    	dataType: 'json',
 	    	data: "ledger=" + sel.value,		    	
 	    	success: function(data) {
@@ -220,7 +220,7 @@ function bankDetails(mode){
 
 $("#bankName").change(function (){
 	$.ajax({
-    url: '/icam/getBankAllDetails.html',
+    url: '/cedugenie/getBankAllDetails.html',
     dataType: 'json',
     data:"bankName=" + $("#bankName").val(),
     success: function(dataDB) {
@@ -238,7 +238,7 @@ function getval(sel){
 	bankDetails(sel);
 	if(sel.value == 'MONEY_TRANSFER'){
 		$.ajax({
-	        url: '/icam/getVendorBankDetails.html',
+	        url: '/cedugenie/getVendorBankDetails.html',
 	        dataType: 'json',
 	        data:"vendorName=" + $("#vendorName").val(),
 	        success: function(dataDB) {

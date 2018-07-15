@@ -22,7 +22,7 @@ $(document).ready(function(){
 		var financialYear = $("#financialYear").val();
 		//alert("financialYear=="+financialYear);
 		$.ajax({
-			url:' /icam/vendorCommodityList.html',
+			url:' /cedugenie/vendorCommodityList.html',
 			data:'vendorCode='+($(this).val())+"&financialYear=" +financialYear,
 			dataType: 'json',
 			success: function(data)
@@ -77,7 +77,7 @@ $(document).ready(function(){
 			var vendorCode=document.getElementById("vendorCode").value;
 			if(vendorCode!=""){
 				$.ajax({
-					url:' /icam/vendorCommodityPriceHistory.html',
+					url:' /cedugenie/vendorCommodityPriceHistory.html',
 					data:"vendorCode=" + vendorCode+ "&commodityCode=" +commodityCode,
 					dataType: 'json',
 					success: function(data)

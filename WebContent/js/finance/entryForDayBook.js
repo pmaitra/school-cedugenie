@@ -34,7 +34,7 @@ function addCredit(){
 	cell.appendChild(element);
 	
 	cell = row.insertCell(3);
-	element = "<img src='/icam/images/minus_icon.png' onclick='deleteCredit(this);'>";
+	element = "<img src='/cedugenie/images/minus_icon.png' onclick='deleteCredit(this);'>";
 	cell.innerHTML=element;
 	
 	credit++;
@@ -73,7 +73,7 @@ function addDebit(){
 	cell.appendChild(element);
 	
 	cell = row.insertCell(3);
-	element = "<img src='/icam/images/minus_icon.png' onclick='deleteDebit(this);'>";
+	element = "<img src='/cedugenie/images/minus_icon.png' onclick='deleteDebit(this);'>";
 	cell.innerHTML=element;
 	
 	debit++;
@@ -109,7 +109,7 @@ function deleteDebit(obj){
 
 function createCheckNumber(sel){
 	$.ajax({			
-	    url: '/icam/checkForBankGroup.html',
+	    url: '/cedugenie/checkForBankGroup.html',
 	    	dataType: 'json',
 	    	data: "ledger=" + sel.value,		    	
 	    	success: function(data) {
@@ -246,7 +246,7 @@ bankDetails(sel);
 	if(sel.value == 'BANK'){
 		$("#bankName").change(function (){
 			$.ajax({
-		    url: '/icam/getBankAllDetails.html',
+		    url: '/cedugenie/getBankAllDetails.html',
 		    dataType: 'json',
 		    data:"bankName=" + $("#bankName").val(),
 		    success: function(dataDB) {
@@ -268,7 +268,7 @@ function checkValues(){
 	document.getElementById("ticketNoDiv").style.display = "none";
 	document.getElementById("debitAdd").style.display = "none";
 	$.ajax({
-	    url: '/icam/getVoucherTypeDetails.html',
+	    url: '/cedugenie/getVoucherTypeDetails.html',
 	    dataType: 'json',
 	    data:"voucherTypeCode=" + $("#voucherTypeCode").val(),
 	    success: function(dataDB) {
@@ -301,7 +301,7 @@ function checkValues(){
 	/* added by sourav.bhadra on 23-04-2018 */
 	if(a==('JOURNAL')){
 		$.ajax({
-		    url: '/icam/getLedgerListForJournalVoucher.html',
+		    url: '/cedugenie/getLedgerListForJournalVoucher.html',
 		    dataType: 'json',
 		    data:"voucherTypeCode=" + $("#voucherTypeCode").val(),
 		    success: function(dataDB) {

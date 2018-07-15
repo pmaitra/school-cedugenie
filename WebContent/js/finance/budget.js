@@ -11,7 +11,7 @@ $("#academicYear").change(function() {
 	deleteRow(table);
 	if($("#academicYear").val()!=""){
 		$.ajax({
-	        url: '/icam/getBudgetForAcademicYear.html',
+	        url: '/cedugenie/getBudgetForAcademicYear.html',
 	        data: "academicYear="+($("#academicYear").val()),
 	        dataType: 'json',
 	        success: function(data) {
@@ -113,7 +113,7 @@ $("#academicYear").change(function() {
 		        		document.getElementById("messageDiv").style.display='block';
 		        		/* modified by sourav.bhadra on 15-03-2018 */
 		        		$.ajax({
-		        	        url: '/icam/getPreviousYearUnallocatedFund.html',
+		        	        url: '/cedugenie/getPreviousYearUnallocatedFund.html',
 		        	        data: "academicYear="+($("#academicYear").val()),
 		        	        dataType: 'json',
 		        	        success: function(data) {

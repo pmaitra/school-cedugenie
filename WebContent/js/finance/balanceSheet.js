@@ -9,7 +9,7 @@ $(document).ready(function() {
 			//	 document.getElementById("warningbox").style.visibility='collapse';
 				 document.getElementById("blncSheet").style.display='block';
 				$.ajax({			
-			    url: '/icam/getBalanceSheet.html',
+			    url: '/cedugenie/getBalanceSheet.html',
 			    	dataType: 'json',
 			    	data: "from=" + ($("#fromDate").val())+ "&to=" + ($("#toDate").val()),		    	
 			    	success: function(data) {

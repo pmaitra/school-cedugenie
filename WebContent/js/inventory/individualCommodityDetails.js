@@ -115,7 +115,7 @@ $(document).ready(function(){
 		var commodityCode=$(this).val();
 		if(commodityCode != ""){
 			$.ajax({
-			    url: '/icam/getIndividualCommodity.html',		   
+			    url: '/cedugenie/getIndividualCommodity.html',		   
 			    dataType: 'json',
 			    data: "commodityCode=" + ($(this).val()),
 			    success: function(data) {

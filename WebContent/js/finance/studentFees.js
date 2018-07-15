@@ -27,7 +27,7 @@ $(document).ready(function(){
 		var rollNumberObject=document.getElementById("rollNumber");				
 		removeOption(rollNumberObject);
 		$.ajax({
-	        url: '/icam/getSectionAgainstStandard.html',
+	        url: '/cedugenie/getSectionAgainstStandard.html',
 	        dataType: 'json',
 	        data: "standard=" + ($(this).val()),
 	        success: function(dataDB) {
@@ -46,7 +46,7 @@ $(document).ready(function(){
 		
 		
 		$.ajax({
-	        url: '/icam/getNewStudents.html',
+	        url: '/cedugenie/getNewStudents.html',
 	        dataType: 'json',
 	        data: "standard=" + ($(this).val()),
 	        success: function(dataDB) {
@@ -76,7 +76,7 @@ $(document).ready(function(){
 			var rollNumberObject=document.getElementById("rollNumber");				
 			removeOption(rollNumberObject);
 			$.ajax({
-		        url: '/icam/getStudentsAgainstStandardAndSection.html',
+		        url: '/cedugenie/getStudentsAgainstStandardAndSection.html',
 		        dataType: 'json',
 		        data: "standard=" + ($("#standard").val())+ "&section=" + ($(this).val()),
 		        success: function(dataDB) {
@@ -103,7 +103,7 @@ $(document).ready(function(){
 		 var check=0;
 		 if(($(this).val())!=""){
 			$.ajax({
-		        url: '/icam/getStudentFeesPaymentDetails.html',
+		        url: '/cedugenie/getStudentFeesPaymentDetails.html',
 		        dataType: 'json',
 		        data: "rollNumber=" + ($(this).val())+ "&standard=" + ($("#standard").val())+ "&section=" + ($("#section").val()),
 		        success: function(dataDB) {
@@ -317,7 +317,7 @@ function addLedger(){
     cell.appendChild(element);
     
     cell = row.insertCell(3);
-    element = "<img src='/icam/images/minus_icon.png' onclick='deleteLedger(this);'>";
+    element = "<img src='/cedugenie/images/minus_icon.png' onclick='deleteLedger(this);'>";
     cell.innerHTML=element;
     
     pay++;

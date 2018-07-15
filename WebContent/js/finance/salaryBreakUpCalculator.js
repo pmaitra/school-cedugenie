@@ -93,7 +93,7 @@ $(document).ready(function(){
 	        }
 	    }
 	   $.ajax({
-	        url: '/icam/getCalculatedValueOfGivenFormula.html',
+	        url: '/cedugenie/getCalculatedValueOfGivenFormula.html',
 	        data: "finalFormula=" + (finalFormula),
 	        dataType: 'json',
 	        success: function(data) {
@@ -119,7 +119,7 @@ $(document).ready(function(){
 			document.getElementById("warningbox").style.visibility='collapse';
 			document.getElementById("warningbox").innerHTML= "";
 			$.ajax({
-		        url: '/icam/getStaffSalaryDetails.html',
+		        url: '/cedugenie/getStaffSalaryDetails.html',
 		        data: "employeeCode=" +($(this).val()),
 		        success: function(data) {
 		        	if(data != ""){

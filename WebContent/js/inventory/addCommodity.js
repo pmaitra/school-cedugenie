@@ -2,7 +2,7 @@
 $(document).ready(function(){
 	$("#commodityName").blur(function(){		
 			$.ajax({
-				url: '/icam/checkCommodityName.html',		   
+				url: '/cedugenie/checkCommodityName.html',		   
 				dataType: 'json',
 				data: "commodityName=" + ($(this).val()),
 				success: function(data) {
@@ -31,7 +31,7 @@ function checkCommodityName(box,codeId){
 		box.value=document.getElementById(codeId).value;
 	}
 	$.ajax({
-	    url: '/icam/checkCommodityName.html',		   
+	    url: '/cedugenie/checkCommodityName.html',		   
 	    dataType: 'json',
 	    data: "commodityName=" + commodityName,
 	    success: function(data) {		    	

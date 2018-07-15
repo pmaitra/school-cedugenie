@@ -2,7 +2,7 @@
 function getRequisitionDetails(){
 	//alert("hiii");
 	$.ajax({
-	    url: '/icam/requisitionDetailsAgainstRequisitionCode.html',
+	    url: '/cedugenie/requisitionDetailsAgainstRequisitionCode.html',
 	    	dataType: 'json',
 	    	data: "requisitionCode=" + ($("#purchaseOrderDesc").val()),		    	
 	    	success: function(data) {
@@ -216,7 +216,7 @@ function deleteRow(obj){
 		$("#vendorCode").val($("#vendor").val());
 		if($("#vendor").val()!=""){
 			$.ajax({
-		    url: '/icam/vendorCommodityList.html',
+		    url: '/cedugenie/vendorCommodityList.html',
 		    	dataType: 'json',
 		    	data: "vendorCode=" + ($("#vendor").val()),		    	
 		    	success: function(data) {
@@ -400,7 +400,7 @@ function deleteRow(obj){
 	
 	$("#addNewCommodityButton").click(function(){
 		$.ajax({			
-	    url: '/icam/getRemeaningCommodities.html',
+	    url: '/cedugenie/getRemeaningCommodities.html',
 	    	dataType: 'json',
 	    	data: "vendorCode=" + ($("#vendor").val()),		    	
 	    	success: function(data) {
@@ -514,7 +514,7 @@ function deleteRow(obj){
 		document.getElementById("departmentBudgetTable").style.display="none";
 		var dept = $(this).val();
 		$.ajax({
-		    url: '/icam/getDepartmentBudgetDetails.html',
+		    url: '/cedugenie/getDepartmentBudgetDetails.html',
 		    	dataType: 'json',
 		    	data: "departmentCode=" + dept,		    	
 		    	success: function(data) {
@@ -547,7 +547,7 @@ function setCommodityCode(code,id,rowid){  modified by sourav.bhadra on 28-07-20
 	 * to display commodity unit against selected commodity 
 	
 	$.ajax({
-        url: '/icam/getCommodityUnitForPO.html',
+        url: '/cedugenie/getCommodityUnitForPO.html',
         data: "commodity="+(code),
         dataType: 'json',
         success: function(data) {
@@ -780,7 +780,7 @@ function getTaxPercentages(){
 	var totalAmt = parseFloat(document.getElementById("totalCommodityExpenceAmount").value);
 	var actualAmt = parseFloat(0.0);
 	$.ajax({
-        url: '/icam/getTaxPercentageAgainstTaxCode.html',
+        url: '/cedugenie/getTaxPercentageAgainstTaxCode.html',
         data: "taxCode="+(taxCode),
         dataType: 'json',
         success: function(data) {
@@ -818,7 +818,7 @@ function getTaxPercentages(){
  * to get vendor's ledger 
 function getVendorsLedger(vendorCode){
 	$.ajax({
-        url: '/icam/getVendorsLedgerForCommodityPO.html',
+        url: '/cedugenie/getVendorsLedgerForCommodityPO.html',
         data: "vendorCode="+(vendorCode),
         dataType: 'json',
         success: function(data) {

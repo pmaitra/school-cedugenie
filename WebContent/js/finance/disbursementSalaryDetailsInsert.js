@@ -7,7 +7,7 @@ $("#employee").change(
 				return;
 			}
 			$.ajax({
-		        url: '/icam/getStaffSalaryDetails.html',
+		        url: '/cedugenie/getStaffSalaryDetails.html',
 		        data: "employeeCode=" +($(this).val()),
 		        success: function(data) {
 		        	if(data != ""){
@@ -30,7 +30,7 @@ $("#employee").change(
 		 });
 			
 		$.ajax({
-	        url: '/icam/getDesignationSalaryDetails.html',
+	        url: '/cedugenie/getDesignationSalaryDetails.html',
 	        data: "designation=" +($(this).val())+ "&parameter=EMPLOYEE",
 	        success: function(data) {
 	        	if(data != ""){

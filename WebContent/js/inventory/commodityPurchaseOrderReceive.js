@@ -172,7 +172,7 @@ function calculatePayingAmount(rowid){
 function getVendorsLedger(vendorCode){
 	
 	$.ajax({
-        url: '/icam/getVendorsLedgerForCommodityPO.html',
+        url: '/cedugenie/getVendorsLedgerForCommodityPO.html',
         data: "vendorCode="+(vendorCode),
         dataType: 'json',
         success: function(data) {

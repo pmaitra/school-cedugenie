@@ -7,7 +7,7 @@ function showdayBookDetails(date,ledgerCode,voucherType,voucherNumber,narration,
  		var option="<option value=''>Select</option>";
  		
  		$.ajax({
- 		    url: '/icam/getAllLedgerForDayBookEdit.html',
+ 		    url: '/cedugenie/getAllLedgerForDayBookEdit.html',
  		    dataType: 'json',
  		    success: function(dataDB){
  		  	if(dataDB != null && dataDB != ""){
@@ -26,7 +26,7 @@ function showdayBookDetails(date,ledgerCode,voucherType,voucherNumber,narration,
  		/*Modified for ledger and vouchertype in popup 22082017*/ 
  		var option1="<option value=''>Select</option>";
  		$.ajax({
- 		    url: '/icam/getAllVoucherForDayBookEdit.html',
+ 		    url: '/cedugenie/getAllVoucherForDayBookEdit.html',
  		    dataType: 'json',
  		    success: function(dataDB){
  		  if(dataDB != null && dataDB != ""){

@@ -3,7 +3,7 @@ function transactionWorkingAreaEdit(index){
 	var transactionCode = document.getElementById("transactionCode"+index).value;
 	var selectedLedger = document.getElementById('ledgerCode'+index).value;
 	$.ajax({
-	    url: '/icam/transactionWorkingAreaEdit.html',
+	    url: '/cedugenie/transactionWorkingAreaEdit.html',
 	    data: "twaCode=" +transactionCode,
 	    dataType: 'json',
 	    success: function(data) {

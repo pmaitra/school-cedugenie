@@ -1,7 +1,7 @@
 $(document).ready(function(){
 	$("#hostelName").change(function() {
 		$.ajax({
-			url:' /icam/getRoomType.html',
+			url:' /cedugenie/getRoomType.html',
 			data:'hostelName='+($(this).val()),
 			dataType: 'json',
 			success: function(data){	
@@ -27,7 +27,7 @@ $(document).ready(function(){
 		
 	$("#roomTypeName").change(function() {
 		$.ajax({
-			url:' /icam/getRoomList.html',
+			url:' /cedugenie/getRoomList.html',
 			data:'roomTypeName='+($(this).val()) + "&hostelName=" + ($("#hostelName").val()),
 			dataType: 'json',
 			success: function(data){
@@ -54,7 +54,7 @@ $(document).ready(function(){
 		
 	$("#userId").change(function() {
 		$.ajax({
-			url:' /icam/getStudent.html',
+			url:' /cedugenie/getStudent.html',
 			
 			data:'rollNumber='+($(this).val()),
 			
@@ -74,7 +74,7 @@ $(document).ready(function(){
 	$("#roomName").change(function() {
 		//document.getElementById("warningbox").style.visibility='collapse';
 		$.ajax({
-			url:' /icam/getRoomFacilities.html',
+			url:' /cedugenie/getRoomFacilities.html',
 			data:'roomName='+($(this).val()),
 			dataType: 'json',
 			success: function(data){				

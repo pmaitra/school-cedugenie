@@ -8,7 +8,7 @@ function validateBRS(){
  	else{
  		alert("In else");
  		$.ajax({
-		    url:'/icam/getBrs.html',
+		    url:'/cedugenie/getBrs.html',
 	    	dataType: 'json',
 	    	data: "fromDate=" + ($("#fromDate").val())+ "&toDate=" + ($("#toDate").val())+ "&bank=" + ($("#bank").val()),		    	
 	    	success: function(data) {

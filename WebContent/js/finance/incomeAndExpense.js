@@ -8,7 +8,7 @@ $(document).ready(function() {
 			 }else{
 				// document.getElementById("warningbox").style.visibility='collapse';
 				$.ajax({			
-			    url: '/icam/getIncomeAndExpenditure.html',
+			    url: '/cedugenie/getIncomeAndExpenditure.html',
 			    	dataType: 'json',
 			    	data: "from=" + ($("#fromDate").val())+ "&to=" + ($("#toDate").val()),		    	
 			    	success: function(data) {

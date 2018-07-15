@@ -7,7 +7,7 @@ $("#employeeCode").change(
 				return;
 			}
 			$.ajax({
-		        url: '/icam/getStaffSalaryDetails.html',
+		        url: '/cedugenie/getStaffSalaryDetails.html',
 		        data: "employeeCode=" +($(this).val()),
 		        success: function(data) {
 		        	if(data != ""){
@@ -86,7 +86,7 @@ $("#employeeCode").change(
 function getGradesForSalaryTemplate(pb){
 	var value = pb.value;
 	$.ajax({
-        url: '/icam/getGradesForSalaryTemplate.html',
+        url: '/cedugenie/getGradesForSalaryTemplate.html',
         dataType: 'json',
         data: "salaryTemplate=" + value,
         success: function(dataDB) {	        	
@@ -120,7 +120,7 @@ function getAppointmentsToPostsWithGradePay(pb){
 	var payBand = pb.value;
 	var salTemp = document.getElementById("salaryTemplate").value;
 	$.ajax({
-        url: '/icam/getAppointmentsToPostsWithGradePay.html',
+        url: '/cedugenie/getAppointmentsToPostsWithGradePay.html',
         dataType: 'json',        
         data: "payBand=" + payBand + "&salTemp=" + salTemp,
         success: function(dataDB) {	
