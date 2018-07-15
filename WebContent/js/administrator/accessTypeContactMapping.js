@@ -2,11 +2,11 @@
 $("#resourceTypeName").change(function (){
 	if(($("#resourceTypeName").val()!=null)){			
 		$("#userId").autocomplete({
-			source: '/icam/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()) ,
+			source: '/cedugenie/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()) ,
 			select: function (event, ui){
 				var userId = ui.item.value;
 				$.ajax({
-					url: '/icam/getUserNameForId.html',
+					url: '/cedugenie/getUserNameForId.html',
 					dataType: 'json',
 					data: "userId=" + userId,
 					success: function(data) {

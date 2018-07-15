@@ -42,7 +42,7 @@ function checkTaskAssignee(){
 
 $("#department").change(function(){
 	$.ajax({
-        url: '/icam/getDesignationListForDepartment.html',
+        url: '/cedugenie/getDesignationListForDepartment.html',
         dataType: 'json',
         data: "department=" + ($(this).val()),
         success: function(dataDB) {	
@@ -65,7 +65,7 @@ $("#department").change(function(){
 
 $("#designation").change(function(){
 	$.ajax({
-        url: '/icam/getDesignationLevelListForDesignation.html',
+        url: '/cedugenie/getDesignationLevelListForDesignation.html',
         dataType: 'json',
         data: "designation=" + ($(this).val()),
         success: function(dataDB) {		        	

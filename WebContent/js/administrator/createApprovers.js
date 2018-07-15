@@ -4,11 +4,11 @@
 		if(($("#resourceTypeName").val()!=null)){
 			
 			$("#userId0").autocomplete({
-				source: '/icam/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()) ,
+				source: '/cedugenie/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()) ,
 				select: function (event, ui){
 					var userId0 = ui.item.value;
 					$.ajax({
-						url: '/icam/getUserNameForId.html',
+						url: '/cedugenie/getUserNameForId.html',
 						dataType: 'json',
 						data: "userId=" + userId0,
 						success: function(data) {
@@ -28,11 +28,11 @@
 function auto(userId,name){
 	//alert("Phase2");
 	$(userId).autocomplete({	 
-		source: '/icam/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()),
+		source: '/cedugenie/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()),
 		select: function (event, ui){
 		var userId = ui.item.value;
 		$.ajax({
-			url: '/icam/getUserNameForId.html',
+			url: '/cedugenie/getUserNameForId.html',
 			dataType: 'json',
 			data: "userId=" + userId,
 		    success: function(data) {
@@ -96,7 +96,7 @@ function addrows(){
 		        
 	var cell2= row.insertCell(2);
 	/*var element2 = document.createElement("img");
-	element2.setAttribute("src","/icam/images/minus_icon.png");		
+	element2.setAttribute("src","/cedugenie/images/minus_icon.png");		
 	element2.setAttribute("onclick", "deleteRow(this);");	*/	
 	var element2 = document.createElement('a');
 	element2.setAttribute("class","fa fa-minus-square");
@@ -125,7 +125,7 @@ function showApproverGroupDetails(approverGroupDetails)
 	//alert("hii");
 	//alert(approverGroupDetails);
 	$.ajax({
-		url: '/icam/getApproverGroupDetails.html',
+		url: '/cedugenie/getApproverGroupDetails.html',
 		dataType: 'json',
 		data: "approverGroupCode=" + approverGroupDetails,
 	    success: function(data) {

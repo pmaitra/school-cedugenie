@@ -7,7 +7,7 @@ $(document).ready(function() {
 /*	if(hidden != "" || hidden != 'null'){
 		
 		$.ajax({
-	        url: '/icam/getRolesForModule.html',
+	        url: '/cedugenie/getRolesForModule.html',
 	        dataType: 'json',
 	        data: "Module=" + ($("#moduleCodeHidden").val()),
 	        success: function(data){
@@ -42,7 +42,7 @@ $(document).ready(function() {
 			return;
 		}*/
 		$.ajax({
-	        url: '/icam/getRolesForModule.html',
+	        url: '/cedugenie/getRolesForModule.html',
 	        dataType: 'json',
 	        data: "Module=" + ($("#moduleName").val()),
 	        success: function(data){
@@ -140,7 +140,7 @@ function inactiveRow(obj){
 	//alert("roleCode=="+roleCode);
 	//var p = obj.parentNode.parentNode;
 	/*$.ajax({
-        url: '/icam/inActiveRole.html',
+        url: '/cedugenie/inActiveRole.html',
         dataType: 'json',
         data: "itSection=" + itSectionCode,
         success: function(dataDB) {

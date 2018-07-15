@@ -57,7 +57,7 @@ function rejectTask(rowId){
 function addComment(rowId,taskStatus){
 	var taskId  = document.getElementById("taskId"+rowId).value;
 	$.ajax({
-		url: '/icam/getPreviousCommentForTask.html',
+		url: '/cedugenie/getPreviousCommentForTask.html',
 		dataType: 'json',
 		data: "taskId=" + taskId,
 	    success: function(data) {

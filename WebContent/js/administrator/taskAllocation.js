@@ -2,7 +2,7 @@ var taskIndex;
 var resourceIndex = 0;
 $("#resourceName").change(function() {
 	$.ajax({
-		url: '/icam/getJobForApproverGroup.html',
+		url: '/cedugenie/getJobForApproverGroup.html',
 		dataType: 'json',
 		data: "approvarGroupCode=" + ($("#resourceName").val()),
 		success: function(data){  
@@ -29,7 +29,7 @@ $("#jobTypeName").change(function() {
 	var jsonData = document.getElementById("jsonData");
 	document.getElementById("tasks").style.display = "block";
 	$.ajax({
-		url: '/icam/getTaskDetailsAgainstJobTypeAndApproverGroup.html',
+		url: '/cedugenie/getTaskDetailsAgainstJobTypeAndApproverGroup.html',
 		dataType: 'json',
 		data: "jobType=" + ($("#jobTypeName").val())+"&approverGroup="+($("#resourceName").val()),
 		success: function(data){  
@@ -169,7 +169,7 @@ function showDetails(index){
 	document.getElementById("desc0").removeAttribute("required");
 	var ticketId  = document.getElementById("ticketId"+index).value;
 	$.ajax({
-		url: '/icam/getDetailsForATicket.html',
+		url: '/cedugenie/getDetailsForATicket.html',
 		dataType: 'json',
 		data: "ticketId=" + ticketId,
 	    success: function(data) {
@@ -214,12 +214,12 @@ $("#resourceTypeName").change(function (){
 	var type  = $("#resourceTypeName").val();
 	if(($("#resourceTypeName").val()!=null)){
 		$("#userId0").autocomplete({
-			source: '/icam/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()) ,
+			source: '/cedugenie/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()) ,
 			select: function (event, ui){
 				var userId = ui.item.value;
 				
 				$.ajax({
-					url: '/icam/getUserNameForId.html',
+					url: '/cedugenie/getUserNameForId.html',
 					dataType: 'json',
 					data: "userId=" + userId,
 					success: function(data) {
@@ -239,11 +239,11 @@ function getUserId(thisClassNode){
 	
 	if(($("#resourceType"+index).val()!=null)){
 		$("#userId"+index).autocomplete({
-			source: '/icam/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()) ,
+			source: '/cedugenie/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()) ,
 			select: function (event, ui){
 				var userId = ui.item.value;
 				$.ajax({
-					url: '/icam/getUserNameForId.html',
+					url: '/cedugenie/getUserNameForId.html',
 					dataType: 'json',
 					data: "userId=" + userId,
 					success: function(data) {
@@ -259,11 +259,11 @@ function getUserId(thisClassNode){
 
 function auto(userId,name){
 	$(userId).autocomplete({	 
-		source: '/icam/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()),
+		source: '/cedugenie/getUserIdForResourceType.html?resourceType='+($("#resourceTypeName").val()),
 		select: function (event, ui){
 		var userId = ui.item.value;
 			$.ajax({
-				url: '/icam/getUserNameForId.html',
+				url: '/cedugenie/getUserNameForId.html',
 				dataType: 'json',
 				data: "userId=" + userId,
 				success: function(data) {

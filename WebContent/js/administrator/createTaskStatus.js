@@ -10,7 +10,7 @@ function checkDuplicate(){
 	//alert("type =="+type);
 //	alert("ticketStatus =="+ticketStatus);
 	$.ajax({
-		url: '/icam/getTaskStatusForDuplicateCheck.html',
+		url: '/cedugenie/getTaskStatusForDuplicateCheck.html',
 		dataType: 'json',
 		data: "taskType="+taskType+"&type="+type+"&ticketStatus="+ticketStatus,
 		success: function(data){ 
