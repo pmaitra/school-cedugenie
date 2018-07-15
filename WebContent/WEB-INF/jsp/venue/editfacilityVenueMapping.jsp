@@ -102,8 +102,8 @@
 
 
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/js/venue/editVenueFunctionalityMapping.js"></script> 
+<script src="/cedugenie/js/venue/editVenueFunctionalityMapping.js"></script> 
 </body>
 </html>

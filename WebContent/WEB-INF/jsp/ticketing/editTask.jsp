@@ -11,9 +11,9 @@
 <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
 <title>Student Details Form</title>
 <%@ include file="/include/include.jsp" %>
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/ticketing/editTicket.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/ticketing/editTicket.js"></script>
 <style type="text/css">
        .scroll-to-top{
            display: none !important;
@@ -507,9 +507,9 @@ $(document).ready(function(){
 		</c:choose> --%>
 	</div>
 </div>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/ticketing/editTicket.js"></script>
+<script type="text/javascript" src="/cedugenie/js/ticketing/editTicket.js"></script>
 <script type="text/javascript">
 /* $(':input').each(function() { 
     $(this).data('initialValue', $(this).val()); 
@@ -537,7 +537,7 @@ $("#status").change(function (){
 
 	if(status == 'USER_INPUT_REQUIRED'){
 		$.ajax({
-			url: '/icam/getUserListAssociatedWithATicket.html',
+			url: '/cedugenie/getUserListAssociatedWithATicket.html',
 			dataType: 'json',
 			data: "ticketCode=" + ticketRecId,
 			success: function(data) {
@@ -582,7 +582,7 @@ function validateBudget(){
 $("#department").change(function(){
 	var dept = $(this).val();
 	$.ajax({
-	    url: '/icam/getDepartmentBudgetDetails.html',
+	    url: '/cedugenie/getDepartmentBudgetDetails.html',
 	    	dataType: 'json',
 	    	data: "departmentCode=" + dept,		    	
 	    	success: function(data) {

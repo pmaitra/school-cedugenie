@@ -123,7 +123,7 @@
 		                                	<c:forEach var="location" items="${locationList}" varStatus="i">
 												<input type="hidden" name="oldLocationNames" value="${location.locationName}">
 											</c:forEach>
-			                                   <table id="datatable-tabletools" class="table table-bordered table-striped mb-none" data-swf-path="/icam/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
+			                                   <table id="datatable-tabletools" class="table table-bordered table-striped mb-none" data-swf-path="/cedugenie/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
 			                                        <thead>
 			                                            <tr>
 			                                            	<th>Location Name</th>
@@ -224,10 +224,10 @@
                      </div>
 		</div>
 			
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/js/venue/createLocation.editable.js"></script>
-<script src="/icam/js/venue/createLocation.js"></script> 
-<script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script>
+<script src="/cedugenie/js/venue/createLocation.editable.js"></script>
+<script src="/cedugenie/js/venue/createLocation.js"></script> 
+<script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script>
 </body>
 </html>

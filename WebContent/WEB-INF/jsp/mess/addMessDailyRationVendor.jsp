@@ -299,9 +299,9 @@
 				</div>
 			</div>
 		</div>			
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/mess/addMessDailyRationVendor.js"></script>
-<script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script>
+<script type="text/javascript" src="/cedugenie/js/mess/addMessDailyRationVendor.js"></script>
+<script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script>
 </body>
 </html>

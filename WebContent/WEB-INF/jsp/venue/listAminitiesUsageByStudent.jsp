@@ -92,7 +92,7 @@
 								<c:forEach var="subject" items="${subjectList}" varStatus="i">
 									<input type="hidden" name="oldSubjectNames" value="${subject.subjectName}">
 								</c:forEach>
-								<table class="table table-bordered table-striped mb-none" id="datatable-editable" data-swf-path="/icam/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
+								<table class="table table-bordered table-striped mb-none" id="datatable-editable" data-swf-path="/cedugenie/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
 									<thead>
 										<tr>
 											<th>Select</th>
@@ -122,9 +122,9 @@
                   
 
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script src="/icam/js/hostel/createHostel.editable.js"></script>
-<script src="/icam/js/venue/listAminitiesUsageByStudent.js"></script>
+<script src="/cedugenie/js/hostel/createHostel.editable.js"></script>
+<script src="/cedugenie/js/venue/listAminitiesUsageByStudent.js"></script>
 </body>
 </html>

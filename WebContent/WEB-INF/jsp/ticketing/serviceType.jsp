@@ -182,16 +182,16 @@
 
 
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/ticketing/serviceType.js"></script>
-<script src="/icam/js/ticketing/servicetype.editable.js"></script>
+<script type="text/javascript" src="/cedugenie/js/ticketing/serviceType.js"></script>
+<script src="/cedugenie/js/ticketing/servicetype.editable.js"></script>
 
 <script type="text/javascript">
 	$(document).ready(function() { 
 		$("#department").change(function() {
 			$.ajax({
-		        url: '/icam/getDepartmentWiseUserList.html',
+		        url: '/cedugenie/getDepartmentWiseUserList.html',
 		        dataType: 'json',
 		        data: "department=" + ($(this).val()),
 		        success: function(dataDB) {
@@ -218,7 +218,7 @@
 				
 		p=p.replace("department","serviceOwner");
 		$.ajax({
-	        url: '/icam/getDepartmentWiseUserList.html',
+	        url: '/cedugenie/getDepartmentWiseUserList.html',
 	        dataType: 'json',
 	        data: "department=" + (abc.value),
 	        success: function(dataDB) {

@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
 <title>Mess Menu</title>
 <%@ include file="/include/include.jsp" %>
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
 <style type="text/css">
        .scroll-to-top{
            display: none !important;
@@ -177,10 +177,10 @@
 			</c:choose>
 		</div>
 	</div>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script src="/icam/assets/custom-caleder/jquery-ui.js" type="text/javascript"></script>
-<script type="text/javascript" src="/icam/js/mess/createMessMenu.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script src="/cedugenie/assets/custom-caleder/jquery-ui.js" type="text/javascript"></script>
+<script type="text/javascript" src="/cedugenie/js/mess/createMessMenu.js"></script>
 </body>
 </html>

@@ -15,16 +15,16 @@
 <meta name="robots" content="index,follow" />
 <title>Edit Ticket</title>
 
-<link rel="stylesheet" href="/icam/css/ticketing/editTicket.css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
-<script type="text/javascript" src="/icam/js/common/iframeHeight.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/ticketing/editTicket.js"></script>
+<link rel="stylesheet" href="/cedugenie/css/ticketing/editTicket.css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
+<script type="text/javascript" src="/cedugenie/js/common/iframeHeight.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/ticketing/editTicket.js"></script>
 
 <script>
 function editable()
@@ -67,7 +67,7 @@ function outwardEditableOnSubmit(){
 <body>
 <div class="ttlarea">	
 	<h1>
-		<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;Edit Ticket
+		<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;Edit Ticket
 	</h1>
 </div>
 <c:choose>
@@ -138,7 +138,7 @@ function outwardEditableOnSubmit(){
 			<th>
 					Upload Related Document
 			</th>					
-			<td><input type="file" name="uploadFile.ticketingRelatedFile" disabled="disabled" id="fileData"/><img class="addFileClassName" src="/icam/images/plus_icon.png" /></td>
+			<td><input type="file" name="uploadFile.ticketingRelatedFile" disabled="disabled" id="fileData"/><img class="addFileClassName" src="/cedugenie/images/plus_icon.png" /></td>
 		</tr>
 		<tr>
 		<th>Attached Documents :: </th>

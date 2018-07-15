@@ -105,7 +105,7 @@
 	</div>
 	
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 <script type="text/javascript">
 $("#submit").click(function(){

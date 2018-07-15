@@ -17,7 +17,7 @@
 	    display: none !important;
 	 }
 </style>
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
 </head>
 <body>
 <header class="page-header">
@@ -125,7 +125,7 @@
 		</c:choose>
 	</div>
 </div>
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 </body>
 </html>

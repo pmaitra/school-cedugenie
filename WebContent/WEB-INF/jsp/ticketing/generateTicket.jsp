@@ -15,17 +15,17 @@
 <meta name="robots" content="index,follow" />
 <title>Generate Ticket</title>
 
-<link rel="stylesheet" href="/icam/css/ticketing/generateTicket.css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
-<script type="text/javascript" src="/icam/js/common/iframeHeight.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/radio.js"></script>
-<script type="text/javascript" src="/icam/js/ticketing/generateTicket.js"></script>
+<link rel="stylesheet" href="/cedugenie/css/ticketing/generateTicket.css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
+<script type="text/javascript" src="/cedugenie/js/common/iframeHeight.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/radio.js"></script>
+<script type="text/javascript" src="/cedugenie/js/ticketing/generateTicket.js"></script>
 
 <script type='text/javascript'>
 	CharacterCount = function(TextArea,FieldToCount){
@@ -47,7 +47,7 @@
 <body>
 <div class="ttlarea">	
 	<h1>
-		<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;Generate Ticket
+		<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;Generate Ticket
 	</h1>
 </div>
 <div class="btnsarea01">		
@@ -67,12 +67,12 @@
 <form:form modelAttribute="FORM" method="POST" id="generateTicket" name="generateTicket" action="generateTicket.html" enctype="multipart/form-data">
 	<table id="ticketDetails" cellspacing="0" cellpadding="0" class="midsec" >
 		<tr>
-			<th>Reported By<img class="required" src="/icam/images/required.gif" alt="Required"></th>			
+			<th>Reported By<img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>			
 			<td><input type="text" name="reportedBy" id="reportedBy" value="${reportedBy}" readonly="readonly" class="textfield1"></td>
 		</tr>
 		<c:if test="${resourceType ne 'STUDENT'}">
 		<tr>
-			<th>Affected End User<img class="required" src="/icam/images/required.gif" alt="Required"></th>			
+			<th>Affected End User<img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>			
 			<td>
 				<select name="affectedUser" id="affectedUser" class="defaultselect">
 				  <option value="">Select...</option>
@@ -86,11 +86,11 @@
 		</tr>
 		</c:if>
 		<tr>
-			<th>Status<img class="required" src="/icam/images/required.gif" alt="Required"></th>			
+			<th>Status<img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>			
 			<td><input type="radio" name="status" id="status" checked="checked" value="OPEN" >OPEN</td>
 		</tr>
 		<tr>
-			<th>Service Type<img class="required" src="/icam/images/required.gif" alt="Required"></th>			
+			<th>Service Type<img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>			
 			<td>
 				<select name="ticketService.ticketServiceName" id="ticketServiceName" class="defaultselect">
 					<option value="">Select...</option>
@@ -103,13 +103,13 @@
 			</td>
 		</tr>
 		<tr>
-			<th>Ticket Summary<img class="required" src="/icam/images/required.gif" alt="Required"></th>			
+			<th>Ticket Summary<img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>			
 			<td>
 				<input type="text" name="ticketSummary" id="ticketSummary" class="textfield1"/>
 			</td>			
 		</tr>
 		<tr>
-			<th>Description<img class="required" src="/icam/images/required.gif" alt="Required"></th>	
+			<th>Description<img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>	
 			<td>
 				<textarea onfocus="clearContents(this);" name="description"  id="description" cols="50" rows="10" maxlength='500' class="txtarea">maxlength is set of 500 letters.
 				</textarea>					
@@ -122,7 +122,7 @@
 			<th>
 					Upload Related Document
 			</th>					
-			<td><input type="file" name="uploadFile.ticketingRelatedFile"/></td><td><img class="addFileClassName" src="/icam/images/plus_icon.png" /></td>
+			<td><input type="file" name="uploadFile.ticketingRelatedFile"/></td><td><img class="addFileClassName" src="/cedugenie/images/plus_icon.png" /></td>
 		</tr>
 	</table>	
 	<div class="btnsarea01">

@@ -194,12 +194,12 @@
 					</div>
 						
 				
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>	
-<script src="/icam/js/venue/venueAllocation.js"></script>	
-<script src="/icam/assets/custom-caleder/jquery-1.9.1.js" type="text/javascript"></script>
-<script src="/icam/assets/custom-caleder/jquery-ui.js" type="text/javascript"></script>
-<link href="/icam/assets/custom-caleder/jquery-ui.css" type="text/css" rel="stylesheet">
+<script src="/cedugenie/js/venue/venueAllocation.js"></script>	
+<script src="/cedugenie/assets/custom-caleder/jquery-1.9.1.js" type="text/javascript"></script>
+<script src="/cedugenie/assets/custom-caleder/jquery-ui.js" type="text/javascript"></script>
+<link href="/cedugenie/assets/custom-caleder/jquery-ui.css" type="text/css" rel="stylesheet">
   <script type="text/javascript">
   $(function(){
 	    $("#startDate").datepicker({

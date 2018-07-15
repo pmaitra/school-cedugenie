@@ -15,13 +15,13 @@
 <meta name="robots" content="index,follow" />
 <title>View Closed Ticket</title>
 
-<link rel="stylesheet" href="/icam/css/ticketing/viewClosedTicket.css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
-<script type="text/javascript" src="/icam/js/common/iframeHeight.js"></script>
+<link rel="stylesheet" href="/cedugenie/css/ticketing/viewClosedTicket.css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
+<script type="text/javascript" src="/cedugenie/js/common/iframeHeight.js"></script>
 <script>
 function editable()
 {
@@ -37,7 +37,7 @@ function editable()
 <body>
 <div class="ttlarea">	
 	<h1>
-		<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;View Closed Ticket
+		<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;View Closed Ticket
 	</h1>
 </div>
 <form>
