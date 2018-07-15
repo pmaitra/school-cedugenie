@@ -28,7 +28,7 @@ $("#vendorName").change(
 		var vCode = $(this).val();
 		document.getElementById("vendorCode").value=$(this).val();
 		$.ajax({
-			url:' /icam/getVendorBooks.html',
+			url:' /cedugenie/getVendorBooks.html',
 			data:'vendorCode='+($(this).val()),
 			dataType: 'json',
 			success: function(data){
@@ -95,7 +95,7 @@ $(".clearbtn").each(function(){
 		var itemId=this.id;
 		var vendorId=document.getElementById("vendorCode").value;
 		$.ajax({
-			url:' /icam/getVendorBookPriceHistory.html',
+			url:' /cedugenie/getVendorBookPriceHistory.html',
 			data:"strVendorCode=" + vendorId+ "&strItemId=" +itemId,
 			dataType: 'json',
 			success: function(data)

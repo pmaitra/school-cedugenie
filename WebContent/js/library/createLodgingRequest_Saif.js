@@ -144,7 +144,7 @@ window.onload = function(){
 	
 	$(document).ready(function() {	
 		 $("#bookRequestedFor").autocomplete({
-		 	source: '/icam/getUserIdList.html',
+		 	source: '/cedugenie/getUserIdList.html',
 		 	 select: function (event, ui) {
 		 		 getmaxbook(ui.item.value);
 		 		removedisabled(ui.item.value);
@@ -157,7 +157,7 @@ window.onload = function(){
 		
 	function getmaxbook(bookObj) {
 					$.ajax({
-				    	url: '/icam/getMaximunNumberOfBook.html',
+				    	url: '/cedugenie/getMaximunNumberOfBook.html',
 				        dataType: 'json',
 				        data: "bookRequestedFor=" + bookObj,
 				        success: function(dataDB) {

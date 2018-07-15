@@ -12,7 +12,7 @@ $(document).ready(function(){
 		if($(this).val()!=''){
 			
 			$.ajax({
-		        url: '/icam/getSectionAgainstStandard.html',
+		        url: '/cedugenie/getSectionAgainstStandard.html',
 		        dataType: 'json',
 		        data: {
 		        		"standard":$(this).val()
@@ -46,7 +46,7 @@ $(document).ready(function(){
 			});
 			
 			$.ajax({
-		        url: '/icam/getUserExamsForStandard.html',
+		        url: '/cedugenie/getUserExamsForStandard.html',
 		        data: "standard=" + $(this).val(),
 		        dataType: 'json',
 		        success: function(data) {

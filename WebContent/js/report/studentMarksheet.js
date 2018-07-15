@@ -8,7 +8,7 @@
 					return;
 				}
 				$.ajax({
-			        url: '/icam/getSectionAgainstStandard.html',
+			        url: '/cedugenie/getSectionAgainstStandard.html',
 			        dataType: 'json',
 			        data: {
 			        		"standard":$(this).val()
@@ -62,7 +62,7 @@
 							return;
 						}
 						$.ajax({
-					        url: '/icam/getStudentsAgainstStandardAndSection.html',
+					        url: '/cedugenie/getStudentsAgainstStandardAndSection.html',
 					        dataType: 'json',
 					        data: {
 					        		"standard":$("#standardName").val(),
@@ -108,7 +108,7 @@ $(document).ready(function(){
 		if($(this).val()!=''){
 			
 			$.ajax({
-		        url: '/icam/getSectionAgainstStandard.html',
+		        url: '/cedugenie/getSectionAgainstStandard.html',
 		        dataType: 'json',
 		        data: {
 		        		"standard":$(this).val()
@@ -201,7 +201,7 @@ $(document).ready(function(){
 			return;
 		}
 		$.ajax({
-	        url: '/icam/getStudentsAgainstStandardAndSection.html',
+	        url: '/cedugenie/getStudentsAgainstStandardAndSection.html',
 	        dataType: 'json',
 	        data: {
         		"standard":$("#standardName").val(),

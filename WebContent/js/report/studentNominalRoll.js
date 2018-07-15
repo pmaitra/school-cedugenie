@@ -6,7 +6,7 @@ $(document).ready(function() {
 					return;
 				}
 				$.ajax({
-			        url: '/icam/getSectionAgainstStandard.html',
+			        url: '/cedugenie/getSectionAgainstStandard.html',
 			        dataType: 'json',
 			        data: {
 			        		"standard":$(this).val()

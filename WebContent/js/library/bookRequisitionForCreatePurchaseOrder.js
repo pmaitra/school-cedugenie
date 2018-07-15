@@ -4,7 +4,7 @@ $(".vendorNameClass").each(function(){
 	$(this).click(function(){
 		buttonName=$(this);
 		$.ajax({
-			url:'/icam/getNameOfVendors.html',
+			url:'/cedugenie/getNameOfVendors.html',
 			dataType:'json',
 			success:function(data){
 				allnames = data.split("*");
@@ -13,7 +13,7 @@ $(".vendorNameClass").each(function(){
 					select: function (event, ui){
 						var vendorName = ui.item.value;
 						$.ajax({
-							url: '/icam/getIdAgainstName.html',
+							url: '/cedugenie/getIdAgainstName.html',
 							dataType: 'json',
 							data: "vendorName=" + vendorName,
 							success: function(data) {
@@ -193,7 +193,7 @@ function validateReceivedRequisition(){
 function getTaxPercentages(rowid){
 	var taxCode = document.getElementById("taxStatus"+rowid).value;
 	$.ajax({
-        url: '/icam/getTaxPercentageAgainstTaxCode.html',
+        url: '/cedugenie/getTaxPercentageAgainstTaxCode.html',
         data: "taxCode="+(taxCode),
         dataType: 'json',
         success: function(data) {
@@ -211,7 +211,7 @@ $(document).ready(function() {
 		//document.getElementById("departmentBudgetTable").style.display="none";
 		var dept = "LIBRARY DEPARTMENT";
 		$.ajax({
-		    url: '/icam/getDepartmentBudgetDetails.html',
+		    url: '/cedugenie/getDepartmentBudgetDetails.html',
 		    	dataType: 'json',
 		    	data: "departmentCode=" + dept,		    	
 		    	success: function(data) {

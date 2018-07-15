@@ -2,7 +2,7 @@ $(document).ready(function(){
 	$("#vendorName").change(function() {
 		document.getElementById("vendorCode").value=$(this).val();
 		$.ajax({
-			url:' /icam/vendorCommodityListForPerishableMaterial.html',
+			url:' /cedugenie/vendorCommodityListForPerishableMaterial.html',
 			data:'vendorCode='+($(this).val()),
 			dataType: 'json',
 			success: function(data){

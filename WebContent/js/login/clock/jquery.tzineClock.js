@@ -91,7 +91,7 @@
 		
 		// Setting up a interval, executed every 1000 milliseconds:
 		$.ajax({
-	        url: '/icam/getTimeFromDB.html',
+	        url: '/cedugenie/getTimeFromDB.html',
 	        dataType: 'json',	       
 	        success: function(dataDB) {	
 	        	if(dataDB!= null ){	        		
@@ -168,7 +168,7 @@
 	
 	function reset(){
 		$.ajax({
-	        url: '/icam/getTimeFromDB.html',
+	        url: '/cedugenie/getTimeFromDB.html',
 	        dataType: 'json',	       
 	        success: function(dataDB) {	
 	        	if(dataDB!= null ){	        		

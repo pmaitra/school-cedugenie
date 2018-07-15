@@ -126,7 +126,7 @@
 		var index = commodityId.slice(9);
 		var commodity = commodityObj.value;
 		$.ajax({
-	        url: '/icam/getCommodityDetailsForIndentSheet.html',
+	        url: '/cedugenie/getCommodityDetailsForIndentSheet.html',
 	        data: "commodity="+(commodity),
 	        dataType: 'text',
 	        success: function(data) {
@@ -151,7 +151,7 @@
 		document.getElementById("vendorCode").value = vendorCode;
 		
 		$.ajax({
-	        url: '/icam/getDailyRationVendorDetails.html',
+	        url: '/cedugenie/getDailyRationVendorDetails.html',
 	        data: "vendorCode="+(vendorCode),
 	        dataType: 'text',
 	        success: function(data) {
@@ -186,7 +186,7 @@
 		var id = itemId.substring(13);
 		var commodityType = ctype.value;
 		$.ajax({
-	        url: '/icam/getCommoditiesForDailyMessConsumption.html',
+	        url: '/cedugenie/getCommoditiesForDailyMessConsumption.html',
 	        data: "commodityType="+(commodityType),
 	        dataType: 'text',
 	        success: function(data) {
@@ -211,7 +211,7 @@
 		var issueDate = document.getElementById("dateOfIssue").value;
 		
 		$.ajax({
-	        url: '/icam/getCommoditiesMessStockForDailyMessConsumption.html',
+	        url: '/cedugenie/getCommoditiesMessStockForDailyMessConsumption.html',
 	        data: "commodityType="+(commodityType)+"&commodity="+(com)+"&issueDate="+(issueDate),
 	        dataType: 'text',
 	        success: function(data) {

@@ -75,7 +75,7 @@
 
 		buttonName=$(x);
 		$.ajax({
-			url:'/icam/getNameOfCommodities.html',
+			url:'/cedugenie/getNameOfCommodities.html',
 			dataType:'json',
 			success:function(data){
 				allnames = data.split(";");
@@ -84,7 +84,7 @@
 					select: function (event, ui){
 						var commodityName = ui.item.value;
 						$.ajax({
-							url: '/icam/getCommodityUnitForPerishableMaterialRequisition.html',
+							url: '/cedugenie/getCommodityUnitForPerishableMaterialRequisition.html',
 							dataType: 'json',
 							data: "commodityName=" + commodityName,
 							success: function(data) {	

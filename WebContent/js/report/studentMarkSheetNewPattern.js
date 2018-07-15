@@ -3,7 +3,7 @@
 	$("#standardName").change(function(){
 		if($(this).val()!=''){
 			$.ajax({
-		        url: '/icam/getSectionAgainstStandard.html',
+		        url: '/cedugenie/getSectionAgainstStandard.html',
 		        dataType: 'json',
 		        data:"standard="+$(this).val(),
 		        success: function(data) {
@@ -37,7 +37,7 @@
 			/*var standardName = $(this).val();*/
 			if($(this).val()!= ""){
 				$.ajax({
-			        url: '/icam/getExamsForStandard.html',
+			        url: '/cedugenie/getExamsForStandard.html',
 			        dataType: 'json',
 			        data: "standard=" + $(this).val(),
 			        success: function(dataDB) {
@@ -120,7 +120,7 @@
 			return;
 		}
 		$.ajax({
-	        url: '/icam/getStudentsAgainstStandardAndSectionForNewReport.html',
+	        url: '/cedugenie/getStudentsAgainstStandardAndSectionForNewReport.html',
 	        dataType: 'json',
 	        data: {
 	    		"standard":$("#standardName").val(),

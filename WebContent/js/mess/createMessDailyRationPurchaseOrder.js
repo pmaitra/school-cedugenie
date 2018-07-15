@@ -5,7 +5,7 @@
 		var index = commodityId.slice(9);
 		var commodity = commodityObj.value;
 		$.ajax({
-	        url: '/icam/getCommodityDetailsForIndentSheet.html',
+	        url: '/cedugenie/getCommodityDetailsForIndentSheet.html',
 	        data: "commodity="+(commodity),
 	        dataType: 'text',
 	        success: function(data) {
@@ -30,7 +30,7 @@
 		document.getElementById("vendorCode").value = vendorCode;
 		
 		$.ajax({
-	        url: '/icam/getDailyRationVendorDetails.html',
+	        url: '/cedugenie/getDailyRationVendorDetails.html',
 	        data: "vendorCode="+(vendorCode),
 	        dataType: 'text',
 	        success: function(data) {
@@ -44,7 +44,7 @@
 		
 		/** added by sourav.bhadra on 26-10-2017 **/
 		/*$.ajax({
-	        url: '/icam/getDailyRationCommoditiesPriceDetailsForAVendor.html',
+	        url: '/cedugenie/getDailyRationCommoditiesPriceDetailsForAVendor.html',
 	        data: "vendorCode="+(vendorCode),
 	        dataType: 'text',
 	        success: function(data) { 

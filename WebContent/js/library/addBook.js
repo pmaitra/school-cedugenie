@@ -1,7 +1,7 @@
 function resourceDetails(val){
 	if(val=="BOOK_CATEGORY_1"){
 		$.ajax({
-			url:'/icam/getListOfItemsFromCatalogue.html',
+			url:'/cedugenie/getListOfItemsFromCatalogue.html',
 			data:"category="+val,
 			success:function(data){
 				$("#bookName").html(data);
@@ -15,7 +15,7 @@ function resourceDetails(val){
 	}
 	if(val=="BOOK_CATEGORY_2"){
 		$.ajax({
-			url:'/icam/getListOfItemsFromCatalogue.html',
+			url:'/cedugenie/getListOfItemsFromCatalogue.html',
 			data:"category="+val,
 			success:function(data){
 				$("#magazineName").html(data);
@@ -31,18 +31,18 @@ function resourceDetails(val){
 
 /*function getBookName(){
 	$("#bookName").autocomplete({
-		source: '/icam/getBooksInCatalogue.html',
+		source: '/cedugenie/getBooksInCatalogue.html',
 	});
 	$("#magazineName").autocomplete({
 		minLength:0,
-		source: '/icam/getMagazinesInCatalogue.html',
+		source: '/cedugenie/getMagazinesInCatalogue.html',
 	});
 };*/
 
 $("#magazineName").change(function(){
 	var magCode = $(this).val();
 	$.ajax({
-		url:'/icam/getAllDetailsOfItemsFromCatalogue.html',
+		url:'/cedugenie/getAllDetailsOfItemsFromCatalogue.html',
 		data:"magCode=" + magCode+ "&category=" + $("#category").val(),
 		success:function(data){
 			var magDataSplit = data.split("#");
@@ -64,7 +64,7 @@ $("#magazineName").change(function(){
 $("#bookName").change(function(){
 	var bookCode = $(this).val();
 	$.ajax({
-		url:'/icam/getAllDetailsOfItemsFromCatalogue.html',
+		url:'/cedugenie/getAllDetailsOfItemsFromCatalogue.html',
 		data:"bookCode=" + bookCode+ "&category=" + $("#category").val(),
 		success:function(data){
 			var fullDataSplit = data.split("^^");
@@ -99,11 +99,11 @@ $("#bookName").change(function(){
 function getPublisherName(){
 	$("#bookPublisherName").autocomplete({
 		minLength: 0,
-		source: '/icam/getPublisherName.html',
+		source: '/cedugenie/getPublisherName.html',
 	});
 	$("#magazinePublisherName").autocomplete({
 		minLength: 0,
-		source: '/icam/getPublisherName.html',
+		source: '/cedugenie/getPublisherName.html',
 	});
 };
 

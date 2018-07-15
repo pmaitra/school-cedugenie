@@ -101,7 +101,7 @@ $(document).ready(function() {
 	});
 	
 	$.ajax({
-		url:"/icam/getGenreListForCreateRequisition.html", 
+		url:"/cedugenie/getGenreListForCreateRequisition.html", 
         success:function(data){
         	genreData = data;
         },
@@ -111,7 +111,7 @@ $(document).ready(function() {
     });
 	
 	$.ajax({
-		url:"/icam/getDepartmentListForCreateRequisition.html",
+		url:"/cedugenie/getDepartmentListForCreateRequisition.html",
         success:function(data){
         	departmentData = data;
         },
@@ -265,7 +265,7 @@ $(".bookNameClass").each(function(){
 	$(this).click(function(){
 		buttonName=$(this);
 		$.ajax({
-			url:'/icam/getBookName.html',
+			url:'/cedugenie/getBookName.html',
 			dataType:'json',
 			success:function(data){
 				var allnames = data.split("*");

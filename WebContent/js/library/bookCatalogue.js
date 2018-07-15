@@ -16,11 +16,11 @@ function resourceDetails(val){
 function getPublisherName(){
 	$("#bookPublisherName").autocomplete({
 		minLength: 0,
-		source: '/icam/getPublisherName.html',
+		source: '/cedugenie/getPublisherName.html',
 	});
 	$("#magazinePublisherName").autocomplete({
 		minLength: 0,
-		source: '/icam/getPublisherName.html',
+		source: '/cedugenie/getPublisherName.html',
 	});
 };
 

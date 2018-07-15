@@ -3,7 +3,7 @@
 	$(document).ready(function(){
 		commoditySelectBoxdata = null;
 		$.ajax({
-			url:"/icam/getCommoditiesForMess.html",
+			url:"/cedugenie/getCommoditiesForMess.html",
 			success:function(data){
 				commoditySelectBoxdata = data;
 	        },
@@ -98,7 +98,7 @@
 		var index = commodityId.slice(9);
 		var commodity = commodityObj.value;
 		$.ajax({
-	        url: '/icam/getCommodityDetailsForIndentSheet.html',
+	        url: '/cedugenie/getCommodityDetailsForIndentSheet.html',
 	        data: "commodity="+(commodity),
 	        dataType: 'text',
 	        success: function(data) {
