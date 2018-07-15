@@ -17,8 +17,8 @@
            display: none !important;
        }
 </style>
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
 
 </head>
 <body>
@@ -80,7 +80,7 @@
 	
 	
 		
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>	
 </body>
 </html>

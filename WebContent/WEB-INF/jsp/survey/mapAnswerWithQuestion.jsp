@@ -154,7 +154,7 @@
 										<%-- <c:forEach var="terms" items="${termList}" varStatus="i">
 											<input type="hidden" name="termCode" value="${courseType.courseTypeName}">
 										</c:forEach> --%>
-										<table  id="datatable-tabletools" class="table table-bordered table-striped mb-none" data-swf-path="/icam/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
+										<table  id="datatable-tabletools" class="table table-bordered table-striped mb-none" data-swf-path="/cedugenie/assets/vendor/jquery-datatables/extras/TableTools/swf/copy_csv_xls_pdf.swf">
 											<thead>
 												<tr>
 		                                            
@@ -261,11 +261,11 @@
 					</div>
 					 -->
 					
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/survey/configureQuestionAnswer.js"></script>
-<!-- <script src="/icam/js/academics/createTerm.js"></script>
-<script src="/icam/assets/javascripts/ui-elements/examples.modals.js"></script> -->
+<script type="text/javascript" src="/cedugenie/js/survey/configureQuestionAnswer.js"></script>
+<!-- <script src="/cedugenie/js/academics/createTerm.js"></script>
+<script src="/cedugenie/assets/javascripts/ui-elements/examples.modals.js"></script> -->
 <script type="text/javascript">
 
 function hideAddButton(){

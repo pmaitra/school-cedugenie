@@ -22,7 +22,7 @@
        	z-index:99999 !important;
        } */
 </style>
-<!-- <link href="/icam/assets/custom-caleder/jquery-ui.css" type="text/css" rel="stylesheet"> --> 
+<!-- <link href="/cedugenie/assets/custom-caleder/jquery-ui.css" type="text/css" rel="stylesheet"> --> 
 </head>
 <body>
 <header class="page-header">
@@ -223,12 +223,12 @@
 			</div>
 
 
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/icam/js/tender/tenderForm.js"></script>
-<!--  <script src="/icam/assets/custom-caleder/jquery-ui.js" type="text/javascript"></script>-->
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/tender/tenderForm.js"></script>
+<!--  <script src="/cedugenie/assets/custom-caleder/jquery-ui.js" type="text/javascript"></script>-->
 
 <script type="text/javascript">
 $('.datepicker').datepicker({

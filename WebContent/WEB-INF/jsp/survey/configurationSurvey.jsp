@@ -23,7 +23,7 @@
        	z-index:99999 !important;
        }
 </style>
-<link href="/icam/assets/custom-caleder/jquery-ui.css" type="text/css" rel="stylesheet"> 
+<link href="/cedugenie/assets/custom-caleder/jquery-ui.css" type="text/css" rel="stylesheet"> 
 </head>
 <body>
 		<c:if test="${status eq 'success'}">
@@ -42,7 +42,7 @@
 			</div>
 		</c:if>			
 					
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
 
 
