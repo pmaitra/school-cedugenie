@@ -27,7 +27,7 @@ $("#standard").change(function(){
 	 if(($(standard).val())=="All"){
 		deleteRow(table);
 		$.ajax({
-	        url: '/icam/getStudentsForAllCourse.html',
+	        url: '/cedugenie/getStudentsForAllCourse.html',
 	        dataType: 'json',
 	        /*data: "standard=" + ($("#standard").val())+ "&section=NA",*/
 	        success: function(dataDB) {
@@ -80,7 +80,7 @@ $("#standard").change(function(){
 	}else{
 		deleteRow(table);
 		$.ajax({
-	        url: '/icam/getSectionAgainstCourse.html',
+	        url: '/cedugenie/getSectionAgainstCourse.html',
 	        dataType: 'json',
 	        data: "course=" + ($(this).val()),
 	        success: function(dataDB) {
@@ -109,7 +109,7 @@ $("#section").change(function(){
 	// if(($(section).val())=="All"){
 		deleteRow(table);
 		$.ajax({
-	        url: '/icam/getStudentsForprogrammeAndBatch.html',
+	        url: '/cedugenie/getStudentsForprogrammeAndBatch.html',
 	        dataType: 'json',
 	        data: "course=" + ($("#standard").val())+ "&section="+($("#section").val()),
 	        success: function(dataDB) {

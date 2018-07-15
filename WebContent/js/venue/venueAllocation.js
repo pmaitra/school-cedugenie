@@ -6,7 +6,7 @@ function checkAllocationStatus(){
 	var endTime = $("#endTime").val();
 	var status = 'allocated';
 	$.ajax({
-		url: '/icam/getAlloctedVenue.html',
+		url: '/cedugenie/getAlloctedVenue.html',
 		dataType: 'json',
 		data: { venueCode:  venueCode, startDate: startDate ,endDate: endDate,startTime:startTime,endTime:endTime},
 		success: function(data) {

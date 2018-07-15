@@ -26,7 +26,7 @@ $(document).ready(
             	$(this).click(function(){                      		
             		var tableNode = $(this).parent().parent().parent().parent();
             		 var row = $('<tr>'); 
-	                 row.append($('<td><input type="file" name="uploadFile.ticketingRelatedFile" /></td><td><img  src="/icam/images/minus_icon.png" onclick="deleteThisRow(this);"></td>'));
+	                 row.append($('<td><input type="file" name="uploadFile.ticketingRelatedFile" /></td><td><img  src="/cedugenie/images/minus_icon.png" onclick="deleteThisRow(this);"></td>'));
 	            $(tableNode).append(row); 
 				});
             });
@@ -41,7 +41,7 @@ $(document).ready(function() {
 	$("#ticketServiceName").change(function() {
 		//alert("hiii");
 		$.ajax({
-			url: '/icam/getKeyDetailsForACategory.html',
+			url: '/cedugenie/getKeyDetailsForACategory.html',
 			dataType: 'json',
 			data: "category="+($("#ticketServiceName").val()),
 			success: function(data){ 
@@ -67,7 +67,7 @@ $(document).ready(function() {
 		});
 		
 		$.ajax({
-			url: '/icam/getSurveyDetailsForAJobType.html',
+			url: '/cedugenie/getSurveyDetailsForAJobType.html',
 			dataType: 'json',
 			data: "ticketServiceName="+($("#ticketServiceName").val()),
 			success: function(data){  
@@ -156,7 +156,7 @@ $("#department").change(function() {
 	removeOption(department);
 	
 	$.ajax({
-		url: '/icam/getCategoryListForADepartment.html',
+		url: '/cedugenie/getCategoryListForADepartment.html',
 		dataType: 'json',
 		data: "department="+($("#department").val()),
 		success: function(data){ 
@@ -191,7 +191,7 @@ $("#standard").change(function(){
 
 	
 	$.ajax({
-        url: '/icam/getSectionAgainstStandard.html',
+        url: '/cedugenie/getSectionAgainstStandard.html',
         dataType: 'json',
         data: "standard=" + ($(this).val()),
         success: function(dataDB) {
@@ -217,7 +217,7 @@ $("#section").change(function(){
 	var rollObject = document.getElementById("rollNumber");
 	removeOption(rollObject);
 	$.ajax({
-		url: '/icam/getStudentsToAssignSection.html',
+		url: '/cedugenie/getStudentsToAssignSection.html',
         dataType: 'json',
         data: "standard=" + ($("#standard").val())+ "&section="+($("#section").val()),
         success: function(dataDB) {

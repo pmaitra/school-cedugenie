@@ -2,7 +2,7 @@
 			$("#venueCode").change(function (){
 			//	alert("hii");
 				$.ajax({
-				url: '/icam/getFacilityListAgainstVenue.html',
+				url: '/cedugenie/getFacilityListAgainstVenue.html',
 				dataType: 'json',
 				data: "venueCode=" + $("#venueCode").val(),
 				success: function(data) {

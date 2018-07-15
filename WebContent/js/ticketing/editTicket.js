@@ -8,8 +8,8 @@
             		var tableNode = $(this).parent().parent().parent().parent();
             		
             		 var row = $('<tr>'); 
-            		 //var row = $('<tr><td><input type="file" name="uploadFile.ticketingRelatedFile" /></td><td><img  src="/icam/images/minus_icon.png" onclick="deleteThisRow(this);"></td></tr>');
-	                 row.append($('<td><input type="file" name="uploadFile.ticketingRelatedFile" /></td><td><img  src="/icam/images/minus_icon.png" onclick="deleteThisRow(this);"></td>'));
+            		 //var row = $('<tr><td><input type="file" name="uploadFile.ticketingRelatedFile" /></td><td><img  src="/cedugenie/images/minus_icon.png" onclick="deleteThisRow(this);"></td></tr>');
+	                 row.append($('<td><input type="file" name="uploadFile.ticketingRelatedFile" /></td><td><img  src="/cedugenie/images/minus_icon.png" onclick="deleteThisRow(this);"></td>'));
 	            $(tableNode).append(row); 
 				});
             //});
@@ -29,7 +29,7 @@ function getUserId(thisClassNode){
 	if(($("#individual"+index).val()!=null)){
 		
 		$("#resource"+index).autocomplete({
-			source: '/icam/getUserIdForResourceType.html?resourceType='+($("#individual"+index).val()) ,
+			source: '/cedugenie/getUserIdForResourceType.html?resourceType='+($("#individual"+index).val()) ,
 			/*select: function (event, ui){
 				var userId = ui.item.value;
 				
@@ -393,7 +393,7 @@ function getUserIdNew(thisClassNode){
 	if(($("#additionalIndividual"+index).val()!=null)){
 		
 		$("#additionalResource"+index).autocomplete({
-			source: '/icam/getUserIdForResourceType.html?resourceType='+($("#additionalIndividual"+index).val()) ,
+			source: '/cedugenie/getUserIdForResourceType.html?resourceType='+($("#additionalIndividual"+index).val()) ,
 			/*select: function (event, ui){
 				var userId = ui.item.value;
 				

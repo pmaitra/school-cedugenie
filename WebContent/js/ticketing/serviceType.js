@@ -2,7 +2,7 @@ $(document).ready(function() {
 	$("#department").change(
 			function() {
 				$.ajax({
-			        url: '/icam/getDepartmentWiseUserList.html',
+			        url: '/cedugenie/getDepartmentWiseUserList.html',
 			        dataType: 'json',
 			        data: "department=" + ($(this).val()),
 			        success: function(dataDB) {
@@ -32,7 +32,7 @@ function check(abc) {
 	var p=abc.id;
 	p=p.replace("serviceListDepartment","serviceName");
 	$.ajax({
-        url: '/icam/getDepartmentWiseUserList.html',
+        url: '/cedugenie/getDepartmentWiseUserList.html',
         dataType: 'json',
         data: "department=" + (abc.value),
         success: function(dataDB) {

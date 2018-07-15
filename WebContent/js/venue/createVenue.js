@@ -9,7 +9,7 @@ $(document).ready( function(){
 		//document.getElementById("floor").style.display  = 'none';
 		
 			$.ajax({
-				url: '/icam/getVenueAgainstVenueType.html',
+				url: '/cedugenie/getVenueAgainstVenueType.html',
 				dataType: 'json',
 				data: "venueTypeCode=" + $("#venueTypeCode").val(),
 				success: function(data) {
@@ -35,7 +35,7 @@ $(document).ready( function(){
 		//document.getElementById("floorLabel").style.display  = 'block';
 		//document.getElementById("floor").style.display  = 'block';
 		$.ajax({
-			url: '/icam/getBuildingAgainstParentVenue.html',
+			url: '/cedugenie/getBuildingAgainstParentVenue.html',
 			dataType: 'json',
 			data: "venueCode=" + $("#venueCode").val(),
 			success: function(data) {

@@ -30,7 +30,7 @@ function addNewRows(){
 		        
 	var cell2= row.insertCell(2);
 	/*var element2 = document.createElement("img");
-	element2.setAttribute("src","/icam/images/minus_icon.png");		
+	element2.setAttribute("src","/cedugenie/images/minus_icon.png");		
 	element2.setAttribute("onclick", "deleteRow(this);");*/
 	var element2= document.createElement('a');	
 	 element2.setAttribute("class","fa fa-minus-square");

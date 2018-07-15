@@ -3,7 +3,7 @@ $(document).ready( function(){
 	
 	$("#zone").change(function (){
 		$.ajax({
-		url: '/icam/getStatesAgainstZone.html',
+		url: '/cedugenie/getStatesAgainstZone.html',
 		dataType: 'json',
 		data: "zone=" + $("#zone").val(),
 		success: function(data) {

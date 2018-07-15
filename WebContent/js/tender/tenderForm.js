@@ -1,6 +1,6 @@
 $(document).ready(function (){
 	$("#tenderSPOC").autocomplete({
-		source: '/icam/getAllUserId.html' ,
+		source: '/cedugenie/getAllUserId.html' ,
 		/*select: function (event, ui){
 			var userId0 = ui.item.value;
 		}*/
@@ -13,7 +13,7 @@ $("#tenderCategory").change(function() {
 	//removeOption(commodityName);
 	
 	$.ajax({
-		url: '/icam/getAllSubCategory.html',
+		url: '/cedugenie/getAllSubCategory.html',
 		dataType: 'json',
 		data: "tenderCategory="+($("#tenderCategory").val()),
 		success: function(data){ 
@@ -46,7 +46,7 @@ function getAllCommodityList(index){
 	
 	
 	$.ajax({
-	url: '/icam/getAllCommodityName.html',
+	url: '/cedugenie/getAllCommodityName.html',
 	dataType: 'json',
 	data: "tenderCategory="+($("#tenderCategory").val())+"&tenderSubCategory="+($("#tenderSubCategory").val()),
 	success: function(data){ 
@@ -86,7 +86,7 @@ function getCommodityUnit(thisValue){
 	var indexNo = split[1];
 	
 	$.ajax({
-	url: '/icam/getCommodityUnit.html',
+	url: '/cedugenie/getCommodityUnit.html',
 	dataType: 'text',
 	data: "commodityName="+thisValue.value,
 	success: function(data){ 
@@ -159,7 +159,7 @@ $(".addFileClassName").each(function(){
 	$(this).click(function(){                      		
 		var tableNode = $(this).parent().parent().parent().parent();
 		 var row = $('<tr>'); 
-         row.append($('<td><input type="file" name="uploadFile.tenderRelatedFile" /></td><td><img  src="/icam/images/minus_icon.png" onclick="deleteThisRow(this);"></td>'));
+         row.append($('<td><input type="file" name="uploadFile.tenderRelatedFile" /></td><td><img  src="/cedugenie/images/minus_icon.png" onclick="deleteThisRow(this);"></td>'));
     $(tableNode).append(row); 
 	});
 });
