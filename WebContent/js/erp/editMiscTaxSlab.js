@@ -90,7 +90,7 @@ function addrows(){
     var element = document.createElement("input");
     element.type = "image";		        	        
     element.name = "deleteButton";
-    element.setAttribute("src","/icam/images/minus_icon.png");
+    element.setAttribute("src","/cedugenie/images/minus_icon.png");
     element.setAttribute("onclick","return deleteRow(this);");
     cell.appendChild(element);
                  

@@ -7,7 +7,7 @@ $("#teacherId").change(
 					return;
 				}
 				$.ajax({
-			        url: '/icam/getStaffDetailsForTeacherSubjectMapping.html',
+			        url: '/cedugenie/getStaffDetailsForTeacherSubjectMapping.html',
 			        data: "staffUserId=" +($(this).val()),
 			        success: function(data) {
 			        	//alert("data==="+data);

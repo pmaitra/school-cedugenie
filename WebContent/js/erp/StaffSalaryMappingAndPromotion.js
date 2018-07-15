@@ -1,13 +1,13 @@
 $(document).ready(function() {	
 		 $("#userId").autocomplete({
-		 	source: '/icam/getStaffUserIdList.html'
+		 	source: '/cedugenie/getStaffUserIdList.html'
 		 });
 		 
 		 
 		 
 		 $("#designationType").change(function(){
 		    	$.ajax({
-			        url: '/icam/getDesignationBasedOnDesignationType.html',
+			        url: '/cedugenie/getDesignationBasedOnDesignationType.html',
 			        dataType: 'json',
 			        data: "designationTypeCode=" + ($(this).val()),
 			        success: function(dataDB) {	
@@ -36,7 +36,7 @@ $(document).ready(function() {
 		    
 		    $("#designation").change(function(){
 		    	$.ajax({
-			        url: '/icam/getReportingPerson.html',
+			        url: '/cedugenie/getReportingPerson.html',
 			        dataType: 'json',
 			        data: "designation=" + ($(this).val()),
 			        success: function(dataDB) {	
@@ -86,7 +86,7 @@ $(document).ready(function() {
 		    $("#level").change(
 				function() {
 					$.ajax({
-				        url: '/icam/getSalTemplate.html',
+				        url: '/cedugenie/getSalTemplate.html',
 				        dataType: 'json',
 				        data: "strlevel=" + ($(this).val()) + "&strDesignationCode=" + ($("#designation")).val(),
 				        success: function(dataDB) {
@@ -107,7 +107,7 @@ $(document).ready(function() {
 		    $("#salaryTemplateName").change(
 				function() {
 					$.ajax({
-				        url: '/icam/getSalBreakUp.html',
+				        url: '/cedugenie/getSalBreakUp.html',
 				        dataType: 'json',
 				        data:{
 				        	strSalaryTemp:$(this).val(),
@@ -393,7 +393,7 @@ function calculateAmount(payHead,thisObj){
 			
 			
 			$.ajax({
-		        url: '/icam/getCalculatedExactValueOfGivenFormula.html', //for HRA
+		        url: '/cedugenie/getCalculatedExactValueOfGivenFormula.html', //for HRA
 		        data: "finalFormula=" + (replacedFormula[arrayLengths]),
 		        dataType: 'json',
 		        success: function(data) {
@@ -410,7 +410,7 @@ function calculateAmount(payHead,thisObj){
 		}
 		for(var arrayLengthAno = 0; arrayLengthAno<replacedFormulaAnother.length;arrayLengthAno++){
 			$.ajax({
-		        url: '/icam/getCalculatedExactValueOfGivenFormula.html', 
+		        url: '/cedugenie/getCalculatedExactValueOfGivenFormula.html', 
 		        data: "finalFormula=" + (replacedFormulaAnother[arrayLengthAno]),
 		        dataType: 'json',
 		        success: function(data) {
@@ -476,7 +476,7 @@ function calculateAmount(payHead,thisObj){
 		}
 		for(var arrayLengthForDed = 0; arrayLengthForDed<replacedFormulaForDed.length;arrayLengthForDed++){
 			$.ajax({
-		        url: '/icam/getCalculatedExactValueOfGivenFormula.html', 
+		        url: '/cedugenie/getCalculatedExactValueOfGivenFormula.html', 
 		        data: "finalFormula=" + (replacedFormulaForDed[arrayLengthForDed]),
 		        dataType: 'json',
 		        success: function(data) {
@@ -492,7 +492,7 @@ function calculateAmount(payHead,thisObj){
 		}
 		for(var arrayLens = 0; arrayLens<replacedFormulaAnotherForDed.length;arrayLens++){
 			$.ajax({
-		        url: '/icam/getCalculatedExactValueOfGivenFormula.html', 
+		        url: '/cedugenie/getCalculatedExactValueOfGivenFormula.html', 
 		        data: "finalFormula=" + (replacedFormulaAnotherForDed[arrayLen]),
 		        dataType: 'json',
 		        success: function(data) {

@@ -8,7 +8,7 @@ $(document).ready(function() {
 					return;
 				}
 				$.ajax({
-		        url: '/icam/getRemainingLeave.html',
+		        url: '/cedugenie/getRemainingLeave.html',
 		        dataType: 'json',
 		        data: "leaveType=" + ($(this).val()),
 		        success: function(dataDB) {				        	
@@ -82,7 +82,7 @@ function showRequestLeaveCount(){
 		 */
 	
 		$.ajax({
-		    url: '/icam/getWorkingDaysForLeaveRequest.html',		   
+		    url: '/cedugenie/getWorkingDaysForLeaveRequest.html',		   
 		    dataType: 'json',
 		    data: "startDate=" + ($('#startDate').val())+"&"+"endDate=" +($('#endDate').val()),
 		    success: function(data) {		    	

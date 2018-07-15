@@ -1,7 +1,7 @@
 $(document).ready(function() {
 	$("#designationType").change(function(){
     	$.ajax({
-	        url: '/icam/getDesignationBasedOnDesignationType.html',
+	        url: '/cedugenie/getDesignationBasedOnDesignationType.html',
 	        dataType: 'json',
 	        data: "designationTypeCode=" + ($(this).val()),
 	        success: function(dataDB) {
@@ -29,7 +29,7 @@ $(document).ready(function() {
 	
 	$("#designation").change(function(){
     	$.ajax({
-	        url: '/icam/getLevelBasedOnDesignation.html',
+	        url: '/cedugenie/getLevelBasedOnDesignation.html',
 	        dataType: 'json',
 	        data: "designationCode=" + ($(this).val()),
 	        success: function(dataDB) {	
@@ -61,7 +61,7 @@ $(document).ready(function() {
 		$("#salaryTemplateName").bind('keyup blur',function(){
 			var salaryTemplateName=$("#salaryTemplateName").val();	
 			 $.ajax({
-		    url: '/icam/getSalaryTemplateName.html',
+		    url: '/cedugenie/getSalaryTemplateName.html',
 		    dataType: 'json',
 		     data: "salaryTemplateName=" +salaryTemplateName,
 		     success: function(data) {
@@ -80,7 +80,7 @@ $(document).ready(function() {
 		
 		$("#level").bind('keyup blur',function(){
 				$.ajax({
-			        url: '/icam/getTemplateForDesignationTypeAndDesignationAndLevel.html',
+			        url: '/cedugenie/getTemplateForDesignationTypeAndDesignationAndLevel.html',
 			        dataType: 'json',
 			        data:"designationType=" + $("#designationType").val() + "&designation=" + $("#designation").val() + "&level="+ $("#level").val(),
 			        success: function(dataDB) {	

@@ -25,7 +25,7 @@ $(document).ready(function() {
              row.append($('<td><input type="text" class="form-control" name = "startSlabIndex" id="startSlabIndex0" value="0.0" style="text-align: right;" onblur="setZero(this);" ></td>'));
              row.append($('<td><input type="text" class="form-control" name = "endSlabIndex" id="endSlabIndex0" value="0.0" style="text-align: right;" onblur="setZero(this);"></td>'));
              row.append($('<input type="text" class="form-control" name = "taxAmount" id="taxAmount0" value="0.0" style="text-align: right;" onblur="setZero(this);"></td>'));
-             row.append($('<td><img alt="" src="/icam/images/minus_icon.png" onclick="deleteRow(this);"></td>'));
+             row.append($('<td><img alt="" src="/cedugenie/images/minus_icon.png" onclick="deleteRow(this);"></td>'));
              $('#contributionSlab').append(row);	
              
              var lastRow = $('<tr>'); 
@@ -49,7 +49,7 @@ $(document).ready(function() {
 		}
 		if(($(this).val()) != ''){	
 			$.ajax({
-		        url: '/icam/getSubmittedEmployerContribution.html',
+		        url: '/cedugenie/getSubmittedEmployerContribution.html',
 		        dataType: 'json',
 		        data: "miscTaxTypeName=" + ($("#miscTaxTypeName").val()),
 		        success: function(dataDB) {
@@ -91,7 +91,7 @@ $(document).ready(function() {
 	    	                 row.append($('<td><input type="text" class="form-control" name = "startSlabIndex" id="startSlabIndex0" value="'+individualData[0]+'" readonly="readonly" style="text-align: right;" onblur="setZero(this);" ></td>'));
 	    	                 row.append($('<td><input type="text" class="form-control" name = "endSlabIndex" id="endSlabIndex0" value="'+individualData[1]+'" readonly="readonly" style="text-align: right;" onblur="setZero(this);"></td>'));
 	    	                 row.append($('<input type="text" class="form-control" name = "taxAmount" id="taxAmount0" value="'+individualData[2]+'" readonly="readonly" style="text-align: right;" onblur="setZero(this);"></td>'));
-	    	                 row.append($('<td><img alt="" src="/icam/images/minus_icon.png" onclick="deleteRowForUpdate(this);"></td>'));
+	    	                 row.append($('<td><img alt="" src="/cedugenie/images/minus_icon.png" onclick="deleteRowForUpdate(this);"></td>'));
 	    	                 $('#contributionSlabForUpdate').append(row);	
 		        		}
 		        		var lastRow = $('<tr>'); 
@@ -178,7 +178,7 @@ function addrows(){
     
     var cell = row.insertCell(3);
     var element = document.createElement("img");
-    element.setAttribute("src","/icam/images/minus_icon.png");
+    element.setAttribute("src","/cedugenie/images/minus_icon.png");
     element.setAttribute("onclick","deleteRow(this);");
     cell.appendChild(element); 
     
@@ -233,7 +233,7 @@ function addrowsForUpdate(){
     
     var cell = row.insertCell(3);
     var element = document.createElement("img");
-    element.setAttribute("src","/icam/images/minus_icon.png");
+    element.setAttribute("src","/cedugenie/images/minus_icon.png");
     element.setAttribute("onclick","deleteRowForUpdate(this);");
     cell.appendChild(element); 
     

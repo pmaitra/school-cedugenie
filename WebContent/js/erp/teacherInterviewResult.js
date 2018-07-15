@@ -3,7 +3,7 @@ $(document).ready(function() {
 		function() {
 			if(this.value!=""){
 					$.ajax({
-				        url: '/icam/getCandidateName.html',
+				        url: '/cedugenie/getCandidateName.html',
 				        dataType: 'json',
 				        data: "strParam=" + ($(this).val()),
 				        success: function(data) {
@@ -41,7 +41,7 @@ function addRow(tableID){
 	
 	var cell = row.insertCell(2);
 	element = document.createElement("img");
-	element.setAttribute("src","/icam/images/minus_icon.png");
+	element.setAttribute("src","/cedugenie/images/minus_icon.png");
 	element.setAttribute("onclick","deleteRow(this);");
 	cell.appendChild(element);
 }

@@ -1,6 +1,6 @@
 $("#venueName").change(function (){
 	$.ajax({
-		url: '/icam/getBlocksOfVenue.html',
+		url: '/cedugenie/getBlocksOfVenue.html',
 		dataType: 'json',
 		data: "venueName=" + $("#venueName").val(),
 		success: function(data) {
@@ -19,7 +19,7 @@ $("#venueName").change(function (){
 
 $("#block").change(function (){
 	$.ajax({
-		url: '/icam/getAvailableRoomOfBlock.html',
+		url: '/cedugenie/getAvailableRoomOfBlock.html',
 		dataType: 'json',
 		data: "block=" + ($(this).val()),
 		success: function(data) {
@@ -38,7 +38,7 @@ $("#block").change(function (){
 
 $("#roomNo").change(function (){
 	$.ajax({
-		url: '/icam/getAvailableBedsInRoom.html',
+		url: '/cedugenie/getAvailableBedsInRoom.html',
 		dataType: 'json',
 		data: "roomNo=" + $("#roomNo").val(),
 		success: function(data) {
@@ -54,7 +54,7 @@ $("#roomNo").change(function (){
 
 $("#userId").change(function() {
 	$.ajax({
-		url:' /icam/getResourceDetails.html',
+		url:' /cedugenie/getResourceDetails.html',
 		data:'userId='+($(this).val()),
 		dataType: 'json',
 		success: function(data){

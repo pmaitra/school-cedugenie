@@ -4,7 +4,7 @@ $(document).ready(function(){
 			if($(this).val()!=''){
 				
 				$.ajax({
-			        url: '/icam/getSectionAgainstCourse.html',
+			        url: '/cedugenie/getSectionAgainstCourse.html',
 			        dataType: 'json',
 			        data: {
 			        		"course":$(this).val()
@@ -46,7 +46,7 @@ $(document).ready(function(){
 		if($(this).val()!=''){
 			
 			$.ajax({
-		        url: '/icam/getSubjectAgainstTeacher.html',
+		        url: '/cedugenie/getSubjectAgainstTeacher.html',
 		        dataType: 'json',
 		        data: {
 		        		"teacher":$(this).val()

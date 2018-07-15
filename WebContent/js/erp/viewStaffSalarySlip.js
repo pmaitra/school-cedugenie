@@ -50,7 +50,7 @@ function calculateAmount(){
 	document.getElementById("grossNetTable").rows[1].cells[2].innerHTML = totalNet;
 	///////////////////////////////////////////////////////////////////////////////////////
 	$.ajax({
-        url: '/icam/ajaxCallForCalculateSlabTax.html',
+        url: '/cedugenie/ajaxCallForCalculateSlabTax.html',
         dataType: 'json',
         data: "totalGross=" + (totalGross)+ "&totalNet=" + (totalNet)+ "&userId=" + ($("#hiddenId").val())+ "&month=" + ($("#selectedMonth").val())+ "&year=" + ($("#selectedYear").val()),
         success: function(dataDB) {
@@ -87,6 +87,6 @@ function calculateAmount(){
 
 $(document).ready(function() {	
 	 $("#userId").autocomplete({
-	 	source: '/icam/getStaffUserIdList.html'
+	 	source: '/cedugenie/getStaffUserIdList.html'
 	 });
 });

@@ -259,7 +259,7 @@ $(document).ready(function(){
 		   }
 		 //  alert("finalFormula:"+finalFormula);
 			$.ajax({
-		        url: '/icam/getCalculatedValueOfGivenFormula.html',
+		        url: '/cedugenie/getCalculatedValueOfGivenFormula.html',
 		        data: "finalFormula=" + finalFormula,
 		        dataType: 'json',
 		        success: function(data) {

@@ -54,7 +54,7 @@ function addChildRows(){
     
     var cell = row.insertCell(3);
     element = document.createElement("img");
-    element.setAttribute("src","/icam/images/minus_icon.png");
+    element.setAttribute("src","/cedugenie/images/minus_icon.png");
     element.setAttribute("onclick","deleteEmployeeDependents(this);");
     cell.appendChild(element);
     
@@ -235,7 +235,7 @@ function addNominee(){
     
   /*  var cell = row.insertCell(3);
     element = document.createElement("img");
-    element.setAttribute("src","/icam/images/minus_icon.png");
+    element.setAttribute("src","/cedugenie/images/minus_icon.png");
     element.setAttribute("onclick","deleteNomineeRow(this);");
     cell.appendChild(element);*/
     

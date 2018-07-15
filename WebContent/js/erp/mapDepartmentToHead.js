@@ -4,7 +4,7 @@ function getUserDetails(rowId){
 	
 	
 	$.ajax({
-        url: '/icam/getResourceUserId.html',
+        url: '/cedugenie/getResourceUserId.html',
         dataType: 'json',
         data:"parent=" + $("#resourceTypeName"+rowId).val(),
         success: function(dataDB) {
@@ -41,7 +41,7 @@ function getUsersDetails(rowId){
 	
 	
 	$.ajax({
-        url: '/icam/getResourceUserId.html',
+        url: '/cedugenie/getResourceUserId.html',
         dataType: 'json',
         data:"parent=" + $("#resourceTypeNames"+rowId).val(),
         success: function(dataDB) {

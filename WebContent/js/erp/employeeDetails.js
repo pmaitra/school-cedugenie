@@ -2,7 +2,7 @@
 		$("#employeeCode").bind('keyup blur',function(){
 			var employeeCode=$("#employeeCode").val();	
 			 $.ajax({
-		     url: '/icam/serverSideValidationOfEmployeeCode.html',
+		     url: '/cedugenie/serverSideValidationOfEmployeeCode.html',
 		     dataType: 'json',
 		     data: "employeeCode=" +employeeCode,
 		     
@@ -158,7 +158,7 @@
 	    
 	    var cell = row.insertCell(3);
 	    element = document.createElement("img");
-	    element.setAttribute("src","/icam/images/minus_icon.png");
+	    element.setAttribute("src","/cedugenie/images/minus_icon.png");
 	    element.setAttribute("onclick","deleteChildRow(this);");
 	    cell.appendChild(element);
 	    
@@ -239,7 +239,7 @@ var wShopCount=0;
 	    
 	    var cell = row.insertCell(6);
 	    element = document.createElement("img");
-	    element.setAttribute("src","/icam/images/minus_icon.png");
+	    element.setAttribute("src","/cedugenie/images/minus_icon.png");
 	    element.setAttribute("onclick","deleteChildRow(this);");
 	    cell.appendChild(element);
 	    
@@ -300,7 +300,7 @@ var wShopCount=0;
 	    
 	    var cell = row.insertCell(3);
 	    element = document.createElement("img");
-	    element.setAttribute("src","/icam/images/minus_icon.png");
+	    element.setAttribute("src","/cedugenie/images/minus_icon.png");
 	    element.setAttribute("onclick","deleteChildRow(this);");
 	    cell.appendChild(element);
 	}
@@ -376,7 +376,7 @@ var wShopCount=0;
 	    
 	    var cell = row.insertCell(3);
 	    element = document.createElement("img");
-	    element.setAttribute("src","/icam/images/minus_icon.png");
+	    element.setAttribute("src","/cedugenie/images/minus_icon.png");
 	    element.setAttribute("onclick","deleteChildRow(this);");
 	    cell.appendChild(element);
 	    
@@ -448,7 +448,7 @@ var wShopCount=0;
 	
 	$("#userId").change(function(){
 		$.ajax({
-		     url: '/icam/serverSideValidationOfUserId.html',
+		     url: '/cedugenie/serverSideValidationOfUserId.html',
 		     dataType: 'json',
 		     data: "userId=" +$(this).val(),
 		     success: function(data) {

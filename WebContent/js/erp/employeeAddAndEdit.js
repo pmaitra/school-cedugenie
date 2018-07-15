@@ -59,7 +59,7 @@ $(document).ready(function() {
     	$("#addFile").click(function(){                        		
     		var tableNode = $(this).parent().parent().parent().parent();
     		 var row = $('<tr>'); 
-             row.append($('<td><input type="file" name="resource.uploadFile.qualificationRelatedFile" /><img src="/icam/images/minus_icon.png"   onclick="deleteThisRow(this);"></td>'));
+             row.append($('<td><input type="file" name="resource.uploadFile.qualificationRelatedFile" /><img src="/cedugenie/images/minus_icon.png"   onclick="deleteThisRow(this);"></td>'));
         $(tableNode).append(row); 
 		});
     	
@@ -81,7 +81,7 @@ $(document).ready(function() {
     $(".permanentCountrys").change(
 			function() {
 				$.ajax({
-			        url: '/icam/getStateList.html',
+			        url: '/cedugenie/getStateList.html',
 			        dataType: 'json',
 			        data: "permanentAddressCountry=" + ($(this).val()),
 			        success: function(dataDB) {
@@ -99,7 +99,7 @@ $(document).ready(function() {
 	$(".presentCountrys").change(
 			function() {
 				$.ajax({
-			        url: '/icam/getStateList.html',
+			        url: '/cedugenie/getStateList.html',
 			        dataType: 'json',
 			        data: "presentAddressCountry=" + ($(this).val()),
 			        success: function(dataDB) {
@@ -116,7 +116,7 @@ $(document).ready(function() {
 	
 		$("#designationName").change(function(){
 	    	$.ajax({
-		        url: '/icam/getDesignationLevelListForDesignation.html',
+		        url: '/cedugenie/getDesignationLevelListForDesignation.html',
 		        dataType: 'json',
 		        data: "designation=" + ($(this).val()),
 		        success: function(dataDB) {		        	
@@ -150,7 +150,7 @@ function deleteThisRow(obj){
 //	if(bvalue=="Collapse")	{
 //	document.getElementById(divId).style.display = 'block';
 //	document.getElementById(imgId).value = 'Expand';
-//	document.getElementById(imgId).src = '/icam/images/minus_icon.png';
+//	document.getElementById(imgId).src = '/cedugenie/images/minus_icon.png';
 //	var innerHeight2=document.body.scrollHeight;
 // 	var frame=window.parent.document.getElementById("frame");	    	
 // 	frame.style.height = innerHeight2+250+ 'px';
@@ -159,7 +159,7 @@ function deleteThisRow(obj){
 //	else{
 //	document.getElementById(divId).style.display = 'none';
 //	document.getElementById(imgId).value = 'Collapse';
-//	document.getElementById(imgId).src = '/icam/images/plus_icon.png';
+//	document.getElementById(imgId).src = '/cedugenie/images/plus_icon.png';
 //	var innerHeight2=document.body.scrollHeight;
 //	var frame=window.parent.document.getElementById("frame");	    	
 //	frame.style.height = innerHeight2+250+ 'px';
@@ -512,7 +512,7 @@ function deleteTableRow(){
 function getDesignationForResourceType(pb){
 var res_type = pb.value;
 $.ajax({
-    url: '/icam/getDesignationForResourceType.html',
+    url: '/cedugenie/getDesignationForResourceType.html',
     dataType: 'json',        
     data: "resourceType=" + res_type,
     success: function(dataDB) {	

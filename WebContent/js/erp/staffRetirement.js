@@ -7,7 +7,7 @@ $("#staffUserId").change(
 				return;
 			}
 			$.ajax({
-		        url: '/icam/getStaffDetails.html',
+		        url: '/cedugenie/getStaffDetails.html',
 		        data: "staffUserId=" +($(this).val()),
 		        success: function(data) {
 		        	var sm=data.split("*");

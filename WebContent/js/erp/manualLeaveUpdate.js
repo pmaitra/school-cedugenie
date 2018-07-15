@@ -20,7 +20,7 @@ $(document).ready(function(){
 			return;
 		}
 		$.ajax({
-	        url: '/icam/getSpecificEmployeeCompleteLeaveDetails.html',
+	        url: '/cedugenie/getSpecificEmployeeCompleteLeaveDetails.html',
 	        data: "staffUserId=" +($(this).val()),
 	        success: function(data) {
 	        	if(null!=data && data!=""){

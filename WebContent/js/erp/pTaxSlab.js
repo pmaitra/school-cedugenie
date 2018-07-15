@@ -101,7 +101,7 @@ $(document).ready(function() {
 		}
 		if(($(this).val()) != ''){			
 			$.ajax({
-		        url: '/icam/getSubmittedSlabTypeForMiscTax.html',
+		        url: '/cedugenie/getSubmittedSlabTypeForMiscTax.html',
 		        dataType: 'json',
 		        data: "miscTaxTypeName=" + ($("#miscTaxTypeName").val()),
 		        success: function(dataDB) {

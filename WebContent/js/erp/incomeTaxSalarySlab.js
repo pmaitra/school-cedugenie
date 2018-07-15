@@ -20,7 +20,7 @@
         
         cell = row.insertCell(countScRows);
         element = document.createElement("img");
-        element.setAttribute("src","/icam/images/minus_icon.png");
+        element.setAttribute("src","/cedugenie/images/minus_icon.png");
         element.setAttribute("onclick","deleteRow(this);");
         cell.appendChild(element);        
         
