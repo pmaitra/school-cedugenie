@@ -127,16 +127,16 @@
 
 	
 	
-<script src="/icam/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
+<script src="/cedugenie/assets/vendor/autosize/iframeResizer.contentWindow.min.js"></script>
 <%@ include file="/include/js-include.jsp" %>
-<!-- <script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-	<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script> -->
-<script type="text/javascript" src="/icam/js/fusionchart/fusioncharts.js"></script>
-<!-- <script type="text/javascript" src="/icam/js/fusionchart/fusioncharts.theme.fint.js"></script> -->
+<!-- <script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+	<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script> -->
+<script type="text/javascript" src="/cedugenie/js/fusionchart/fusioncharts.js"></script>
+<!-- <script type="text/javascript" src="/cedugenie/js/fusionchart/fusioncharts.theme.fint.js"></script> -->
 
-<script src="/icam/js/login/saveSvgAsPng.js"></script>
-<script src="/icam/js/login/jspdf.debug.js"></script>
-<script src="/icam/js/login/svg_to_pdf.js"></script>
+<script src="/cedugenie/js/login/saveSvgAsPng.js"></script>
+<script src="/cedugenie/js/login/jspdf.debug.js"></script>
+<script src="/cedugenie/js/login/svg_to_pdf.js"></script>
 
 <script type="text/javascript">
 
@@ -190,7 +190,7 @@
 		        "dataSource" : ""
 		  });
 		    $.ajax({
-		        url:"http://localhost:8080/icam/loadChart1DataForLibrary.html",
+		        url:"http://localhost:8080/cedugenie/loadChart1DataForLibrary.html",
 		        dataType:"text",
 		        //data: "module=" + ($(module).val()),
 		        success:function(xmldata1){
@@ -207,7 +207,7 @@
 		    
 		    
 		    $.ajax({
-		        url:"http://localhost:8080/icam/loadChart2DataForLibrary.html",
+		        url:"http://localhost:8080/cedugenie/loadChart2DataForLibrary.html",
 		        dataType:"text",
 		        //data: "module=" +  ($(module).val()),
 		        success:function(xmldata1){
@@ -225,7 +225,7 @@
 		    
 		    
 		    $.ajax({
-		        url:"http://localhost:8080/icam/loadChart3DataForLibrary.html",
+		        url:"http://localhost:8080/cedugenie/loadChart3DataForLibrary.html",
 		        dataType:"text",
 		        //data: "module=" +  ($(module).val()),
 		        success:function(xmldata2){
@@ -242,7 +242,7 @@
 		    }); 
 		    
 		    $.ajax({
-		        url:"http://localhost:8080/icam/loadChart4DataForLibrary.html",
+		        url:"http://localhost:8080/cedugenie/loadChart4DataForLibrary.html",
 		        dataType:"text",
 		        //data: "module=" +  ($(module).val()),
 		        success:function(xmldata2){

@@ -17,20 +17,20 @@
 <meta name="revisit-after" content="7 days" />
 <meta name="robots" content="index,follow" />
 <title>Social Category Wise Class Strength</title>
-<link rel="stylesheet" href="/icam/css/report/socialCategoryWiseClassStrength.css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/css/common/pagination.css" rel="stylesheet" />
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<link rel="stylesheet" href="/icam/Cal/default.css" type="text/css">
-<link rel="stylesheet" href="/icam/Cal/jsDatePick_ltr.min.css">
-<script src="/icam/Cal/jsDatePick.min.1.3.js"></script>
-<script type="text/javascript" src="/icam/Cal/zebra_datepicker.js"></script>
+<link rel="stylesheet" href="/cedugenie/css/report/socialCategoryWiseClassStrength.css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/css/common/pagination.css" rel="stylesheet" />
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="/cedugenie/Cal/default.css" type="text/css">
+<link rel="stylesheet" href="/cedugenie/Cal/jsDatePick_ltr.min.css">
+<script src="/cedugenie/Cal/jsDatePick.min.1.3.js"></script>
+<script type="text/javascript" src="/cedugenie/Cal/zebra_datepicker.js"></script>
 <script>
 function validateForm() {
 	
@@ -59,7 +59,7 @@ function validateForm() {
 <body>
 <div class="ttlarea">	
 		<h1>
-		<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;Social Category Wise Class Strength
+		<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;Social Category Wise Class Strength
 		</h1>
 </div>
 
@@ -71,7 +71,7 @@ function validateForm() {
 <form:form id="generateSocialCategoryWiseClassStrengthReport" name="generateSocialCategoryWiseClassStrengthReport" method="POST" action="generateSocialCategoryWiseClassStrengthReport.html">		
 	<table cellspacing="0" cellpadding="0" class="midsec1">
 		<tr>
-			<td>Class<img class="required" src="/icam/images/required.gif" alt="Required"></td>
+			<td>Class<img class="required" src="/cedugenie/images/required.gif" alt="Required"></td>
 			<td>
 				<select name="standard" id="standard" class="defaultMultipleSelect1" multiple="multiple">
 					<option value="">Please Select</option>

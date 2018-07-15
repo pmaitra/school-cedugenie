@@ -15,17 +15,17 @@
 <meta name="revisit-after" content="7 days" />
 <meta name="robots" content="index,follow" />
 <title>Create Condemnation Report</title>
-<link rel="stylesheet" href="/icam/css/report/studentMarksheet.css" />
-<link href="/icam/css/common/messagebox.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/button.css" rel="stylesheet" type="text/css" />
-<link href="/icam/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" type="text/css" href="/icam/css/common/jquery-ui.css" />
-<link href="/icam/fonts/font-awesome.css" rel="stylesheet" />
-<link rel="stylesheet" type="text/css" href="/icam/Cal/default.css"/>
+<link rel="stylesheet" href="/cedugenie/css/report/studentMarksheet.css" />
+<link href="/cedugenie/css/common/messagebox.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/button.css" rel="stylesheet" type="text/css" />
+<link href="/cedugenie/css/common/bodyAndHeader.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/css/common/jquery-ui.css" />
+<link href="/cedugenie/fonts/font-awesome.css" rel="stylesheet" />
+<link rel="stylesheet" type="text/css" href="/cedugenie/Cal/default.css"/>
 
-<script type="text/javascript" src="/icam/js/common/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/icam/js/common/jquery-ui.min.js"></script>
-<script src="/icam/Cal/zebra_datepicker.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/cedugenie/js/common/jquery-ui.min.js"></script>
+<script src="/cedugenie/Cal/zebra_datepicker.js"></script>
 	<script>
 	 $(document).ready(function() {
 		 $('#startDate').Zebra_DatePicker();				 
@@ -45,7 +45,7 @@
 <body>
 <div class="ttlarea">	
 		<h1>
-		<img src="/icam/images/titleicon01.png" alt="" />&nbsp;&nbsp;Create Condemnation Report
+		<img src="/cedugenie/images/titleicon01.png" alt="" />&nbsp;&nbsp;Create Condemnation Report
 		</h1>
 </div>
 <c:if test="${message ne null}">	
@@ -70,7 +70,7 @@
   <form action="getCondemnationReport.html" method="post">
 	<table cellspacing="0" cellpadding="0" class="midsec">
 		<tr>
-			<th>Department Name :: <img class="required" src="/icam/images/required.gif" alt="Required"></th>
+			<th>Department Name :: <img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>
 			<td>
 					<select name="department.departmentCode" id="departmentCode" class="defaultselect" >
 						<option value="">Select...</option>
@@ -81,7 +81,7 @@
 			</td>
 		</tr>	
   	 	<tr>
-			<th>Inventory Session :: <img class="required" src="/icam/images/required.gif" alt="Required"></th>
+			<th>Inventory Session :: <img class="required" src="/cedugenie/images/required.gif" alt="Required"></th>
 			<td>
 					<select name="year" id="year" class="defaultselect" >
 						<option value="">Select...</option>
