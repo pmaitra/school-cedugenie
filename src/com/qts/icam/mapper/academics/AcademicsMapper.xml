@@ -146,7 +146,7 @@
 			(SELECT rec_id FROM resource WHERE user_id  ilike #{updatedBy} AND is_active = true),
 			(SELECT extract(epoch FROM now())),(SELECT extract(epoch FROM now())),
 			#{subjectGroupCode}, #{subjectGroupName}, #{desc},
-			(SELECT rec_id FROM subject_group WHERE serial_id = (SELECT MAX(serial_id)FROM subject_group) AND is_active = true),
+			(SELECT rec_id FROM subject_group WHERE subject_group_id = (SELECT MAX(subject_group_id)FROM subject_group) AND is_active = true),
 			#{subjectGroupOrderId},	#{totalHRSForCourse}, 
 			(SELECT rec_id FROM scholastic_type WHERE scholastic_type_code = #{scholasticTypeName} AND is_active = true)
 			);
@@ -162,7 +162,7 @@
 				subject_group_order=#{subjectGroupOrderId},
 				total_hrs_for_course=#{totalHRSForCourse}
 			WHERE
-				serial_id=#{subjectGroupId}
+				subject_group_id=#{subjectGroupId}
 			AND
 				is_active=true;
 				
@@ -176,7 +176,7 @@
 			total_hrs_for_course=#{totalHRSForCourse}
 			<!-- subject_group=(SELECT rec_id FROM subject_group WHERE subject_group_code =#{subjectGroup} AND is_active = true) -->
 		WHERE
-			subject_group = (SELECT rec_id FROM subject_group WHERE serial_id=#{subjectGroupId} AND is_active = true)
+			subject_group = (SELECT rec_id FROM subject_group WHERE subject_group_id=#{subjectGroupId} AND is_active = true)
 		AND
 			is_active=true;
 	</update>

@@ -179,15 +179,15 @@ function saveData(rowId,name)
 	
 	var credit = document.getElementById("code").value;
 	var hours = document.getElementById("hrs").value;
-	var taskNo = document.getElementById("taskNoEdit").value;
-	var ticketNo = document.getElementById("ticketNoEdit").value;
+	//var taskNo = document.getElementById("taskNoEdit").value;
+	//var ticketNo = document.getElementById("ticketNoEdit").value;
 	
 	
 	document.getElementById("saveId").value = rowId;
     document.getElementById("getCredit").value = credit;
 	document.getElementById("getHours").value = hours;
-	document.getElementById("taskNoUpdate").value = taskNo;
-	document.getElementById("ticketNoUpdate").value = ticketNo;
+	//document.getElementById("taskNoUpdate").value = taskNo;
+	//document.getElementById("ticketNoUpdate").value = ticketNo;
 	
 	
 

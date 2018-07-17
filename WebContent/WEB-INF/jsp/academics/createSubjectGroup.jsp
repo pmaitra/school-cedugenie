@@ -93,7 +93,8 @@ function makeEditable(rowId){
 										</div>
 										<!-- Added on 18052018 for ticket and task no -->
 										<!-- start -->
-										<div class="form-group">
+										<!-- PRAD COMMENTED OUT ON JULY 17 2018 -->
+										<%-- <div class="form-group">
 											<label class="col-sm-5 control-label">Task No</label>
 											<div class="col-sm-7">
 												<select class="form-control" name="taskNo" id="taskNo" >
@@ -109,7 +110,7 @@ function makeEditable(rowId){
 											<div class="col-sm-7">
 												<input type="text" class= "form-control"  name="ticketNo" id="ticketNo" value="" readonly/>
 											</div>
-										</div>
+										</div> --%>
 									<!-- end -->
 									</div>
 									
@@ -117,6 +118,10 @@ function makeEditable(rowId){
 			  							<span></span>	
 									</div>
 									<footer style="display: block;" class="panel-footer">
+										<button class="btn btn-primary" type="submit" onclick="return validating()">Submit </button>
+										<button type="reset" class="btn btn-default">Reset</button>
+									</footer>
+									<%-- <footer style="display: block;" class="panel-footer">
 										<c:if test="${addTaskList ne null && addTaskList.size() != 0}">
 											<button class="btn btn-primary" type="submit" onclick="return validating()">Submit </button>
 										</c:if>
@@ -124,7 +129,7 @@ function makeEditable(rowId){
 											<button class="btn btn-primary" type="submit" onclick="return validating()" disabled>Submit </button>
 										</c:if>
 										<button type="reset" class="btn btn-default">Reset</button>
-									</footer>
+									</footer> --%>
 								</section>
                             </form>
 						</div>
@@ -185,12 +190,17 @@ function makeEditable(rowId){
 													 <input type="hidden" name="totalHRSForCourse${i.index}" class="form-control" value="${group.totalHRSForCourse}" readonly id="totalHRSForCourse${i.index}">												 
 													${group.totalHRSForCourse} 
 												</td>
-												<td class="actions">
+												<%-- <td class="actions">
 													<a href="#" class="hidden on-editing cancel-row"><i class="fa fa-times"></i></a>
 													<c:if test="${editTaskList ne null && editTaskList.size() != 0}">
 														<a href="#modalInfo" class="mb-xs mt-xs mr-xs modal-basic" id="edit${i.index}" onclick = "showCourseDetails('${i.index}','${group.scholasticTypeName}','${group.subjectGroupName}','${group.subjectGroupOrderId}','${group.totalHRSForCourse}')"><i class="fa fa-pencil"></i></a>
 														<a href="inactiveDeleteCourse.html?groupName=${group.subjectGroupName}" id = "delete${i.index}"><i class="fa fa-trash-o"></i></a> 
 													</c:if>
+												</td> --%>
+												<td class="actions">
+													<a href="#" class="hidden on-editing cancel-row"><i class="fa fa-times"></i></a>
+													<a href="#modalInfo" class="mb-xs mt-xs mr-xs modal-basic" id="edit${i.index}" onclick = "showCourseDetails('${i.index}','${group.scholasticTypeName}','${group.subjectGroupName}','${group.subjectGroupOrderId}','${group.totalHRSForCourse}')"><i class="fa fa-pencil"></i></a>
+													<a href="inactiveDeleteCourse.html?groupName=${group.subjectGroupName}" id = "delete${i.index}"><i class="fa fa-trash-o"></i></a> 
 												</td>
 											</tr>
 											</c:forEach>
@@ -211,8 +221,8 @@ function makeEditable(rowId){
                                                                 <th>Subject Name</th>
                                                                 <th>Subject Credit</th>
                                                                 <th>Total Hours for credit</th>
-                                                                <th>Task No</th>
-                                                                <th>Ticket No</th>
+                                                                <!-- <th>Task No</th>
+                                                                <th>Ticket No</th> --> 
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -221,7 +231,7 @@ function makeEditable(rowId){
                                                         		<td><input type="text" class = "form-control" name="name" id="name" value="" readonly></td>
                                                         		<td><input type="text" class = "form-control" name="id" id="code"  class = "form-control" style="width: 50px" value="" ></td>
 											     				<td><input type="text" name="hrs" id="hrs"  class = "form-control" style="width: 50px" value="" ></td>
-											     				<td>
+											     				<%-- <td>
 											     					<select name="taskNo" id="taskNoEdit"  class = "form-control" style="width: 100px">
 											     						<option value="">select..</option>
 												     					<c:forEach var="task" items="${taskList}">
@@ -229,7 +239,7 @@ function makeEditable(rowId){
 																		</c:forEach>
 											     					</select>
 											     				</td>
-											     				<td><input type="text" class= "form-control"  name="ticketNo" id="ticketNoEdit" style="width: 50px" value="" readonly></td>
+											     				<td><input type="text" class= "form-control"  name="ticketNo" id="ticketNoEdit" style="width: 50px" value="" readonly></td> --%>
 											     			</tr>
                                                         </tbody>
                                                     </table>
