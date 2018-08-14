@@ -4,7 +4,7 @@
     top: 200px;
     width: 400px;
     background: #2e353e;
-    border: 2px solid #0088cc;
+    border: 2px solid #2e3192;
 }
 .sidebar{
       z-index: 999999;
@@ -151,7 +151,7 @@
       -webkit-box-shadow: -1px 0px 8px rgba(0, 0, 0, .175);
       box-shadow: -1px 0px 8px rgba(0, 0, 0, .175);      		
       left: -20px;
-      background: #0088cc;
+      background: #2e3192;
 } 
 
 .sidebar-right > .toggler > span{

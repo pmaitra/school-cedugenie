@@ -2361,3 +2361,9 @@ if (typeof jQuery === 'undefined') {
   })
 
 }(jQuery);
+
+ // background slider
+  // ==============
+  $('#myCarousel').carousel({
+		pause: 'none'
+	})
