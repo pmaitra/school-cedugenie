@@ -1494,7 +1494,7 @@ select.styled {
 }
 .more:before {
 	color: #FF5E63;
-	content: "";
+	content: "ï†Ž";
 	display: block;
 	float: left;
 	font-family: fontawesome;
